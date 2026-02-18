@@ -1,0 +1,5 @@
+name: CLI Tools Read-Only
+scope:
+  nodes:
+    - cli/core
+    - cli/commands

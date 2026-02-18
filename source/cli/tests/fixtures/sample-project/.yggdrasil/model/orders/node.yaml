@@ -1,0 +1,4 @@
+name: Orders
+type: module
+tags:
+  - requires-audit

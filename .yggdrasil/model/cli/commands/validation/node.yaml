@@ -1,0 +1,24 @@
+name: ValidationCommands
+type: library
+tags: [deterministic]
+
+relations:
+  - target: cli/core/loader
+    type: uses
+    consumes: [loadGraph]
+  - target: cli/core/context
+    type: uses
+    consumes: [buildContext]
+  - target: cli/core/validator
+    type: uses
+    consumes: [validate]
+  - target: cli/formatters
+    type: uses
+    consumes: [formatContextMarkdown]
+knowledge:
+  - patterns/command-error-handling
+
+mapping:
+  paths:
+    - source/cli/src/cli/validate.ts
+    - source/cli/src/cli/build-context.ts

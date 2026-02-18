@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+dist/
+build/
+*.tgz
+coverage/
+*.log
+
+# Environment
+.env*
+
+# Yggdrasil test artifacts
+.yggdrasil-test/
+.yggdrasil/_build/
+
+# VitePress build output
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / temp
+.vscode/
+.idea/
+*.tmp
+*.swp

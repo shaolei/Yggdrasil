@@ -1,0 +1,17 @@
+name: ContextBuilder
+type: library
+tags: [deterministic]
+
+relations:
+  - target: cli/model
+    type: uses
+    consumes: [Graph, GraphNode, ContextPackage, YggConfig, AspectDef, KnowledgeItem, FlowDef, Relation]
+  - target: cli/utils
+    type: uses
+    consumes: [normalizeMappingPaths, estimateTokens]
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/core/context-builder.ts

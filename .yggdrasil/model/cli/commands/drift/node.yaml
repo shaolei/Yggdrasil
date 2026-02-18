@@ -1,0 +1,24 @@
+name: DriftCommands
+type: library
+tags: [deterministic]
+
+relations:
+  - target: cli/core/loader
+    type: uses
+    consumes: [loadGraph]
+  - target: cli/core/drift-detector
+    type: uses
+    consumes: [detectDrift]
+  - target: cli/core/dependency-resolver
+    type: uses
+    consumes: [resolveDeps, formatDependencyTree, findChangedNodes]
+  - target: cli/io
+    type: uses
+    consumes: [readDriftState, writeDriftState]
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/cli/drift.ts
+    - source/cli/src/cli/drift-sync.ts

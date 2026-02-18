@@ -1,0 +1,15 @@
+name: Tooling
+type: library
+tags: []
+
+relations: []
+
+mapping:
+  paths:
+    - scripts/
+    - next.config.ts
+    - drizzle.config.ts
+    - postcss.config.mjs
+    - eslint.config.mjs
+    - tsconfig.json
+    - types/

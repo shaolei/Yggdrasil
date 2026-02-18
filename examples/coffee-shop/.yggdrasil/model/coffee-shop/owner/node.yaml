@@ -1,0 +1,10 @@
+name: Owner
+type: module
+tags: [owner]
+
+relations: []
+
+mapping:
+  paths:
+    - app/owner/
+    - app/api/owner/

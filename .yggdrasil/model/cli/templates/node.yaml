@@ -1,0 +1,11 @@
+name: Templates
+type: library
+tags: []
+
+relations: []
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/templates/

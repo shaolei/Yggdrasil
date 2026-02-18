@@ -1,0 +1,8 @@
+name: Test
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: x
+knowledge_categories: []
+tags: []

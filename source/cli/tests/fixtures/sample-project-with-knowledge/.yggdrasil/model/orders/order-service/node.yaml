@@ -1,0 +1,12 @@
+name: OrderService
+type: service
+tags:
+  - requires-audit
+relations:
+  - target: auth/auth-api
+    type: uses
+  - target: users/user-repo
+    type: uses
+mapping:
+  paths:
+    - src/orders/order.service.ts

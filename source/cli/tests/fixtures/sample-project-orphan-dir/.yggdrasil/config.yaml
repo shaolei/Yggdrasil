@@ -1,0 +1,14 @@
+name: Orphan Dir Test
+stack:
+  language: TypeScript
+standards: ''
+node_types:
+  - module
+  - service
+artifacts:
+  responsibility:
+    required: always
+    description: 'x'
+knowledge_categories: []
+tags:
+  - valid-tag

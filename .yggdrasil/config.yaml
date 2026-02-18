@@ -1,0 +1,60 @@
+name: "Yggdrasil"
+
+stack:
+  language: "TypeScript"
+  runtime: "Node.js 22+"
+
+standards: |
+  Strict TypeScript. ESM modules (import/export). Vitest for tests.
+  Commands: errors to stderr, process.exit(1) on failure. No default exports for command handlers.
+
+tags:
+  - deterministic
+
+node_types:
+  - module
+  - service
+  - library
+
+artifacts:
+  responsibility.md:
+    required: always
+    description: "What this node is responsible for, and what it is not"
+  interface.md:
+    required:
+      when: has_incoming_relations
+    description: "Public API — methods, parameters, return types, contracts"
+    structural_context: true
+  constraints.md:
+    required: never
+    description: "Validation rules, business rules, invariants"
+  errors.md:
+    required:
+      when: has_incoming_relations
+    description: "Error conditions, codes, recovery behavior"
+    structural_context: true
+  state.md:
+    required: never
+    description: "State machines, lifecycle, transitions"
+  decisions.md:
+    required: never
+    description: "Local design decisions and rationale"
+  rationale.md:
+    required: never
+    description: "Ideological understanding — why the system exists, core premises, design philosophy. Reference documentation for canonical source."
+
+knowledge_categories:
+  - name: decisions
+    description: "Architectural decisions and their rationale"
+  - name: patterns
+    description: "Implementation conventions with examples"
+  - name: invariants
+    description: "System truths that must never be violated"
+
+quality:
+  min_artifact_length: 50
+  max_direct_relations: 10
+  context_budget:
+    warning: 5000
+    error: 10000
+  knowledge_staleness_days: 90

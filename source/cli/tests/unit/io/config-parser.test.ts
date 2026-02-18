@@ -1,0 +1,466 @@
+import { describe, it, expect } from 'vitest';
+import { writeFile, mkdir, rm } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseConfig } from '../../../src/io/config-parser.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const FIXTURE_DIR = path.join(__dirname, '../../fixtures/sample-project/.yggdrasil');
+
+describe('config-parser', () => {
+  it('parses valid config.yaml correctly (v2.2)', async () => {
+    const config = await parseConfig(path.join(FIXTURE_DIR, 'config.yaml'));
+
+    expect(config.name).toBe('Sample E-Commerce System');
+    expect(config.stack).toEqual({
+      language: 'TypeScript',
+      runtime: 'Node 22',
+      framework: 'NestJS',
+      database: 'PostgreSQL',
+    });
+    expect(typeof config.standards).toBe('string');
+    expect(config.standards).toContain('ESLint');
+    expect(config.quality?.context_budget.warning).toBe(8000);
+    expect(config.tags).toContain('requires-auth');
+    expect(config.tags).toContain('requires-audit');
+    expect(config.tags).toContain('public-api');
+    expect(config.node_types).toContain('service');
+    expect(config.artifacts['responsibility.md']).toBeDefined();
+  });
+
+  it('throws when name is missing', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config');
+    await mkdir(tmpDir, { recursive: true });
+    const badConfigPath = path.join(tmpDir, 'config.yaml');
+    await writeFile(
+      badConfigPath,
+      `
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(badConfigPath)).rejects.toThrow(
+      "config.yaml: missing or invalid 'name' field",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('defaults empty tags to empty array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-minimal');
+    await mkdir(tmpDir, { recursive: true });
+    const minimalConfigPath = path.join(tmpDir, 'config.yaml');
+    await writeFile(
+      minimalConfigPath,
+      `
+name: "Minimal Config"
+node_types: [module]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+knowledge_categories: []
+tags: []
+`,
+      'utf-8',
+    );
+
+    const config = await parseConfig(minimalConfigPath);
+    expect(config.tags).toEqual([]);
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('parses structural_context when present in artifact', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-structural');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Structural"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+  interface:
+    required: never
+    description: "API"
+    structural_context: true
+knowledge_categories: []
+tags: []
+`,
+      'utf-8',
+    );
+
+    const config = await parseConfig(path.join(tmpDir, 'config.yaml'));
+    expect(config.artifacts.interface.structural_context).toBe(true);
+    expect(config.artifacts.responsibility.structural_context).toBe(false);
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('parses quality.context_budget when present', async () => {
+    const config = await parseConfig(path.join(FIXTURE_DIR, 'config.yaml'));
+    expect(config.quality?.context_budget.warning).toBe(8000);
+    expect(config.quality?.context_budget.error).toBe(16000);
+  });
+
+  it('throws when artifact name is node (reserved)', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-node');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Reserved"
+node_types: [service]
+artifacts:
+  node:
+    required: always
+    description: "x"
+  responsibility:
+    required: always
+    description: "x"
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "artifact name 'node' is reserved",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when artifact required is invalid', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-invalid-required');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Invalid"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: invalid_value
+    description: "x"
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "invalid 'required' field",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when required.when is invalid', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-invalid-when');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "InvalidWhen"
+node_types: [service]
+artifacts:
+  responsibility:
+    required:
+      when: has_foo
+    description: "x"
+knowledge_categories: []
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "invalid 'required.when'",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when knowledge_categories is missing', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-no-kc');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "NoKC"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "missing 'knowledge_categories' field",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when duplicate knowledge category', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-dup-cat');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Dup"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+knowledge_categories:
+  - name: decisions
+  - name: decisions
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      'duplicate knowledge category',
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when quality.context_budget.error < warning', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-budget');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Budget"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+quality:
+  context_budget:
+    warning: 10000
+    error: 5000
+knowledge_categories: []
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      'must be >= warning',
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when tags field is missing', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-no-tags');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "NoTags"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+knowledge_categories: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "missing 'tags' field",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when node_types is not array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-node-types');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Bad"
+node_types: "not-array"
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "'node_types' must be a non-empty array",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when node_types is empty', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-empty-types');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Bad"
+node_types: []
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "'node_types' must be a non-empty array",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when artifacts is array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-artifacts-array');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Bad"
+node_types: [service]
+artifacts: []
+tags: []
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "'artifacts' must be a non-empty object",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when tags is not array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-tags-not-array');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "Tags"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+knowledge_categories: []
+tags: "not-an-array"
+`,
+      'utf-8',
+    );
+
+    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
+      "'tags' must be an array",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('skips knowledge categories with invalid name', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-kc-skip');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "KC"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+knowledge_categories:
+  - name: decisions
+  - {}
+  - name: patterns
+tags: []
+`,
+      'utf-8',
+    );
+
+    const config = await parseConfig(path.join(tmpDir, 'config.yaml'));
+    expect(config.knowledge_categories).toHaveLength(2);
+    expect(config.knowledge_categories.map((c) => c.name)).toEqual(['decisions', 'patterns']);
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('defaults artifact description to empty string when missing', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-artifact-no-desc');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'config.yaml'),
+      `
+name: "NoDesc"
+node_types: [service]
+artifacts:
+  responsibility:
+    required: always
+knowledge_categories: []
+tags: []
+`,
+      'utf-8',
+    );
+
+    const config = await parseConfig(path.join(tmpDir, 'config.yaml'));
+    expect(config.artifacts.responsibility.description).toBe('');
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('defaults stack to empty object', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-bare');
+    await mkdir(tmpDir, { recursive: true });
+    const configPath = path.join(tmpDir, 'config.yaml');
+    await writeFile(
+      configPath,
+      `
+name: "Bare Config"
+node_types: [module]
+artifacts:
+  responsibility:
+    required: always
+    description: "x"
+knowledge_categories: []
+tags: []
+`,
+      'utf-8',
+    );
+
+    const config = await parseConfig(configPath);
+    expect(config.stack).toEqual({});
+    expect(config.standards).toBe('');
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+});

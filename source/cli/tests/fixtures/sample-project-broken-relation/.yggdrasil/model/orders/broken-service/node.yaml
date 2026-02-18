@@ -1,0 +1,5 @@
+name: BrokenService
+type: service
+relations:
+  - target: nonexistent/missing-target
+    type: uses

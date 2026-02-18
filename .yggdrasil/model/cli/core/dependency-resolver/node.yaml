@@ -1,0 +1,17 @@
+name: DependencyResolver
+type: library
+tags: [deterministic]
+
+relations:
+  - target: cli/model
+    type: uses
+    consumes: [Graph, Stage, ResolveOptions]
+  - target: cli/utils
+    type: uses
+    consumes: [normalizeMappingPaths]
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/core/dependency-resolver.ts

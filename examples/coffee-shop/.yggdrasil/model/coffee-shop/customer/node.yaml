@@ -1,0 +1,15 @@
+name: Customer
+type: module
+tags: [customer]
+
+relations: []
+
+mapping:
+  paths:
+    - app/page.tsx
+    - app/cart/
+    - app/checkout/
+    - app/orders/
+    - app/login/
+    - app/register/
+    - app/components/

@@ -1,0 +1,10 @@
+name: CLI
+type: module
+tags: []
+
+relations: []
+
+knowledge:
+  - decisions/001-cli-tools-read-only
+  - invariants/001-context-package-sufficient
+  - invariants/002-graph-intended-truth

@@ -1,0 +1,9 @@
+name: Lib
+type: library
+tags: []
+
+relations: []
+
+mapping:
+  paths:
+    - lib/

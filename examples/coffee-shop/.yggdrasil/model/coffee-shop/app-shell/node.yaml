@@ -1,0 +1,11 @@
+name: App Shell
+type: library
+tags: []
+
+relations: []
+
+mapping:
+  paths:
+    - app/layout.tsx
+    - app/providers.tsx
+    - app/globals.css

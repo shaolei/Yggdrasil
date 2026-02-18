@@ -1,0 +1,9 @@
+name: Barista
+type: library
+tags: [barista]
+
+relations: []
+
+mapping:
+  paths:
+    - app/barista/

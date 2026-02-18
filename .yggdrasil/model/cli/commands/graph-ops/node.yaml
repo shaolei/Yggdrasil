@@ -1,0 +1,33 @@
+name: GraphOpsCommands
+type: library
+tags: [deterministic]
+
+relations:
+  - target: cli/core/loader
+    type: uses
+    consumes: [loadGraph, loadGraphFromRef]
+  - target: cli/core/validator
+    type: uses
+    consumes: [validate]
+  - target: cli/core/drift-detector
+    type: uses
+    consumes: [detectDrift]
+  - target: cli/core/dependency-resolver
+    type: uses
+    consumes: [resolveDeps, formatDependencyTree, findChangedNodes]
+  - target: cli/core/context
+    type: uses
+    consumes: [buildContext]
+  - target: cli/utils
+    type: uses
+    consumes: [normalizeMappingPaths, normalizeProjectRelativePath]
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/cli/tree.ts
+    - source/cli/src/cli/owner.ts
+    - source/cli/src/cli/deps.ts
+    - source/cli/src/cli/impact.ts
+    - source/cli/src/cli/status.ts

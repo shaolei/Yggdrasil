@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# SQLite
+*.db
+*.db-journal
+
+# Build
+dist/
+build/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Yggdrasil operational metadata (excluded from drift hashing)
+.yggdrasil/.drift-state
+.yggdrasil/.journal.yaml
+
+# OS
+.DS_Store
+Thumbs.db

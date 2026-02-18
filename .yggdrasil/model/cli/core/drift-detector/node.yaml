@@ -1,0 +1,20 @@
+name: DriftDetector
+type: library
+tags: [deterministic]
+
+relations:
+  - target: cli/io
+    type: uses
+    consumes: [readDriftState, writeDriftState, getCanonicalHash, getFileHashes]
+  - target: cli/model
+    type: uses
+    consumes: [Graph, DriftReport, DriftEntry, DriftStatus]
+  - target: cli/utils
+    type: uses
+    consumes: [normalizeMappingPaths, hashForMapping, perFileHashes]
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/core/drift-detector.ts

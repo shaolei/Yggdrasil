@@ -1,0 +1,127 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`context-builder > formatContextMarkdown > produces correct markdown structure (snapshot) 1`] = `
+"# Context Package: OrderService
+# Path: orders/order-service
+# Generated: 2026-02-10T12:00:00.000Z
+
+---
+
+## Global
+
+### Global Context
+
+**Project:** Sample E-Commerce System
+
+**Stack:**
+- language: TypeScript
+- runtime: Node 22
+- framework: NestJS
+- database: PostgreSQL
+
+**Standards:**
+ESLint + Prettier configuration.
+Clean Architecture pattern.
+Jest as test framework. Test coverage target: 80%.
+
+
+
+---
+
+## Hierarchy
+
+### Module Context (orders/)
+
+### description.md
+Order management module.
+
+
+### responsibility.md
+Order management module.
+
+
+---
+
+## OwnArtifacts
+
+### Node: OrderService
+
+### node.yaml
+name: OrderService
+type: service
+tags:
+  - requires-audit
+relations:
+  - target: auth/auth-api
+    type: uses
+  - target: users/user-repo
+    type: uses
+mapping:
+  paths:
+    - src/orders/order.service.ts
+
+### description.md
+Order service handles order lifecycle.
+
+
+### responsibility.md
+Order service handles order lifecycle.
+
+
+### Materialization Target
+
+src/orders/order.service.ts
+
+---
+
+## Dependencies
+
+### Dependency: AuthApi (uses) — auth/auth-api
+
+### responsibility.md
+Auth API service.
+
+### Dependency: UserRepo (uses) — users/user-repo
+
+### description.md
+User repository.
+
+
+### responsibility.md
+User repository.
+
+---
+
+## Aspects
+
+### Audit Logging (tag: requires-audit)
+
+### content.md
+Every data-modifying operation must be logged to the audit_log table.
+Log entry format: { userId, action, entityType, entityId, oldState, newState, timestamp }.
+
+Use AuditService.log() for all create, update, and delete operations.
+Never log sensitive fields (passwords, tokens) in oldState/newState.
+Audit log entries are append-only, never modified or deleted.
+
+
+---
+
+## Flows
+
+### Flow: Checkout Flow
+
+### description.md
+Checkout flow description.
+
+
+### sequence.md
+Sequence: create order -> validate -> payment -> ship.
+
+
+---
+
+Context size: 331 tokens
+Layers: global, hierarchy, own, relational, relational, aspects, flows
+"
+`;

@@ -1,0 +1,27 @@
+import { readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
+import type { Artifact } from '../model/types.js';
+
+export async function readArtifacts(
+  dirPath: string,
+  excludeFiles: string[] = ['node.yaml'],
+  includeFiles?: string[],
+): Promise<Artifact[]> {
+  const entries = await readdir(dirPath, { withFileTypes: true });
+  const artifacts: Artifact[] = [];
+  const includeSet = includeFiles && includeFiles.length > 0 ? new Set(includeFiles) : null;
+
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    if (excludeFiles.includes(entry.name)) continue;
+    if (includeSet && !includeSet.has(entry.name)) continue;
+
+    const filePath = path.join(dirPath, entry.name);
+    const content = await readFile(filePath, 'utf-8');
+    artifacts.push({ filename: entry.name, content });
+  }
+
+  // Sort by filename for deterministic output
+  artifacts.sort((a, b) => a.filename.localeCompare(b.filename));
+  return artifacts;
+}

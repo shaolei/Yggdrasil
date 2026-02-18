@@ -1,0 +1,17 @@
+name: IO
+type: library
+tags: []
+
+relations:
+  - target: cli/model
+    type: uses
+    consumes: [YggConfig, NodeMeta, NodeMapping, Artifact, KnowledgeItem]
+  - target: cli/utils
+    type: uses
+    consumes: [normalizeProjectRelativePath]
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/io/

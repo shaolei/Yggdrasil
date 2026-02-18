@@ -1,0 +1,11 @@
+name: Formatters
+type: library
+tags: []
+
+relations: []
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/formatters/

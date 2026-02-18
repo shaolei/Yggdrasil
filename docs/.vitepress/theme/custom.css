@@ -1,0 +1,21 @@
+/* Yggdrasil palette */
+:root {
+  --ygg-emerald-green: #3a5a4d;
+  --ygg-wasabi: #809076;
+  --ygg-creased-khaki: #f8d794;
+  --ygg-noir-de-vigne: #1f2629;
+  --ygg-egyptian-earth: #284139;
+}
+
+/* Yggdrasil brand colors */
+:root {
+  --vp-c-brand-1: var(--ygg-emerald-green);
+  --vp-c-brand-2: #4a6a5d;
+  --vp-c-brand-3: #5a7a6d;
+}
+
+.dark {
+  --vp-c-brand-1: var(--ygg-creased-khaki);
+  --vp-c-brand-2: #fadea8;
+  --vp-c-brand-3: #fce8c4;
+}

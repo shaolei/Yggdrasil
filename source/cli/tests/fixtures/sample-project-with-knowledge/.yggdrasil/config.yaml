@@ -1,0 +1,51 @@
+name: 'Sample E-Commerce System'
+
+stack:
+  language: TypeScript
+  runtime: Node 22
+  framework: NestJS
+  database: PostgreSQL
+
+standards: |
+  ESLint + Prettier configuration.
+  Clean Architecture pattern.
+  Jest as test framework. Test coverage target: 80%.
+
+tags:
+  - requires-auth
+  - requires-audit
+  - public-api
+
+node_types:
+  - module
+  - service
+  - repository
+
+artifacts:
+  responsibility:
+    required: always
+    description: 'What this node is responsible for'
+  interface:
+    required:
+      when: has_incoming_relations
+    description: 'Public API'
+  constraints:
+    required: never
+    description: 'Validation rules'
+  description:
+    required: never
+    description: 'Node description'
+
+knowledge_categories:
+  - name: decisions
+    description: 'Architectural decisions'
+  - name: patterns
+    description: 'Implementation patterns'
+
+quality:
+  min_artifact_length: 50
+  max_direct_relations: 10
+  context_budget:
+    warning: 8000
+    error: 16000
+  knowledge_staleness_days: 90

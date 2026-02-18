@@ -1,0 +1,19 @@
+name: JournalCommands
+type: library
+tags: [deterministic]
+
+relations:
+  - target: cli/io
+    type: uses
+    consumes: [readJournal, appendJournalEntry, archiveJournal]
+  - target: cli/utils
+    type: uses
+    consumes: [findYggRoot]
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/cli/journal-add.ts
+    - source/cli/src/cli/journal-read.ts
+    - source/cli/src/cli/journal-archive.ts

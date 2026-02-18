@@ -1,0 +1,21 @@
+name: GraphLoader
+type: library
+tags: [deterministic]
+
+relations:
+  - target: cli/io
+    type: uses
+    consumes: [parseConfig, parseNodeYaml, parseAspect, parseFlow, parseKnowledge, parseTemplate, readArtifacts]
+  - target: cli/model
+    type: uses
+    consumes: [Graph, GraphNode, YggConfig]
+  - target: cli/utils
+    type: uses
+    consumes: [findYggRoot]
+
+knowledge: []
+
+mapping:
+  paths:
+    - source/cli/src/core/graph-loader.ts
+    - source/cli/src/core/graph-from-git.ts

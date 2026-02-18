@@ -1,0 +1,10 @@
+name: API
+type: library
+tags: []
+
+relations: []
+
+mapping:
+  paths:
+    - app/api/auth/
+    - app/api/orders/
