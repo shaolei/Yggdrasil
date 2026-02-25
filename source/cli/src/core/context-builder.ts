@@ -67,8 +67,8 @@ export async function buildContext(graph: Graph, nodePath: string): Promise<Cont
     }
   }
 
-  // 10. Flows
-  for (const flow of collectParticipatingFlows(graph, nodePath)) {
+  // 10. Flows (node + all ancestors)
+  for (const flow of collectParticipatingFlows(graph, node)) {
     layers.push(buildFlowLayer(flow));
     for (const kPath of flow.knowledge ?? []) {
       const norm = kPath.replace(/\/$/, '');
@@ -148,8 +148,9 @@ function collectKnowledgeItems(
   return result;
 }
 
-function collectParticipatingFlows(graph: Graph, nodePath: string): FlowDef[] {
-  return graph.flows.filter((f) => f.nodes.includes(nodePath));
+function collectParticipatingFlows(graph: Graph, node: GraphNode): FlowDef[] {
+  const paths = new Set<string>([node.path, ...collectAncestors(node).map((a) => a.path)]);
+  return graph.flows.filter((f) => f.nodes.some((n) => paths.has(n)));
 }
 
 // --- Layer builders (exported for testing) ---

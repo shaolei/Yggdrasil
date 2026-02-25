@@ -88,9 +88,9 @@ cli/core/loader:
     source/cli/src/core/graph-loader.ts: 5fc15614d240bfe651681af610c4ae45c64071725c76cf2cf27aadeb840ac6a7
     source/cli/src/core/graph-from-git.ts: d3a9faad4509eba0417651ba01095e2440e0771a34be67522c77c19e03f97809
 cli/core/context:
-  hash: fbb2da88ccdeffc1ed4526bbb91340566b920c40f6da7f270509a50cc6fc942b
+  hash: b2d8464f2bc8bb76096da145f0a47d767bf12c589c355c29482a9c4f5388662f
   files:
-    source/cli/src/core/context-builder.ts: e19b821cec16e9a2bd985f0635f68c7b1126cf215c0177c1e7f538633ad362e2
+    source/cli/src/core/context-builder.ts: 2d4425167b6790059a457c62182d5889e1690d57c798b4bdce0937d9a2e9ebe3
 cli/core/validator:
   hash: 1338aad8fc6b70977caf08ac05aa4065a1887b4719a15be1977f1e00f5242cd4
   files:

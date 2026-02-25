@@ -367,6 +367,58 @@ describe('context-builder', () => {
       expect(flowLayers.some((l) => l.label.includes('Checkout'))).toBe(true);
     });
 
+    it('child node gets flow when only ancestor is participant (flows propagate down)', async () => {
+      const parent: GraphNode = {
+        path: 'orders',
+        meta: { name: 'Orders', type: 'module' },
+        artifacts: [{ filename: 'responsibility.md', content: 'x' }],
+        children: [],
+        parent: null,
+      };
+      const child: GraphNode = {
+        path: 'orders/order-service',
+        meta: { name: 'OrderService', type: 'service' },
+        artifacts: [{ filename: 'responsibility.md', content: 'x' }],
+        children: [],
+        parent,
+      };
+      parent.children = [child];
+
+      const graph: Graph = {
+        config: {
+          name: 'T',
+          stack: {},
+          standards: '',
+          tags: [],
+          node_types: ['module', 'service'],
+          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
+          knowledge_categories: [],
+        },
+        nodes: new Map([
+          ['orders', parent],
+          ['orders/order-service', child],
+        ]),
+        aspects: [],
+        flows: [
+          {
+            name: 'Checkout Flow',
+            nodes: ['orders'],
+            knowledge: [],
+            artifacts: [{ filename: 'description.md', content: 'Parent-only flow' }],
+          },
+        ],
+        knowledge: [],
+        templates: [],
+        rootPath: '/tmp',
+      };
+
+      const pkg = await buildContext(graph, 'orders/order-service');
+      const flowLayers = pkg.layers.filter((l) => l.type === 'flows');
+      expect(flowLayers).toHaveLength(1);
+      expect(flowLayers[0].label).toContain('Checkout Flow');
+      expect(flowLayers[0].content).toContain('Parent-only flow');
+    });
+
     it('node with emits relation gets event layer', async () => {
       const emitter: GraphNode = {
         path: 'events/emitter',

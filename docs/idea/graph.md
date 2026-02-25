@@ -553,8 +553,9 @@ flow behavior, sequence, error handling, and edge cases.
 - `nodes` lists flow participants — paths are relative to `model/`.
 - `knowledge` lists knowledge elements relevant to the flow.
 
-When assembling a context package for any participant node, tools attach the flow's content
-artifacts as context. They also attach knowledge elements referenced by the flow.
+When assembling a context package for a node, tools attach the flow's content artifacts as
+context if the node or any of its ancestors is listed as a participant. They also attach
+knowledge elements referenced by the flow.
 
 Flows capture semantic knowledge that belongs to **no single node**: orchestration logic,
 end-to-end sequences, what happens when one participant fails. This knowledge is essential for

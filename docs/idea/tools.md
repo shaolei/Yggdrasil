@@ -213,7 +213,7 @@ knowledge: # list of strings, optional
 ```
 
 All files in the flow directory except `flow.yaml` are content attached to the context
-packages of the listed nodes.
+packages of the listed nodes and their descendants (flows propagate down the hierarchy).
 
 **Validation rules:**
 
@@ -525,7 +525,7 @@ The 10-step algorithm defined in the [Engine](engine) document. Summary:
 8. **Relational** — for structural relations: interface + errors of the target with consumes
    and failure annotations. For event relations: event name and type with consumes annotation.
 9. **Aspects** — content of aspects matching the node's tags.
-10. **Flows** — artifacts of flows listing this node as a participant + knowledge referenced by the flow.
+10. **Flows** — artifacts of flows listing this node or any ancestor as a participant + knowledge referenced by the flow.
 
 Deduplication: each knowledge element appears at most once in the package, regardless of
 the number of paths leading to it.

@@ -86,7 +86,7 @@ Each step is deterministic.
 
 9.  ASPECTS       for each tag in T: content of the matching aspect
 
-10. FLOWS         for each flow listing P as a participant:
+10. FLOWS         for each flow listing N or any of N's ancestors as a participant:
                   - flow content artifacts
                   - knowledge elements referenced by the flow (flow.knowledge)
 ```
