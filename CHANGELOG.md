@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2026-02-27
+
+### Added
+
+- **README:** Primary goals (build knowledge for new projects, reverse-engineer existing codebases, autonomous maintenance). Upgrade section with CLI update and `yg init --upgrade` instructions.
+- **Rules:** Reverse-engineering order — when mapping existing code, create aspects → flows → knowledge → model (never model before cross-cutting rules and shared wisdom).
+
 ## [0.3.2] - 2026-02-25
 
 ### Changed

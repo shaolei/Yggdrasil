@@ -28,6 +28,8 @@ It maintains the system's intent, rules, and boundaries in structured Markdown a
 
 The agent stops guessing. It knows exactly what it is looking at, what constraints it must follow, and what the surrounding dependencies require.
 
+**Primary goals:** Build knowledge for new projects from day one. Reverse-engineer existing codebases and capture their intent. Keep semantic memory alive autonomously — your agent maintains the graph as it works, so you never re-explain, re-discover, or lose context.
+
 ### You change nothing about how you work
 
 You use your AI agent exactly as you did before. Yggdrasil acts as an ambient, invisible infrastructure. Your agent reads the graph to understand the architecture, writes the code, and autonomously updates the graph in the background to reflect new decisions.

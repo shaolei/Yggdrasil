@@ -107,6 +107,8 @@ STOP. Do not modify the code. First determine: **Is this greenfield or existing 
   * **Option 2: Blackbox Coverage:** Create a \`blackbox: true\` node to establish ownership without deep semantic exploration.
   * **Option 3: Abort/Change Plan:** Do not touch the file.
 
+**Reverse engineering order:** When reverse-engineering an area, create graph elements in this order: (1) aspects, (2) flows, (3) knowledge elements, (4) model nodes. Never create model nodes before cross-cutting rules and shared wisdom exist — they depend on them.
+
 ---
 
 ## 4. WORKFLOW: MODIFYING THE GRAPH & BLAST RADIUS (Graph-First)

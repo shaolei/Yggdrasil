@@ -103,7 +103,7 @@ STOP. Do not modify the code. First determine: **Is this greenfield or existing 
 * **If GREENFIELD (empty directory, new project):** Do NOT offer blackbox. Create proper nodes (reverse engineering or upfront design) before implementing.
 * **If PARTIALLY MAPPED (file is unmapped, but lives inside a mapped module):** Stop and ask the user if this file should be added to the existing node or if a new node is required.
 * **If EXISTING CODE (legacy, third-party):** Present the user with 3 options and wait:
-  * **Option 1: Reverse Engineering:** Create/extend standard nodes to map the area fully before modifying.
+  * **Option 1: Reverse Engineering:** Create/extend standard nodes to map the area fully before modifying. **Order:** Create aspects, flows, and knowledge first; then the model (nodes). Shared context precedes component mapping.
   * **Option 2: Blackbox Coverage:** Create a `blackbox: true` node to establish ownership without deep semantic exploration.
   * **Option 3: Abort/Change Plan:** Do not touch the file.
 
