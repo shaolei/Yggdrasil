@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import type { Graph, ValidationResult, ValidationIssue, ArtifactConfig } from '../model/types.js';
-import { buildContext } from './context-builder.js';
+import { buildContext, expandAspectsForTags } from './context-builder.js';
 import { normalizeMappingPaths } from '../utils/paths.js';
 
 /** Reserved directories that are NOT nodes (within model/) */
@@ -36,6 +36,7 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
     issues.push(...checkAspectTagUniqueness(graph));
     issues.push(...checkImpliedAspectsExist(graph));
     issues.push(...checkImpliesNoCycles(graph));
+    issues.push(...checkRequiredTagsCoverage(graph));
     issues.push(...checkRequiredArtifacts(graph));
     issues.push(...checkInvalidArtifactConditions(graph));
     issues.push(...(await checkContextBudget(graph)));
@@ -275,6 +276,42 @@ function checkImpliesNoCycles(graph: Graph): ValidationIssue[] {
   for (const tag of tagToAspect.keys()) {
     if (color.get(tag) === WHITE) {
       dfs(tag, []);
+    }
+  }
+  return issues;
+}
+
+// --- Rule: Required tags coverage per node type ---
+
+function checkRequiredTagsCoverage(graph: Graph): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const typeConfig = new Map(
+    (graph.config.node_types ?? []).map((t) => [t.name, t.required_tags ?? []]),
+  );
+  for (const [nodePath, node] of graph.nodes) {
+    if (node.meta.blackbox) continue;
+    const requiredTags = typeConfig.get(node.meta.type);
+    if (!requiredTags || requiredTags.length === 0) continue;
+
+    const nodeTags = node.meta.tags ?? [];
+    let effectiveAspects;
+    try {
+      effectiveAspects = expandAspectsForTags(nodeTags, graph.aspects);
+    } catch {
+      continue;
+    }
+    const effectiveTags = new Set(effectiveAspects.map((a) => a.tag));
+
+    for (const required of requiredTags) {
+      if (!effectiveTags.has(required)) {
+        issues.push({
+          severity: 'warning',
+          code: 'W011',
+          rule: 'missing-required-tag-coverage',
+          message: `Node '${nodePath}' (type: ${node.meta.type}) missing required aspect coverage for tag '${required}'`,
+          nodePath,
+        });
+      }
     }
   }
   return issues;

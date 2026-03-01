@@ -7,15 +7,19 @@ import { validate } from '../../../src/core/validator.js';
 import { loadGraph } from '../../../src/core/graph-loader.js';
 import type { Graph, GraphNode } from '../../../src/model/types.js';
 
-vi.mock('../../../src/core/context-builder.js', () => ({
-  buildContext: vi.fn().mockResolvedValue({
-    nodePath: 'x',
-    nodeName: 'X',
-    layers: [],
-    mapping: null,
-    tokenCount: 100,
-  }),
-}));
+vi.mock('../../../src/core/context-builder.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/core/context-builder.js')>();
+  return {
+    ...actual,
+    buildContext: vi.fn().mockResolvedValue({
+      nodePath: 'x',
+      nodeName: 'X',
+      layers: [],
+      mapping: null,
+      tokenCount: 100,
+    }),
+  };
+});
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PROJECT = path.join(__dirname, '../../fixtures/sample-project');
@@ -788,6 +792,41 @@ describe('validator', () => {
     expect(issues[0].message).toContain('cycle');
     expect(issues[0].message).toContain('tag-a');
     expect(issues[0].message).toContain('tag-b');
+  });
+
+  it('missing-required-tag-coverage returns warning when node type requires tag', async () => {
+    const graph = createGraph();
+    graph.config.node_types = [{ name: 'service', required_tags: ['requires-audit'] }];
+    graph.config.tags = ['requires-audit'];
+    graph.nodes.set('svc', createNode('svc', { tags: [] }));
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'missing-required-tag-coverage');
+    expect(issues).toHaveLength(1);
+    expect(issues[0].code).toBe('W011');
+    expect(issues[0].message).toContain('requires-audit');
+  });
+
+  it('no missing-required-tag-coverage when node has implied coverage', async () => {
+    const graph = createGraph({
+      config: {
+        name: 'Test',
+        stack: {},
+        standards: '',
+        tags: ['requires-hipaa', 'requires-audit'],
+        node_types: [{ name: 'service', required_tags: ['requires-audit'] }],
+        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
+      },
+    });
+    graph.aspects = [
+      { name: 'Audit', tag: 'requires-audit', artifacts: [] },
+      { name: 'HIPAA', tag: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
+    ];
+    graph.nodes.set('svc', createNode('svc', { tags: ['requires-hipaa'] }));
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'missing-required-tag-coverage');
+    expect(issues).toHaveLength(0);
   });
 
   it('unknown-node-type returns error for node type not in config', async () => {
