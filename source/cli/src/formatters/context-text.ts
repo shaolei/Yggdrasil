@@ -22,10 +22,10 @@ function formatLayer(layer: ContextLayer): string {
       return `<own-artifacts${ownAspectsAttr}>\n${layer.content}\n</own-artifacts>`;
     }
     case 'aspects': {
-      const nameMatch = layer.label.match(/^(.+?) \(tag: (.+)\)$/);
+      const nameMatch = layer.label.match(/^(.+?) \(aspect: (.+)\)$/);
       const name = nameMatch ? escapeAttr(nameMatch[1]) : '';
-      const tag = nameMatch ? escapeAttr(nameMatch[2]) : '';
-      return `<aspect name="${name}" tag="${tag}">\n${layer.content}\n</aspect>`;
+      const id = nameMatch ? escapeAttr(nameMatch[2]) : '';
+      return `<aspect name="${name}" id="${id}">\n${layer.content}\n</aspect>`;
     }
     case 'relational': {
       const attrs = layer.attrs ?? {};

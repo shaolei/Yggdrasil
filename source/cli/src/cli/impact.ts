@@ -120,9 +120,9 @@ export function registerImpactCommand(program: Command): void {
 
         const aspectsInScope: string[] = [];
         const targetNode = graph.nodes.get(nodePath)!;
-        const targetTags = new Set(targetNode.meta.tags ?? []);
+        const targetAspectIds = new Set(targetNode.meta.aspects ?? []);
         for (const aspect of graph.aspects) {
-          if (targetTags.has(aspect.tag)) {
+          if (targetAspectIds.has(aspect.id)) {
             aspectsInScope.push(aspect.name);
           }
         }

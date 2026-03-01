@@ -4,15 +4,13 @@
 
 export interface NodeTypeConfig {
   name: string;
-  required_tags?: string[];
+  required_aspects?: string[];
 }
 
 export interface YggConfig {
   name: string;
   stack: Record<string, string>;
   standards: string;
-  /** Optional. When absent, valid tags are derived from graph.aspects (aspect tag = directory name). */
-  tags?: string[];
   node_types: NodeTypeConfig[];
   artifacts: Record<string, ArtifactConfig>;
   quality?: QualityConfig;
@@ -40,7 +38,7 @@ export type RelationType = 'uses' | 'calls' | 'extends' | 'implements' | 'emits'
 export interface NodeMeta {
   name: string;
   type: string;
-  tags?: string[];
+  aspects?: string[];
   blackbox?: boolean;
   relations?: Relation[];
   mapping?: NodeMapping;
@@ -86,8 +84,9 @@ export interface Artifact {
 
 export interface AspectDef {
   name: string;
-  tag: string;
-  /** Tags of aspects to include automatically (composition) */
+  id: string;
+  description?: string;
+  /** Ids of aspects to include automatically (composition) */
   implies?: string[];
   artifacts: Artifact[];
 }
@@ -99,7 +98,7 @@ export interface AspectDef {
 export interface FlowDef {
   name: string;
   nodes: string[];
-  /** Optional tags — aspects propagate to all participants */
+  /** Optional aspect ids — aspects propagate to all participants */
   aspects?: string[];
   artifacts: Artifact[];
 }

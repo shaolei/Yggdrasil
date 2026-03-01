@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import type { Graph, ValidationResult, ValidationIssue, ArtifactConfig } from '../model/types.js';
-import { buildContext, expandAspectsForTags } from './context-builder.js';
+import { buildContext, resolveAspects } from './context-builder.js';
 import { normalizeMappingPaths } from '../utils/paths.js';
 
 /** Reserved directories that are NOT nodes (within model/) */
@@ -31,12 +31,12 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
 
   if (!graph.configError) {
     issues.push(...checkNodeTypes(graph));
-    issues.push(...checkTagsDefined(graph));
-    issues.push(...checkAspectTags(graph));
-    issues.push(...checkAspectTagUniqueness(graph));
+    issues.push(...checkAspectsDefined(graph));
+    issues.push(...checkAspectIds(graph));
+    issues.push(...checkAspectIdUniqueness(graph));
     issues.push(...checkImpliedAspectsExist(graph));
     issues.push(...checkImpliesNoCycles(graph));
-    issues.push(...checkRequiredTagsCoverage(graph));
+    issues.push(...checkRequiredAspectsCoverage(graph));
     issues.push(...checkRequiredArtifacts(graph));
     issues.push(...checkInvalidArtifactConditions(graph));
     issues.push(...(await checkContextBudget(graph)));
@@ -48,7 +48,7 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   issues.push(...checkNoCycles(graph));
   issues.push(...checkMappingOverlap(graph));
   issues.push(...checkBrokenFlowRefs(graph));
-  issues.push(...checkFlowAspectTags(graph));
+  issues.push(...checkFlowAspectIds(graph));
   issues.push(...(await checkDirectoriesHaveNodeYaml(graph)));
   issues.push(...(await checkShallowArtifacts(graph)));
   issues.push(...checkUnpairedEvents(graph));
@@ -149,19 +149,19 @@ function checkRelationTargets(graph: Graph): ValidationIssue[] {
   return issues;
 }
 
-// --- Rule 2: Node tags must reference an aspect (valid tags = graph.aspects) ---
+// --- Rule 2: Node aspects must reference a defined aspect ---
 
-function checkTagsDefined(graph: Graph): ValidationIssue[] {
+function checkAspectsDefined(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const validTags = new Set(graph.aspects.map((a) => a.tag));
+  const validAspectIds = new Set(graph.aspects.map((a) => a.id));
   for (const [nodePath, node] of graph.nodes) {
-    for (const tag of node.meta.tags ?? []) {
-      if (!validTags.has(tag)) {
+    for (const aspectId of node.meta.aspects ?? []) {
+      if (!validAspectIds.has(aspectId)) {
         issues.push({
           severity: 'error',
           code: 'E003',
-          rule: 'unknown-tag',
-          message: `Tag '${tag}' has no corresponding aspect in aspects/`,
+          rule: 'unknown-aspect',
+          message: `Aspect '${aspectId}' has no corresponding directory in aspects/`,
           nodePath,
         });
       }
@@ -170,28 +170,28 @@ function checkTagsDefined(graph: Graph): ValidationIssue[] {
   return issues;
 }
 
-// --- Rule 3: Aspect tags (derived from directory name) — always valid when aspect exists ---
+// --- Rule 3: Aspect ids (derived from directory path) — always valid when aspect exists ---
 
-function checkAspectTags(_graph: Graph): ValidationIssue[] {
-  // validTags = graph.aspects.map(a => a.tag), so every aspect's tag is valid by definition
+function checkAspectIds(_graph: Graph): ValidationIssue[] {
+  // validAspectIds = graph.aspects.map(a => a.id), so every aspect's id is valid by definition
   return [];
 }
 
-function checkAspectTagUniqueness(graph: Graph): ValidationIssue[] {
+function checkAspectIdUniqueness(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const byTag = new Map<string, string[]>();
+  const byId = new Map<string, string[]>();
   for (const aspect of graph.aspects) {
-    const names = byTag.get(aspect.tag) ?? [];
+    const names = byId.get(aspect.id) ?? [];
     names.push(aspect.name);
-    byTag.set(aspect.tag, names);
+    byId.set(aspect.id, names);
   }
-  for (const [tag, names] of byTag) {
+  for (const [id, names] of byId) {
     if (names.length <= 1) continue;
     issues.push({
       severity: 'error',
       code: 'E014',
       rule: 'duplicate-aspect-binding',
-      message: `Tag '${tag}' is bound to multiple aspects (${names.join(', ')})`,
+      message: `Aspect '${id}' is bound to multiple aspects (${names.join(', ')})`,
     });
   }
   return issues;
@@ -201,18 +201,18 @@ function checkAspectTagUniqueness(graph: Graph): ValidationIssue[] {
 
 function checkImpliedAspectsExist(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const tagToAspect = new Map<string, { name: string }>();
+  const idToAspect = new Map<string, { name: string }>();
   for (const a of graph.aspects) {
-    tagToAspect.set(a.tag, { name: a.name });
+    idToAspect.set(a.id, { name: a.name });
   }
   for (const aspect of graph.aspects) {
-    for (const impliedTag of aspect.implies ?? []) {
-      if (!tagToAspect.has(impliedTag)) {
+    for (const impliedId of aspect.implies ?? []) {
+      if (!idToAspect.has(impliedId)) {
         issues.push({
           severity: 'error',
           code: 'E016',
           rule: 'implied-aspect-missing',
-          message: `Aspect '${aspect.name}' implies '${impliedTag}' but no aspect with that tag exists in aspects/`,
+          message: `Aspect '${aspect.name}' implies '${impliedId}' but no aspect with that id exists in aspects/`,
         });
       }
     }
@@ -223,82 +223,82 @@ function checkImpliedAspectsExist(graph: Graph): ValidationIssue[] {
 // --- Rule: No cycles in aspect implies graph ---
 
 function checkImpliesNoCycles(graph: Graph): ValidationIssue[] {
-  const tagToAspect = new Map<string, { implies?: string[] }>();
+  const idToAspect = new Map<string, { implies?: string[] }>();
   for (const a of graph.aspects) {
-    tagToAspect.set(a.tag, { implies: a.implies });
+    idToAspect.set(a.id, { implies: a.implies });
   }
   const WHITE = 0;
   const GRAY = 1;
   const BLACK = 2;
   const color = new Map<string, number>();
-  for (const tag of tagToAspect.keys()) color.set(tag, WHITE);
+  for (const id of idToAspect.keys()) color.set(id, WHITE);
 
   const issues: ValidationIssue[] = [];
 
-  function dfs(tag: string, path: string[]): boolean {
-    color.set(tag, GRAY);
-    path.push(tag);
-    const aspect = tagToAspect.get(tag);
+  function dfs(id: string, pathArr: string[]): boolean {
+    color.set(id, GRAY);
+    pathArr.push(id);
+    const aspect = idToAspect.get(id);
     for (const implied of aspect?.implies ?? []) {
       if (color.get(implied) === GRAY) {
-        const cycle = path.slice(path.indexOf(implied)).concat(implied);
+        const cycle = pathArr.slice(pathArr.indexOf(implied)).concat(implied);
         issues.push({
           severity: 'error',
           code: 'E017',
           rule: 'aspect-implies-cycle',
           message: `Aspect implies cycle: ${cycle.join(' → ')}`,
         });
-        path.pop();
-        color.set(tag, BLACK);
+        pathArr.pop();
+        color.set(id, BLACK);
         return true;
       }
-      if (color.get(implied) === WHITE && dfs(implied, path)) {
-        path.pop();
-        color.set(tag, BLACK);
+      if (color.get(implied) === WHITE && dfs(implied, pathArr)) {
+        pathArr.pop();
+        color.set(id, BLACK);
         return true;
       }
     }
-    path.pop();
-    color.set(tag, BLACK);
+    pathArr.pop();
+    color.set(id, BLACK);
     return false;
   }
 
-  for (const tag of tagToAspect.keys()) {
-    if (color.get(tag) === WHITE) {
-      dfs(tag, []);
+  for (const id of idToAspect.keys()) {
+    if (color.get(id) === WHITE) {
+      dfs(id, []);
     }
   }
   return issues;
 }
 
-// --- Rule: Required tags coverage per node type ---
+// --- Rule: Required aspects coverage per node type ---
 
-function checkRequiredTagsCoverage(graph: Graph): ValidationIssue[] {
+function checkRequiredAspectsCoverage(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const typeConfig = new Map(
-    (graph.config.node_types ?? []).map((t) => [t.name, t.required_tags ?? []]),
+    (graph.config.node_types ?? []).map((t) => [t.name, t.required_aspects ?? []]),
   );
   for (const [nodePath, node] of graph.nodes) {
     if (node.meta.blackbox) continue;
-    const requiredTags = typeConfig.get(node.meta.type);
-    if (!requiredTags || requiredTags.length === 0) continue;
+    const requiredAspects = typeConfig.get(node.meta.type);
+    if (!requiredAspects || requiredAspects.length === 0) continue;
 
-    const nodeTags = node.meta.tags ?? [];
+    const nodeAspects = node.meta.aspects ?? [];
     let effectiveAspects;
     try {
-      effectiveAspects = expandAspectsForTags(nodeTags, graph.aspects);
+      effectiveAspects = resolveAspects(nodeAspects, graph.aspects);
     } catch {
       continue;
     }
-    const effectiveTags = new Set(effectiveAspects.map((a) => a.tag));
+    const effectiveAspectIds = new Set(effectiveAspects.map((a) => a.id));
 
-    for (const required of requiredTags) {
-      if (!effectiveTags.has(required)) {
+    for (const required of requiredAspects) {
+      if (!effectiveAspectIds.has(required)) {
         issues.push({
           severity: 'warning',
           code: 'W011',
-          rule: 'missing-required-tag-coverage',
-          message: `Node '${nodePath}' (type: ${node.meta.type}) missing required aspect coverage for tag '${required}'`,
+          rule: 'missing-required-aspect-coverage',
+          message: `Node '${nodePath}' (type: ${node.meta.type}) missing required aspect coverage for '${required}'`,
           nodePath,
         });
       }
@@ -422,7 +422,7 @@ function artifactRequiredReason(
   graph: Graph,
   nodePath: string,
   node: {
-    meta: { relations?: Array<{ target: string }>; tags?: string[]; blackbox?: boolean };
+    meta: { relations?: Array<{ target: string }>; aspects?: string[]; blackbox?: boolean };
     artifacts: Array<{ filename: string }>;
   },
   required: ArtifactConfig['required'],
@@ -444,7 +444,7 @@ function artifactRequiredReason(
   }
   if (when.startsWith('has_tag:')) {
     const tag = when.slice(8);
-    return (node.meta.tags ?? []).includes(tag) ? `node has tag '${tag}'` : null;
+    return (node.meta.aspects ?? []).includes(tag) ? `node has aspect '${tag}'` : null;
   }
   return null;
 }
@@ -515,20 +515,20 @@ function checkBrokenFlowRefs(graph: Graph): ValidationIssue[] {
   return issues;
 }
 
-// --- E007: Flow aspect tags must have corresponding aspect ---
+// --- E007: Flow aspect ids must have corresponding aspect ---
 
-function checkFlowAspectTags(graph: Graph): ValidationIssue[] {
+function checkFlowAspectIds(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const validTags = new Set(graph.aspects.map((a) => a.tag));
+  const validAspectIds = new Set(graph.aspects.map((a) => a.id));
 
   for (const flow of graph.flows) {
-    for (const tag of flow.aspects ?? []) {
-      if (!validTags.has(tag)) {
+    for (const aspectId of flow.aspects ?? []) {
+      if (!validAspectIds.has(aspectId)) {
         issues.push({
           severity: 'error',
           code: 'E007',
-          rule: 'broken-aspect-tag',
-          message: `Flow '${flow.name}' references tag '${tag}' but no aspect with that tag exists in aspects/`,
+          rule: 'broken-aspect-ref',
+          message: `Flow '${flow.name}' references aspect '${aspectId}' but no aspect with that id exists in aspects/`,
         });
       }
     }
@@ -540,7 +540,7 @@ function checkFlowAspectTags(graph: Graph): ValidationIssue[] {
 
 function checkInvalidArtifactConditions(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const validTags = new Set(graph.aspects.map((a) => a.tag));
+  const validAspectIds = new Set(graph.aspects.map((a) => a.id));
   const artifacts = graph.config.artifacts ?? {};
   for (const [artifactName, config] of Object.entries(artifacts)) {
     const required = config.required;
@@ -548,7 +548,7 @@ function checkInvalidArtifactConditions(graph: Graph): ValidationIssue[] {
       const when = (required as { when: string }).when;
       if (when.startsWith('has_tag:')) {
         const tag = when.slice(8);
-        if (!validTags.has(tag)) {
+        if (!validAspectIds.has(tag)) {
           issues.push({
             severity: 'error',
             code: 'E013',

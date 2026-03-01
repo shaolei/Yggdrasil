@@ -149,21 +149,33 @@ async function scanModelDirectory(
 
 async function loadAspects(aspectsDir: string): Promise<AspectDef[]> {
   try {
-    const entries = await readdir(aspectsDir, { withFileTypes: true });
     const aspects: AspectDef[] = [];
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      const aspectYamlPath = path.join(aspectsDir, entry.name, 'aspect.yaml');
-      const aspect = await parseAspect(
-        path.join(aspectsDir, entry.name),
-        aspectYamlPath,
-        entry.name,
-      );
-      aspects.push(aspect);
-    }
+    await scanAspectsDirectory(aspectsDir, aspectsDir, aspects);
     return aspects;
   } catch {
     return [];
+  }
+}
+
+async function scanAspectsDirectory(
+  dirPath: string,
+  aspectsRoot: string,
+  aspects: AspectDef[],
+): Promise<void> {
+  const entries = await readdir(dirPath, { withFileTypes: true });
+  const hasAspectYaml = entries.some((e) => e.isFile() && e.name === 'aspect.yaml');
+
+  if (hasAspectYaml) {
+    const id = path.relative(aspectsRoot, dirPath).split(path.sep).join('/');
+    const aspectYamlPath = path.join(dirPath, 'aspect.yaml');
+    const aspect = await parseAspect(dirPath, aspectYamlPath, id);
+    aspects.push(aspect);
+  }
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    if (entry.name.startsWith('.')) continue;
+    await scanAspectsDirectory(path.join(dirPath, entry.name), aspectsRoot, aspects);
   }
 }
 

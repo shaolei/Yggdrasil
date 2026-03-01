@@ -50,22 +50,22 @@ export async function buildContext(graph: Graph, nodePath: string): Promise<Cont
     }
   }
 
-  // 5. Flows (node + all ancestors) — built before aspects so we can collect flow tags
+  // 5. Flows (node + all ancestors) — built before aspects so we can collect flow aspect ids
   for (const flow of collectParticipatingFlows(graph, node)) {
     layers.push(buildFlowLayer(flow, graph));
   }
 
-  // 6. Aspects: union of tags from hierarchy + own + flow layers
-  const allTags = new Set<string>();
+  // 6. Aspects: union of aspect ids from hierarchy + own + flow layers
+  const allAspectIds = new Set<string>();
   for (const l of layers) {
     const aspects = l.attrs?.aspects;
     if (aspects) {
-      for (const tag of aspects.split(',').map((t) => t.trim()).filter(Boolean)) {
-        allTags.add(tag);
+      for (const id of aspects.split(',').map((t) => t.trim()).filter(Boolean)) {
+        allAspectIds.add(id);
       }
     }
   }
-  const aspectsToInclude = expandAspectsForTags(allTags, graph.aspects);
+  const aspectsToInclude = resolveAspects(allAspectIds, graph.aspects);
   for (const aspect of aspectsToInclude) {
     layers.push(buildAspectLayer(aspect));
   }
@@ -90,53 +90,57 @@ function collectParticipatingFlows(graph: Graph, node: GraphNode): FlowDef[] {
   return graph.flows.filter((f) => f.nodes.some((n) => paths.has(n)));
 }
 
-/** Expand tags to include implied tags recursively. Returns unique list. */
-export function expandTags(tags: string[], aspects: AspectDef[]): string[] {
-  const tagToAspect = new Map<string, AspectDef>();
+/** Expand aspect ids to include implied ids recursively. Returns unique list. */
+export function expandAspects(aspectIds: string[], aspects: AspectDef[]): string[] {
+  const idToAspect = new Map<string, AspectDef>();
   for (const a of aspects) {
-    tagToAspect.set(a.tag, a);
+    idToAspect.set(a.id, a);
   }
   const result: string[] = [];
   const visited = new Set<string>();
   const stack = new Set<string>();
 
-  function collect(tag: string): void {
-    if (stack.has(tag)) {
-      throw new Error(`Aspect implies cycle detected involving tag '${tag}'`);
+  function collect(id: string): void {
+    if (stack.has(id)) {
+      throw new Error(`Aspect implies cycle detected involving aspect '${id}'`);
     }
-    if (visited.has(tag)) return;
-    stack.add(tag);
-    visited.add(tag);
-    result.push(tag);
-    const aspect = tagToAspect.get(tag);
+    if (visited.has(id)) return;
+    stack.add(id);
+    visited.add(id);
+    result.push(id);
+    const aspect = idToAspect.get(id);
     if (aspect) {
       for (const implied of aspect.implies ?? []) {
         collect(implied);
       }
     }
-    stack.delete(tag);
+    stack.delete(id);
   }
 
-  for (const tag of tags) {
-    collect(tag);
+  for (const id of aspectIds) {
+    collect(id);
   }
   return result;
 }
 
-/** Expand tags to aspects including implied (recursive, with cycle detection). */
-export function expandAspectsForTags(
-  tags: Iterable<string>,
+/** Expand aspect ids to AspectDefs including implied (recursive, with cycle detection). */
+export function resolveAspects(
+  aspectIds: Iterable<string>,
   aspects: AspectDef[],
 ): AspectDef[] {
-  const tagToAspect = new Map<string, AspectDef>();
+  const idToAspect = new Map<string, AspectDef>();
   for (const a of aspects) {
-    tagToAspect.set(a.tag, a);
+    idToAspect.set(a.id, a);
   }
-  const expandedTags = expandTags([...tags], aspects);
-  return expandedTags
-    .map((tag) => tagToAspect.get(tag))
+  const expandedIds = expandAspects([...aspectIds], aspects);
+  return expandedIds
+    .map((id) => idToAspect.get(id))
     .filter((a): a is AspectDef => a !== undefined);
 }
+
+// --- backward-compat aliases (used by tests / external callers) ---
+export const expandTags = expandAspects;
+export const expandAspectsForTags = resolveAspects;
 
 // --- Layer builders (exported for testing) ---
 
@@ -165,8 +169,8 @@ export function buildHierarchyLayer(
 ): ContextLayer {
   const filtered = filterArtifactsByConfig(ancestor.artifacts, config);
   const content = filtered.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
-  const tags = ancestor.meta.tags ?? [];
-  const expanded = expandTags(tags, graph.aspects);
+  const nodeAspects = ancestor.meta.aspects ?? [];
+  const expanded = expandAspects(nodeAspects, graph.aspects);
   const attrs: Record<string, string> | undefined =
     expanded.length > 0 ? { aspects: expanded.join(',') } : undefined;
   return {
@@ -199,8 +203,8 @@ export async function buildOwnLayer(
   }
 
   const content = parts.join('\n\n');
-  const tags = node.meta.tags ?? [];
-  const expanded = expandTags(tags, graph.aspects);
+  const nodeAspects = node.meta.aspects ?? [];
+  const expanded = expandAspects(nodeAspects, graph.aspects);
   const attrs: Record<string, string> | undefined =
     expanded.length > 0 ? { aspects: expanded.join(',') } : undefined;
   return {
@@ -285,15 +289,15 @@ export function buildAspectLayer(aspect: AspectDef): ContextLayer {
   const content = aspect.artifacts.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
   return {
     type: 'aspects',
-    label: `${aspect.name} (tag: ${aspect.tag})`,
+    label: `${aspect.name} (aspect: ${aspect.id})`,
     content,
   };
 }
 
 function buildFlowLayer(flow: FlowDef, graph: Graph): ContextLayer {
   const content = flow.artifacts.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
-  const tags = flow.aspects ?? [];
-  const expanded = expandTags(tags, graph.aspects);
+  const flowAspects = flow.aspects ?? [];
+  const expanded = expandAspects(flowAspects, graph.aspects);
   const attrs: Record<string, string> | undefined =
     expanded.length > 0 ? { aspects: expanded.join(',') } : undefined;
   return {

@@ -35,17 +35,19 @@ export async function parseConfig(filePath: string): Promise<YggConfig> {
       'name' in item &&
       typeof (item as { name: unknown }).name === 'string'
     ) {
-      const obj = item as { name: string; required_tags?: unknown };
-      const requiredTags = Array.isArray(obj.required_tags)
-        ? (obj.required_tags as unknown[]).filter((t): t is string => typeof t === 'string')
-        : undefined;
+      const obj = item as { name: string; required_aspects?: unknown; required_tags?: unknown };
+      const requiredAspects = Array.isArray(obj.required_aspects)
+        ? (obj.required_aspects as unknown[]).filter((t): t is string => typeof t === 'string')
+        : Array.isArray(obj.required_tags)
+          ? (obj.required_tags as unknown[]).filter((t): t is string => typeof t === 'string')
+          : undefined;
       return {
         name: obj.name,
-        required_tags: requiredTags && requiredTags.length > 0 ? requiredTags : undefined,
+        required_aspects: requiredAspects && requiredAspects.length > 0 ? requiredAspects : undefined,
       };
     }
     throw new Error(
-      `config.yaml: node_types entry must be string or { name, required_tags? }`,
+      `config.yaml: node_types entry must be string or { name, required_aspects? }`,
     );
   });
 
@@ -116,17 +118,10 @@ export async function parseConfig(filePath: string): Promise<YggConfig> {
     );
   }
 
-  const tagsRaw = raw.tags;
-  const tagsList: string[] =
-    Array.isArray(tagsRaw) ?
-      (tagsRaw as unknown[]).filter((t): t is string => typeof t === 'string')
-    : [];
-
   return {
     name: (raw.name as string).trim(),
     stack: (raw.stack as Record<string, string>) ?? {},
     standards: typeof raw.standards === 'string' ? raw.standards : '',
-    tags: tagsList,
     node_types: nodeTypes,
     artifacts: artifactsMap,
     quality,
