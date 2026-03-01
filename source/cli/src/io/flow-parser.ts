@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import nodePath from 'node:path';
+import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import type { FlowDef } from '../model/types.js';
 import { readArtifacts } from './artifact-reader.js';
@@ -34,7 +34,7 @@ export async function parseFlow(flowDir: string, flowYamlPath: string): Promise<
   const artifacts = await readArtifacts(flowDir, ['flow.yaml']);
 
   return {
-    path: nodePath.basename(flowDir),
+    path: path.basename(flowDir),
     name: (raw.name as string).trim(),
     nodes: nodePaths,
     ...(aspects !== undefined && { aspects }),

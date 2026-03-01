@@ -165,6 +165,19 @@ aspects:
     await rm(tmpDir, { recursive: true, force: true });
   });
 
+  it('sets path to basename of flowDir', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-flow-path');
+    await mkdir(tmpDir, { recursive: true });
+    const flowYaml = path.join(tmpDir, 'flow.yaml');
+    await writeFile(flowYaml, 'name: Path Test\nnodes: [a/b]', 'utf-8');
+
+    const flow = await parseFlow(tmpDir, flowYaml);
+
+    expect(flow.path).toBe(path.basename(tmpDir));
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
   it('returns undefined when aspects absent', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-flow-no-aspects');
     await mkdir(tmpDir, { recursive: true });

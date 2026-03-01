@@ -187,7 +187,6 @@ async function loadFlows(flowsDir: string): Promise<FlowDef[]> {
       if (!entry.isDirectory()) continue;
       const flowYamlPath = path.join(flowsDir, entry.name, 'flow.yaml');
       const flow = await parseFlow(path.join(flowsDir, entry.name), flowYamlPath);
-      flow.path = entry.name;
       flows.push(flow);
     }
     return flows;
