@@ -9,10 +9,10 @@ cli/core:
     source/cli/src/core/graph-loader.ts: 9232999167e64572f0f9d9dd8e5a103bf3fd99110281e8d50ed74643d141aa41
     source/cli/src/core/validator.ts: 817fd77e88aac1e3787d4e520156fa0ce4adee2ce841fe98e28f5f1cf77f0457
 cli/entry:
-  hash: 68a9e29d2530e27db548659fc1096c4914a107947c4078cac5d67494f364420d
+  hash: b568f5798e2e9d50daac35c596c58b2a7280ba2c8219a1e4fd3e9ee161178485
   files:
     source/cli/src/bin.ts: c129f85232fda48cb2fec3acfa73e104c5222208e15324bb7b93811d2d67b511
-    source/cli/package.json: a0703a29c88e9c0e7c2c64993113452540e214975967d34dac8052be51363ac8
+    source/cli/package.json: c02574688f22f58b01108677f90d76433afc6e6ebec37e4e5ae6d237b36af3ea
 cli/formatters:
   hash: 8a739db766be713426e5cef40fec8b0ebe0f151c712dce92f7997329bd7a2daf
   files:
