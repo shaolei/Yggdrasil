@@ -29,3 +29,6 @@ Thumbs.db
 
 # Agent working dir — design docs and plans (local only, not committed)
 .plans/
+
+# Git worktrees
+.worktrees/
