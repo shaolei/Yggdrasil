@@ -9,9 +9,9 @@ standards: ""
 tags: []
 
 node_types:
-  - module
-  - service
-  - library
+  - name: module
+  - name: service
+  - name: library
 
 artifacts:
   responsibility.md:

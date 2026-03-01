@@ -18,10 +18,13 @@ describe('default-config', () => {
   });
 
   it('DEFAULT_CONFIG node_types includes module, service, library', () => {
-    const parsed = parseYaml(DEFAULT_CONFIG) as { node_types: string[] };
-    expect(parsed.node_types).toContain('module');
-    expect(parsed.node_types).toContain('service');
-    expect(parsed.node_types).toContain('library');
+    const parsed = parseYaml(DEFAULT_CONFIG) as {
+      node_types: Array<{ name: string } | string>;
+    };
+    const names = parsed.node_types.map((t) => (typeof t === 'string' ? t : t.name));
+    expect(names).toContain('module');
+    expect(names).toContain('service');
+    expect(names).toContain('library');
   });
 
   it('DEFAULT_CONFIG responsibility, interface, constraints, errors have structural_context', () => {
