@@ -1,6 +1,6 @@
 name: DependencyResolver
 type: library
-tags: [deterministic]
+aspects: [deterministic]
 
 relations:
   - target: cli/model

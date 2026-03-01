@@ -1,5 +1,5 @@
 name: Commands
 type: module
-tags: [deterministic]
+aspects: [deterministic]
 
 relations: []

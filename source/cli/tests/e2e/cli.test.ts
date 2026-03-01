@@ -46,16 +46,16 @@ describe.skipIf(!distExists)('CLI E2E', () => {
     expect(status).toBe(0);
   });
 
-  it('yg tags lists aspect directory names', () => {
-    const { stdout, status } = run(['tags']);
+  it('yg aspects lists aspects with YAML output', () => {
+    const { stdout, status } = run(['aspects']);
     expect(status).toBe(0);
     expect(stdout).toContain('requires-audit');
   });
 
-  it('yg tags without .yggdrasil returns exit 1', () => {
-    const emptyDir = mkdtempSync(path.join(tmpdir(), 'yg-e2e-tags-no-ygg-'));
+  it('yg aspects without .yggdrasil returns exit 1', () => {
+    const emptyDir = mkdtempSync(path.join(tmpdir(), 'yg-e2e-aspects-no-ygg-'));
     try {
-      const { status, stderr } = run(['tags'], emptyDir);
+      const { status, stderr } = run(['aspects'], emptyDir);
       expect(status).toBe(1);
       expect(stderr).toContain('yg init');
     } finally {

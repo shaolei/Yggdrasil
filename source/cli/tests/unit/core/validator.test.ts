@@ -51,7 +51,7 @@ function createGraph(overrides: Partial<Graph> = {}): Graph {
       artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
     },
     nodes: new Map(),
-    aspects: [{ name: 'Valid', tag: 'valid-tag', artifacts: [] }],
+    aspects: [{ name: 'Valid', id: 'valid-tag', artifacts: [] }],
     flows: [],
     schemas: [],
     rootPath: path.join(FIXTURE_PROJECT, '.yggdrasil'),
@@ -106,22 +106,22 @@ describe('validator', () => {
     expect(issues[0].nodePath).toBe('a');
   });
 
-  it('unknown-tag (E003) returns error when node tag has no aspect', async () => {
+  it('unknown-aspect (E003) returns error when node aspect has no aspect def', async () => {
     const graph = createGraph();
-    graph.nodes.set('a', createNode('a', { tags: ['no-aspect-for-this'] }));
+    graph.nodes.set('a', createNode('a', { aspects: ['no-aspect-for-this'] }));
 
     const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'unknown-tag');
+    const issues = result.issues.filter((i) => i.rule === 'unknown-aspect');
     expect(issues).toHaveLength(1);
     expect(issues[0].code).toBe('E003');
-    expect(issues[0].message).toContain('no corresponding aspect');
+    expect(issues[0].message).toContain('no corresponding directory');
   });
 
-  it('duplicate-aspect-binding returns E014 when tag bound to multiple aspects', async () => {
+  it('duplicate-aspect-binding returns E014 when id bound to multiple aspects', async () => {
     const graph = createGraph({
       aspects: [
-        { name: 'Aspect One', tag: 'audit', artifacts: [] },
-        { name: 'Aspect Two', tag: 'audit', artifacts: [] },
+        { name: 'Aspect One', id: 'audit', artifacts: [] },
+        { name: 'Aspect Two', id: 'audit', artifacts: [] },
       ],
     });
     graph.nodes.set('a', createNode('a'));
@@ -136,7 +136,6 @@ describe('validator', () => {
   });
 
   it('invalid-node-yaml reports parse errors from graph loader', async () => {
-    const { writeFile, mkdir, rm } = await import('node:fs/promises');
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-validator-parse-error');
     const yggRoot = path.join(tmpDir, '.yggdrasil');
     const modelDir = path.join(yggRoot, 'model');
@@ -145,7 +144,7 @@ describe('validator', () => {
     await mkdir(badNodeDir, { recursive: true });
     await writeFile(
       path.join(yggRoot, 'config.yaml'),
-      'name: V\nnode_types: [service]\nartifacts:\n  responsibility.md:\n    required: always\n    description: x\ntags: []',
+      'name: V\nnode_types: [service]\nartifacts:\n  responsibility.md:\n    required: always\n    description: x',
     );
     await writeFile(path.join(badNodeDir, 'node.yaml'), 'type: service\n# missing name');
 
@@ -173,7 +172,6 @@ describe('validator', () => {
   });
 
   it('directories-have-node-yaml catches orphan directory with content in model', async () => {
-    const { writeFile, mkdir, rm } = await import('node:fs/promises');
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-validator-orphan');
     const yggRoot = path.join(tmpDir, '.yggdrasil');
     const modelDir = path.join(yggRoot, 'model');
@@ -184,7 +182,7 @@ describe('validator', () => {
     await mkdir(serviceDir, { recursive: true });
     await writeFile(
       path.join(yggRoot, 'config.yaml'),
-      'name: V\nnode_types: [service]\nartifacts:\n  responsibility.md:\n    required: always\n    description: x\ntags: []',
+      'name: V\nnode_types: [service]\nartifacts:\n  responsibility.md:\n    required: always\n    description: x',
     );
     await writeFile(path.join(serviceDir, 'node.yaml'), 'name: Svc\ntype: service\n');
     await writeFile(path.join(orphanDir, 'readme.md'), '# orphan content');
@@ -473,7 +471,7 @@ describe('validator', () => {
     expect(issues.some((i) => i.message.includes('non-existent node'))).toBe(true);
   });
 
-  it('flow aspect tag must have corresponding aspect', async () => {
+  it('flow aspect id must have corresponding aspect', async () => {
     const graph = createGraph();
     graph.nodes.set('a', createNode('a'));
     graph.flows.push({
@@ -484,13 +482,13 @@ describe('validator', () => {
     });
 
     const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'broken-aspect-tag');
+    const issues = result.issues.filter((i) => i.rule === 'broken-aspect-ref');
     expect(issues).toHaveLength(1);
     expect(issues[0].message).toContain("Flow 'SagaFlow'");
     expect(issues[0].message).toContain("undefined-tag");
   });
 
-  it('flow aspect tag without corresponding aspect returns error', async () => {
+  it('flow aspect id without corresponding aspect returns error', async () => {
     const graph = createGraph({ aspects: [] });
     graph.nodes.set('a', createNode('a'));
     graph.flows.push({
@@ -502,9 +500,9 @@ describe('validator', () => {
     // aspects[] is empty — no aspect binds to valid-tag
 
     const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'broken-aspect-tag');
+    const issues = result.issues.filter((i) => i.rule === 'broken-aspect-ref');
     expect(issues).toHaveLength(1);
-    expect(issues[0].message).toContain("no aspect with that tag exists");
+    expect(issues[0].message).toContain("no aspect with that id exists");
   });
 
   it('invalid-artifact-condition returns error when has_tag references tag with no aspect', async () => {
@@ -532,7 +530,7 @@ describe('validator', () => {
 
   it('artifactRequiredReason has_tag returns null when node lacks tag', async () => {
     const graph = createGraph({
-      aspects: [{ name: 'Special', tag: 'special', artifacts: [] }],
+      aspects: [{ name: 'Special', id: 'special', artifacts: [] }],
       config: {
         name: 'Test',
         stack: {},
@@ -704,7 +702,7 @@ describe('validator', () => {
 
   it('missing-artifact when required has_tag and node has tag', async () => {
     const graph = createGraph({
-      aspects: [{ name: 'PublicAPI', tag: 'public-api', artifacts: [] }],
+      aspects: [{ name: 'PublicAPI', id: 'public-api', artifacts: [] }],
       config: {
         name: 'Test',
         stack: {},
@@ -720,7 +718,7 @@ describe('validator', () => {
       },
     });
     graph.nodes.set('svc', {
-      ...createNode('svc', { tags: ['public-api'] }),
+      ...createNode('svc', { aspects: ['public-api'] }),
       artifacts: [{ filename: 'responsibility.md', content: 'x' }],
     });
 
@@ -757,11 +755,11 @@ describe('validator', () => {
     expect(result.nodesScanned).toBe(2);
   });
 
-  it('aspect-tag-uniqueness returns error when tag bound to multiple aspects', async () => {
+  it('aspect-id-uniqueness returns error when id bound to multiple aspects', async () => {
     const graph = createGraph({
       aspects: [
-        { name: 'Aspect1', tag: 'dup-tag', artifacts: [] },
-        { name: 'Aspect2', tag: 'dup-tag', artifacts: [] },
+        { name: 'Aspect1', id: 'dup-tag', artifacts: [] },
+        { name: 'Aspect2', id: 'dup-tag', artifacts: [] },
       ],
     });
     graph.nodes.set('a', createNode('a'));
@@ -773,10 +771,10 @@ describe('validator', () => {
     expect(issues[0].message).toContain('multiple aspects');
   });
 
-  it('implied-aspect-missing returns error when implied tag has no aspect', async () => {
+  it('implied-aspect-missing returns error when implied id has no aspect', async () => {
     const graph = createGraph({
       aspects: [
-        { name: 'HIPAA', tag: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
+        { name: 'HIPAA', id: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
       ],
     });
     graph.nodes.set('a', createNode('a'));
@@ -792,8 +790,8 @@ describe('validator', () => {
   it('aspect-implies-cycle returns error when implies form cycle', async () => {
     const graph = createGraph({
       aspects: [
-        { name: 'A', tag: 'tag-a', implies: ['tag-b'], artifacts: [] },
-        { name: 'B', tag: 'tag-b', implies: ['tag-a'], artifacts: [] },
+        { name: 'A', id: 'tag-a', implies: ['tag-b'], artifacts: [] },
+        { name: 'B', id: 'tag-b', implies: ['tag-a'], artifacts: [] },
       ],
     });
     graph.nodes.set('a', createNode('a'));
@@ -807,44 +805,44 @@ describe('validator', () => {
     expect(issues[0].message).toContain('tag-b');
   });
 
-  it('missing-required-tag-coverage returns warning when node type requires tag', async () => {
+  it('missing-required-aspect-coverage returns warning when node type requires aspect', async () => {
     const graph = createGraph({
-      aspects: [{ name: 'Audit', tag: 'requires-audit', artifacts: [] }],
+      aspects: [{ name: 'Audit', id: 'requires-audit', artifacts: [] }],
       config: {
         name: 'Test',
         stack: {},
         standards: '',
-        node_types: [{ name: 'service', required_tags: ['requires-audit'] }],
+        node_types: [{ name: 'service', required_aspects: ['requires-audit'] }],
         artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
     });
-    graph.nodes.set('svc', createNode('svc', { tags: [] }));
+    graph.nodes.set('svc', createNode('svc', { aspects: [] }));
 
     const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'missing-required-tag-coverage');
+    const issues = result.issues.filter((i) => i.rule === 'missing-required-aspect-coverage');
     expect(issues).toHaveLength(1);
     expect(issues[0].code).toBe('W011');
     expect(issues[0].message).toContain('requires-audit');
   });
 
-  it('no missing-required-tag-coverage when node has implied coverage', async () => {
+  it('no missing-required-aspect-coverage when node has implied coverage', async () => {
     const graph = createGraph({
       config: {
         name: 'Test',
         stack: {},
         standards: '',
-        node_types: [{ name: 'service', required_tags: ['requires-audit'] }],
+        node_types: [{ name: 'service', required_aspects: ['requires-audit'] }],
         artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       aspects: [
-        { name: 'Audit', tag: 'requires-audit', artifacts: [] },
-        { name: 'HIPAA', tag: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
+        { name: 'Audit', id: 'requires-audit', artifacts: [] },
+        { name: 'HIPAA', id: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
       ],
     });
-    graph.nodes.set('svc', createNode('svc', { tags: ['requires-hipaa'] }));
+    graph.nodes.set('svc', createNode('svc', { aspects: ['requires-hipaa'] }));
 
     const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'missing-required-tag-coverage');
+    const issues = result.issues.filter((i) => i.rule === 'missing-required-aspect-coverage');
     expect(issues).toHaveLength(0);
   });
 

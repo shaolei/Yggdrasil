@@ -4,7 +4,7 @@ Public API consumed by cli/commands/init.
 
 ## default-config.ts
 
-- `DEFAULT_CONFIG: string` — YAML string for default config.yaml (name, stack, standards, tags, node_types, artifacts, quality)
+- `DEFAULT_CONFIG: string` — YAML string for default config.yaml (name, stack, standards, node_types, artifacts, quality)
 
 ## platform.ts
 

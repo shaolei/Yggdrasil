@@ -4,7 +4,7 @@
 
 name: ComponentName           # required — display name
 type: service                 # required — must match a type from config.node_types
-tags: []                      # optional — list of aspect tags (directory names under aspects/)
+aspects: []                   # optional — list of aspect identifiers (directory paths under aspects/)
 blackbox: false               # optional, default false — if true, coarse-grained coverage without deep artifacts
 
 relations:                    # optional — outgoing dependencies to other nodes

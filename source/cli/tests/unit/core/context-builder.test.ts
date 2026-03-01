@@ -30,7 +30,6 @@ describe('context-builder', () => {
         name: 'Test Project',
         stack: { language: 'TypeScript', runtime: 'Node 22' },
         standards: 'ESLint + Jest',
-        tags: [],
         node_types: [{ name: 'service' }],
         artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       };
@@ -52,7 +51,7 @@ describe('context-builder', () => {
     it('formats aspect artifacts', () => {
       const layer = buildAspectLayer({
         name: 'Audit',
-        tag: 'requires-audit',
+        id: 'requires-audit',
         artifacts: [{ filename: 'rules.md', content: 'Log everything' }],
       });
       expect(layer.type).toBe('aspects');
@@ -66,7 +65,6 @@ describe('context-builder', () => {
       name: '',
       stack: {},
       standards: '',
-      tags: [],
       node_types: [{ name: 'service' }],
       artifacts: {
         'responsibility.md': { required: 'always', description: 'x' },
@@ -246,22 +244,22 @@ describe('context-builder', () => {
     });
   });
 
-  describe('node tags (v2.2: no propagation)', () => {
+  describe('node aspects (v2.2: no propagation)', () => {
     it('includes implied aspects in context package', async () => {
       const auditAspect: AspectDef = {
         name: 'Audit',
-        tag: 'requires-audit',
+        id: 'requires-audit',
         artifacts: [{ filename: 'content.md', content: 'Audit rules' }],
       };
       const hipaaAspect: AspectDef = {
         name: 'HIPAA',
-        tag: 'requires-hipaa',
+        id: 'requires-hipaa',
         implies: ['requires-audit'],
         artifacts: [{ filename: 'content.md', content: 'HIPAA rules' }],
       };
       const node: GraphNode = {
         path: 'test/node',
-        meta: { name: 'TestNode', type: 'service', tags: ['requires-hipaa'] },
+        meta: { name: 'TestNode', type: 'service', aspects: ['requires-hipaa'] },
         artifacts: [{ filename: 'responsibility.md', content: 'x' }],
         children: [],
         parent: null,
@@ -271,7 +269,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: ['requires-hipaa', 'requires-audit'],
           node_types: [{ name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -283,26 +280,26 @@ describe('context-builder', () => {
       };
       const pkg = await buildContext(graph, 'test/node');
       const aspectLayers = pkg.layers.filter((l) => l.type === 'aspects');
-      expect(aspectLayers.map((l) => l.label)).toContain('Audit (tag: requires-audit)');
-      expect(aspectLayers.map((l) => l.label)).toContain('HIPAA (tag: requires-hipaa)');
+      expect(aspectLayers.map((l) => l.label)).toContain('Audit (aspect: requires-audit)');
+      expect(aspectLayers.map((l) => l.label)).toContain('HIPAA (aspect: requires-hipaa)');
     });
 
     it('throws when aspect implies cycle detected', async () => {
       const a: AspectDef = {
         name: 'A',
-        tag: 'tag-a',
+        id: 'tag-a',
         implies: ['tag-b'],
         artifacts: [],
       };
       const b: AspectDef = {
         name: 'B',
-        tag: 'tag-b',
+        id: 'tag-b',
         implies: ['tag-a'],
         artifacts: [],
       };
       const node: GraphNode = {
         path: 'test/node',
-        meta: { name: 'TestNode', type: 'service', tags: ['tag-a'] },
+        meta: { name: 'TestNode', type: 'service', aspects: ['tag-a'] },
         artifacts: [{ filename: 'responsibility.md', content: 'x' }],
         children: [],
         parent: null,
@@ -312,7 +309,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: ['tag-a', 'tag-b'],
           node_types: [{ name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -323,14 +319,14 @@ describe('context-builder', () => {
         rootPath: '/tmp',
       };
       await expect(buildContext(graph, 'test/node')).rejects.toThrow(
-        "Aspect implies cycle detected involving tag 'tag-a'",
+        "Aspect implies cycle detected involving aspect 'tag-a'",
       );
     });
 
-    it('node with own tags includes aspects in context', async () => {
+    it('node with own aspects includes aspects in context', async () => {
       const graph = await loadGraph(FIXTURE_PROJECT);
       const orderService = graph.nodes.get('orders/order-service')!;
-      expect(orderService.meta.tags).toContain('requires-audit');
+      expect(orderService.meta.aspects).toContain('requires-audit');
 
       const pkg = await buildContext(graph, 'orders/order-service');
       const aspectLayer = pkg.layers.find((l) => l.type === 'aspects');
@@ -419,7 +415,7 @@ describe('context-builder', () => {
 
     it('node without matching aspects has no aspect layers', async () => {
       const graph = await loadGraph(FIXTURE_PROJECT);
-      // users module has no tags matching the audit aspect
+      // users module has no aspects matching the audit aspect
       const pkg = await buildContext(graph, 'users');
 
       const aspectLayers = pkg.layers.filter((l) => l.type === 'aspects');
@@ -435,10 +431,10 @@ describe('context-builder', () => {
       expect(flowLayers.some((l) => l.label.includes('Checkout'))).toBe(true);
     });
 
-    it('hierarchy tags: child without own tags inherits from ancestor (aspects on hierarchy layer)', async () => {
+    it('hierarchy aspects: child without own aspects inherits from ancestor (aspects on hierarchy layer)', async () => {
       const parent: GraphNode = {
         path: 'orders',
-        meta: { name: 'Orders', type: 'module', tags: ['requires-audit'] },
+        meta: { name: 'Orders', type: 'module', aspects: ['requires-audit'] },
         artifacts: [],
         children: [],
         parent: null,
@@ -457,7 +453,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: ['requires-audit'],
           node_types: [{ name: 'module' }, { name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -468,7 +463,7 @@ describe('context-builder', () => {
         aspects: [
           {
             name: 'Audit',
-            tag: 'requires-audit',
+            id: 'requires-audit',
             artifacts: [{ filename: 'content.md', content: 'Audit rules' }],
           },
         ],
@@ -486,17 +481,17 @@ describe('context-builder', () => {
       expect(aspectLayers[0].label).toContain('Audit');
     });
 
-    it('hierarchy tags: node own tags declared on own layer (aspects on own-artifacts)', async () => {
+    it('hierarchy aspects: node own aspects declared on own layer (aspects on own-artifacts)', async () => {
       const parent: GraphNode = {
         path: 'orders',
-        meta: { name: 'Orders', type: 'module', tags: ['requires-audit'] },
+        meta: { name: 'Orders', type: 'module', aspects: ['requires-audit'] },
         artifacts: [],
         children: [],
         parent: null,
       };
       const child: GraphNode = {
         path: 'orders/order-service',
-        meta: { name: 'OrderService', type: 'service', tags: ['requires-audit'] },
+        meta: { name: 'OrderService', type: 'service', aspects: ['requires-audit'] },
         artifacts: [{ filename: 'responsibility.md', content: 'x' }],
         children: [],
         parent,
@@ -508,7 +503,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: ['requires-audit'],
           node_types: [{ name: 'module' }, { name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -519,7 +513,7 @@ describe('context-builder', () => {
         aspects: [
           {
             name: 'Audit',
-            tag: 'requires-audit',
+            id: 'requires-audit',
             artifacts: [{ filename: 'content.md', content: 'Audit rules' }],
           },
         ],
@@ -549,7 +543,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: ['requires-saga'],
           node_types: [{ name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -557,7 +550,7 @@ describe('context-builder', () => {
         aspects: [
           {
             name: 'Saga',
-            tag: 'requires-saga',
+            id: 'requires-saga',
             artifacts: [{ filename: 'content.md', content: 'Use saga pattern' }],
           },
         ],
@@ -604,7 +597,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: [],
           node_types: [{ name: 'module' }, { name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -655,7 +647,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: [],
           node_types: [{ name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -701,7 +692,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: [],
           node_types: [{ name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -749,7 +739,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: [],
           node_types: [{ name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -809,18 +798,18 @@ describe('context-builder', () => {
       expect(pkg.mapping).toBeNull();
     });
 
-    it('includes multiple aspects when node matches multiple tags', async () => {
-      // Manually build a graph with 2 aspects on 2 different tags
+    it('includes multiple aspects when node matches multiple aspect ids', async () => {
+      // Manually build a graph with 2 aspects on 2 different ids
       const parent: GraphNode = {
         path: 'mod',
-        meta: { name: 'Mod', type: 'module', tags: ['tag-a'] },
+        meta: { name: 'Mod', type: 'module', aspects: ['tag-a'] },
         artifacts: [],
         children: [],
         parent: null,
       };
       const child: GraphNode = {
         path: 'mod/svc',
-        meta: { name: 'Svc', type: 'service', tags: ['tag-a', 'tag-b'] },
+        meta: { name: 'Svc', type: 'service', aspects: ['tag-a', 'tag-b'] },
         artifacts: [{ filename: 'desc.md', content: 'service desc' }],
         children: [],
         parent,
@@ -832,7 +821,6 @@ describe('context-builder', () => {
           name: 'MultiAspect',
           stack: {},
           standards: '',
-          tags: ['tag-a', 'tag-b'],
           node_types: [{ name: 'module' }, { name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -843,12 +831,12 @@ describe('context-builder', () => {
         aspects: [
           {
             name: 'Aspect A',
-            tag: 'tag-a',
+            id: 'tag-a',
             artifacts: [{ filename: 'a.md', content: 'aspect-a-content' }],
           },
           {
             name: 'Aspect B',
-            tag: 'tag-b',
+            id: 'tag-b',
             artifacts: [{ filename: 'b.md', content: 'aspect-b-content' }],
           },
         ],
@@ -862,8 +850,8 @@ describe('context-builder', () => {
       // svc has both tag-a and tag-b (v2.2: no propagation)
       expect(aspectLayers).toHaveLength(2);
       const aspectLabels = aspectLayers.map((l) => l.label);
-      expect(aspectLabels).toContain('Aspect A (tag: tag-a)');
-      expect(aspectLabels).toContain('Aspect B (tag: tag-b)');
+      expect(aspectLabels).toContain('Aspect A (aspect: tag-a)');
+      expect(aspectLabels).toContain('Aspect B (aspect: tag-b)');
     });
 
     it('own layer includes raw node.yaml from fixture', async () => {
@@ -890,7 +878,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: [],
           node_types: [{ name: 'module' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -1006,7 +993,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: ['requires-saga'],
           node_types: [{ name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -1014,7 +1000,7 @@ describe('context-builder', () => {
         aspects: [
           {
             name: 'Saga',
-            tag: 'requires-saga',
+            id: 'requires-saga',
             artifacts: [{ filename: 'content.md', content: 'Use saga' }],
           },
         ],
@@ -1036,10 +1022,10 @@ describe('context-builder', () => {
       expect(output).toContain('<flow name="Checkout"');
     });
 
-    it('formatContextText includes aspects on hierarchy for ancestor tags', async () => {
+    it('formatContextText includes aspects on hierarchy for ancestor aspects', async () => {
       const parent: GraphNode = {
         path: 'orders',
-        meta: { name: 'Orders', type: 'module', tags: ['requires-audit'] },
+        meta: { name: 'Orders', type: 'module', aspects: ['requires-audit'] },
         artifacts: [],
         children: [],
         parent: null,
@@ -1058,7 +1044,6 @@ describe('context-builder', () => {
           name: 'T',
           stack: {},
           standards: '',
-          tags: ['requires-audit'],
           node_types: [{ name: 'module' }, { name: 'service' }],
           artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
         },
@@ -1069,7 +1054,7 @@ describe('context-builder', () => {
         aspects: [
           {
             name: 'Audit',
-            tag: 'requires-audit',
+            id: 'requires-audit',
             artifacts: [{ filename: 'content.md', content: 'Audit rules' }],
           },
         ],

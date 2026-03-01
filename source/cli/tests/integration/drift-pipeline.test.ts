@@ -96,7 +96,7 @@ describe('drift-pipeline', () => {
     await mkdir(nodeDir, { recursive: true });
     await writeFile(
       path.join(yggRoot, 'config.yaml'),
-      'name: X\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x\ntags: []',
+      'name: X\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x',
     );
     await writeFile(path.join(modelDir, 'svc', 'node.yaml'), 'name: svc\ntype: module\n');
     await writeFile(

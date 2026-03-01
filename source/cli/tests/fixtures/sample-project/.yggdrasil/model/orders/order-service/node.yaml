@@ -1,6 +1,6 @@
 name: OrderService
 type: service
-tags:
+aspects:
   - requires-audit
 relations:
   - target: auth/auth-api

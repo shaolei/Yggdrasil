@@ -1,6 +1,6 @@
 name: Templates
 type: library
-tags: [deterministic]
+aspects: [deterministic]
 
 relations: []
 

@@ -49,7 +49,7 @@ Order management module.
 ### node.yaml
 name: OrderService
 type: service
-tags:
+aspects:
   - requires-audit
 relations:
   - target: auth/auth-api
@@ -76,7 +76,7 @@ src/orders/order.service.ts
 
 ## Aspects
 
-### Audit Logging (tag: requires-audit)
+### Audit Logging (aspect: requires-audit)
 
 ### content.md
 Every data-modifying operation must be logged to the audit_log table.
@@ -117,7 +117,7 @@ Sequence: create order -> validate -> payment -> ship.
 
 ---
 
-Context size: 331 tokens
+Context size: 332 tokens
 Layers: global, hierarchy, own, relational, relational, flows, aspects
 "
 `;

@@ -50,7 +50,7 @@ general rules are concise and stable; specific contracts are detailed and changi
 
 ### Assembly Algorithm
 
-For node `N` at path `P` with tags `T`, context assembly executes the following steps in order.
+For node `N` at path `P` with aspects `A`, context assembly executes the following steps in order.
 Each step is deterministic.
 
 ```
@@ -64,16 +64,16 @@ Each step is deterministic.
                   artifact filenames)
 
 4.  ASPECTS       Each block (hierarchy, own, flow) declares its own aspects. No inheritance —
-                  each block has an `aspects` field (comma-separated tags; omit if empty).
-                  Hierarchy block: each ancestor may have `aspects="tag1,tag2"` in its metadata.
-                  Own block: node.yaml has `aspects="tag1,tag2"` (or tags list).
-                  Flow block: flow.yaml has `aspects: [tag1, tag2]` for flows where N or an
-                  ancestor participates. Effective tags = union of all tags from these blocks.
-                  For each tag: content of the matching aspect (aspects/<tag>/) plus any aspects
-                  implied by that aspect (recursive). Implies are resolved with cycle detection;
+                  each block has an `aspects` field (comma-separated aspect identifiers; omit if empty).
+                  Hierarchy block: each ancestor may have `aspects="id1,id2"` in its metadata.
+                  Own block: node.yaml has `aspects: [id1, id2]`.
+                  Flow block: flow.yaml has `aspects: [id1, id2]` for flows where N or an
+                  ancestor participates. Effective aspects = union of all identifiers from these blocks.
+                  For each aspect identifier: content of the matching aspect (aspects/<id>/) plus any
+                  aspects implied by that aspect (recursive). Implies are resolved with cycle detection;
                   a cycle (A implies B implies A) is an error. No source attribute on aspect
                   output — aspects are rendered without provenance. Aspects section = union of
-                  tags from hierarchy + own + flow blocks, expand implies, render content.
+                  aspect identifiers from hierarchy + own + flow blocks, expand implies, render content.
 
 5.  RELATIONAL
       for each structural relation of N (uses, calls, extends, implements):
@@ -175,13 +175,13 @@ metadata; content between tags is raw text (no CDATA, no escaping).
 ### node.yaml
 name: OrderService
 type: service
-tags: [requires-audit, requires-auth]
+aspects: [requires-audit, requires-auth]
 relations: ...
 ### responsibility.md
 <content>
 </own-artifacts>
 
-<aspect name="Audit logging" tag="requires-audit">
+<aspect name="Audit logging" id="requires-audit">
 ### content.md
 <content>
 </aspect>
@@ -249,8 +249,8 @@ a graph with errors cannot produce reliable context packages.
 
 - Every relation target must resolve to an existing node.
 - Every flow participant must resolve to an existing node.
-- Every tag must be an aspect directory name (exists under `aspects/<tag>/`).
-- Every tag in an aspect's `implies` must have a corresponding aspect in `aspects/`.
+- Every aspect identifier must correspond to a directory under `aspects/`.
+- Every identifier in an aspect's `implies` must have a corresponding aspect in `aspects/`.
 - The aspect implies graph must be acyclic (no A implies B implies A).
 
 **Mapping uniqueness**: no two nodes may map to the same file or have overlapping directory
@@ -282,8 +282,8 @@ of excessive coupling.
 has no matching `listens`, or vice versa — event-based communication is declared unilaterally.
 Tools compare declarations on both sides and signal the missing complement.
 
-**Missing required tag coverage**: a node of type X has `required_tags` in config but the node
-lacks coverage (direct tag or via implies) for one or more required tags. Tools report this as
+**Missing required aspect coverage**: a node of type X has `required_aspects` in config but the node
+lacks coverage (direct aspect or via implies) for one or more required aspects. Tools report this as
 a warning (W011).
 
 ### Role of Validation
@@ -555,12 +555,12 @@ Given graph state:
 
 ```
 config.yaml
-model/orders/order-service/node.yaml tags: requires-audit
+model/orders/order-service/node.yaml aspects: [requires-audit]
                                      relations: calls payments/payment-service
                                                         consumes: charge, refund
 
-aspects/requires-audit/              tag = directory name
-  aspect.yaml                        name, optional implies
+aspects/requires-audit/              aspect id = directory path
+  aspect.yaml                        name, optional description, optional implies
 
 flows/checkout/flow.yaml             lists orders/order-service as participant
 ```
@@ -571,7 +571,7 @@ Context package for `orders/order-service` contains:
 Step 1.  config.yaml: standards and stack
 Step 2.  Domain context of orders/ module artifacts
 Step 3.  Own artifacts of OrderService: responsibility, interface, constraints, state
-Step 4.  Aspect: Audit logging  [tag requires-audit]
+Step 4.  Aspect: Audit logging  [aspect requires-audit]
 Step 5.  Structural-context artifacts of PaymentService: responsibility, interface, constraints, errors
          + annotation: consumes charge, refund; on failure: retry 3x, then payment-failed
          Flow: Checkout flow  [description.md, sequence.md]

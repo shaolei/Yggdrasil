@@ -2,11 +2,11 @@
 
 Parsers and stores throw `Error` on invalid input. No dedicated error codes — standard Error with descriptive message.
 
-**config-parser:** Missing name, invalid node_types, invalid artifacts (reserved name `node`, invalid required.when), missing knowledge_categories, invalid quality (context_budget.error < warning), missing tags. Propagates ENOENT, EACCES from readFile.
+**config-parser:** Missing name, invalid node_types, invalid artifacts (reserved name `node`, invalid required.when), invalid quality (context_budget.error < warning). Propagates ENOENT, EACCES from readFile.
 
 **node-parser:** Missing name/type, invalid relations (non-array, invalid type, missing target), invalid mapping (paths must be relative, non-empty, no leading slash). Propagates ENOENT, EACCES from readFile.
 
-**aspect-parser:** Missing name or tag. Propagates readFile and readArtifacts errors.
+**aspect-parser:** Missing name or id. Propagates readFile and readArtifacts errors.
 
 **flow-parser:** Missing name, invalid or empty nodes array. Propagates readFile and readArtifacts errors.
 

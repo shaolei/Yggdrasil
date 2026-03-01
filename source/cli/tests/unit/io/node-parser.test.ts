@@ -181,7 +181,7 @@ type: module
     );
 
     const meta = await parseNodeYaml(nodePath);
-    expect(meta.tags).toBeUndefined();
+    expect(meta.aspects).toBeUndefined();
     expect(meta.relations).toBeUndefined();
     expect(meta.mapping).toBeUndefined();
     expect(meta.blackbox).toBe(false);
@@ -211,7 +211,29 @@ blackbox: true
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('parses node with tags correctly', async () => {
+  it('parses node with aspects field', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-node-aspects');
+    await mkdir(tmpDir, { recursive: true });
+    const nodePath = path.join(tmpDir, 'node.yaml');
+    await writeFile(
+      nodePath,
+      `
+name: AspectedNode
+type: service
+aspects:
+  - requires-auth
+  - public-api
+`,
+      'utf-8',
+    );
+
+    const meta = await parseNodeYaml(nodePath);
+    expect(meta.aspects).toEqual(['requires-auth', 'public-api']);
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('backward compat: parses tags field as aspects', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-node-tags');
     await mkdir(tmpDir, { recursive: true });
     const nodePath = path.join(tmpDir, 'node.yaml');
@@ -228,7 +250,7 @@ tags:
     );
 
     const meta = await parseNodeYaml(nodePath);
-    expect(meta.tags).toEqual(['requires-auth', 'public-api']);
+    expect(meta.aspects).toEqual(['requires-auth', 'public-api']);
 
     await rm(tmpDir, { recursive: true, force: true });
   });

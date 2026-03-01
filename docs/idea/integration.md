@@ -182,7 +182,7 @@ The directives say **when** to act, not how graph files are structured. Schema a
 By reading it, the agent immediately knows:
 
 - Which node types exist (service, repository, controller, …)
-- Which tags exist (requires-audit, high-throughput, …)
+- Which aspects exist (requires-audit, high-throughput, …)
 - Which artifacts exist, when they are required, and what they should contain
   (each has a `description`)
 - Which quality thresholds apply
@@ -213,7 +213,7 @@ feedback:
 
 - Which artifacts are required for this node type and why
 - Which references do not resolve and what might be wrong
-- Which tags do not exist in configuration
+- Which aspect identifiers do not resolve
 - Whether the context package fits into the budget
 
 This feedback is **configuration-aware**. It does not teach generic graph building — it teaches
@@ -320,14 +320,14 @@ document.
 A change in semantic memory has an impact scope proportional to the scope of the changed element:
 
 - **Node scope** — change affects one context package; one node may need re-materialization.
-- **Tag scope** — change affects packages for nodes with a given tag; a group may need
+- **Aspect scope** — change affects packages for nodes with a given aspect; a group may need
   re-materialization.
 - **Global scope** — change affects every context package; the whole graph may need
   re-materialization.
 
 The agent is aware of this and prefers the narrowest scope that achieves the goal.
 When the user asks for a global rule, the agent informs them of the consequences:
-“this will affect every node — are you sure global is necessary, or would tag scope be enough?”
+“this will affect every node — are you sure global is necessary, or would aspect scope be enough?”
 
 The agent does not block — it allows. But it asks, because the cost is real: applying a global
 change means every mapped node should be re-materialized against the new rule.
@@ -486,7 +486,7 @@ conflict resolution) apply.
 
 ### Merge conflicts
 
-Two branches may modify the same `node.yaml` — e.g., one adds a relation, another changes a tag.
+Two branches may modify the same `node.yaml` — e.g., one adds a relation, another changes an aspect.
 The resulting merge conflict is a YAML conflict that git reports normally.
 
 Tools do not resolve conflicts — that requires human or agent judgment. But validation after merge

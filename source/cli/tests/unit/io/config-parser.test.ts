@@ -21,9 +21,6 @@ describe('config-parser', () => {
     expect(typeof config.standards).toBe('string');
     expect(config.standards).toContain('ESLint');
     expect(config.quality?.context_budget.warning).toBe(8000);
-    expect(config.tags).toContain('requires-auth');
-    expect(config.tags).toContain('requires-audit');
-    expect(config.tags).toContain('public-api');
     expect(config.node_types.some((t) => t.name === 'service')).toBe(true);
     expect(config.artifacts['responsibility.md']).toBeDefined();
   });
@@ -40,7 +37,6 @@ artifacts:
   responsibility:
     required: always
     description: "x"
-tags: []
 `,
       'utf-8',
     );
@@ -52,7 +48,7 @@ tags: []
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('defaults empty tags to empty array', async () => {
+  it('parses minimal config without tags field', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-minimal');
     await mkdir(tmpDir, { recursive: true });
     const minimalConfigPath = path.join(tmpDir, 'config.yaml');
@@ -65,13 +61,12 @@ artifacts:
   responsibility:
     required: always
     description: "x"
-tags: []
 `,
       'utf-8',
     );
 
     const config = await parseConfig(minimalConfigPath);
-    expect(config.tags).toEqual([]);
+    expect(config.name).toBe('Minimal Config');
 
     await rm(tmpDir, { recursive: true, force: true });
   });
@@ -92,7 +87,6 @@ artifacts:
     required: never
     description: "API"
     structural_context: true
-tags: []
 `,
       'utf-8',
     );
@@ -125,7 +119,6 @@ artifacts:
   responsibility:
     required: always
     description: "x"
-tags: []
 `,
       'utf-8',
     );
@@ -149,7 +142,6 @@ artifacts:
   responsibility:
     required: invalid_value
     description: "x"
-tags: []
 `,
       'utf-8',
     );
@@ -174,7 +166,6 @@ artifacts:
     required:
       when: has_foo
     description: "x"
-tags: []
 `,
       'utf-8',
     );
@@ -202,7 +193,6 @@ quality:
   context_budget:
     warning: 10000
     error: 5000
-tags: []
 `,
       'utf-8',
     );
@@ -210,28 +200,6 @@ tags: []
     await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
       'must be >= warning',
     );
-
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
-  it('defaults missing tags to empty array', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-no-tags');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'config.yaml'),
-      `
-name: "NoTags"
-node_types: [service]
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
-`,
-      'utf-8',
-    );
-
-    const config = await parseConfig(path.join(tmpDir, 'config.yaml'));
-    expect(config.tags).toEqual([]);
 
     await rm(tmpDir, { recursive: true, force: true });
   });
@@ -248,7 +216,6 @@ artifacts:
   responsibility:
     required: always
     description: "x"
-tags: []
 `,
       'utf-8',
     );
@@ -272,7 +239,6 @@ artifacts:
   responsibility:
     required: always
     description: "x"
-tags: []
 `,
       'utf-8',
     );
@@ -284,7 +250,7 @@ tags: []
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('parses node_types with name and required_tags', async () => {
+  it('parses node_types with name and required_aspects', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-node-types');
     await mkdir(tmpDir, { recursive: true });
     const configPath = path.join(tmpDir, 'config.yaml');
@@ -295,8 +261,7 @@ name: T
 node_types:
   - name: module
   - name: service
-    required_tags: [requires-audit]
-tags: []
+    required_aspects: [requires-audit]
 artifacts:
   responsibility.md:
     required: always
@@ -307,7 +272,32 @@ artifacts:
     const cfg = await parseConfig(configPath);
     expect(cfg.node_types).toHaveLength(2);
     expect(cfg.node_types[0]).toEqual({ name: 'module' });
-    expect(cfg.node_types[1]).toEqual({ name: 'service', required_tags: ['requires-audit'] });
+    expect(cfg.node_types[1]).toEqual({ name: 'service', required_aspects: ['requires-audit'] });
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('backward compat: parses required_tags as required_aspects', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-node-types-compat');
+    await mkdir(tmpDir, { recursive: true });
+    const configPath = path.join(tmpDir, 'config.yaml');
+    await writeFile(
+      configPath,
+      `
+name: T
+node_types:
+  - name: module
+  - name: service
+    required_tags: [requires-audit]
+artifacts:
+  responsibility.md:
+    required: always
+    description: x
+`,
+      'utf-8',
+    );
+    const cfg = await parseConfig(configPath);
+    expect(cfg.node_types).toHaveLength(2);
+    expect(cfg.node_types[1]).toEqual({ name: 'service', required_aspects: ['requires-audit'] });
     await rm(tmpDir, { recursive: true, force: true });
   });
 
@@ -320,7 +310,6 @@ artifacts:
       `
 name: T
 node_types: [module, service]
-tags: []
 artifacts:
   responsibility.md:
     required: always
@@ -342,7 +331,6 @@ artifacts:
 name: "Bad"
 node_types: [service]
 artifacts: []
-tags: []
 `,
       'utf-8',
     );
@@ -350,29 +338,6 @@ tags: []
     await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
       "'artifacts' must be a non-empty object",
     );
-
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
-  it('defaults tags to empty array when tags is not array', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-tags-not-array');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'config.yaml'),
-      `
-name: "Tags"
-node_types: [service]
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
-tags: "not-an-array"
-`,
-      'utf-8',
-    );
-
-    const config = await parseConfig(path.join(tmpDir, 'config.yaml'));
-    expect(config.tags).toEqual([]);
 
     await rm(tmpDir, { recursive: true, force: true });
   });
@@ -388,7 +353,6 @@ node_types: [service]
 artifacts:
   responsibility:
     required: always
-tags: []
 `,
       'utf-8',
     );
@@ -412,7 +376,6 @@ artifacts:
   responsibility:
     required: always
     description: "x"
-tags: []
 `,
       'utf-8',
     );

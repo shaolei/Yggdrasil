@@ -1,6 +1,6 @@
 name: Utils
 type: library
-tags: []
+aspects: []
 
 relations:
   - target: cli/model

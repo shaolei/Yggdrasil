@@ -10,7 +10,7 @@
 
 ## tree
 
-- loadGraph; traverse model/; for each dir with node.yaml output path, type, tags, relations count, blackbox flag
+- loadGraph; traverse model/; for each dir with node.yaml output path, type, aspects, relations count, blackbox flag
 
 ## owner
 

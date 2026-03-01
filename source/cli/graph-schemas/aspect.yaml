@@ -1,7 +1,9 @@
 # aspect.yaml — Schema for cross-cutting aspects
 # Each aspect is a directory under .yggdrasil/aspects/ containing this file
 # plus any number of .md content files (requirements, rationale, guidance).
-# The directory name is the tag used in node.yaml tags field.
+# Aspect identifier = relative path from aspects/ to the directory (e.g. observability/logging).
+# Aspects can be organized in nested directories for hierarchy.
 
 name: CrossCuttingRequirementName  # required — display name
-# implies: [other-tag, another-tag] # optional — other aspect tags included automatically (recursive, must be acyclic)
+description: "Short description for discovery via yg aspects"  # optional
+# implies: [other-aspect, another-aspect] # optional — other aspect identifiers included automatically (recursive, must be acyclic)

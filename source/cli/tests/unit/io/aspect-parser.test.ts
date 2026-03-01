@@ -19,7 +19,7 @@ describe('aspect-parser', () => {
     );
 
     expect(aspect.name).toBe('Audit Logging');
-    expect(aspect.tag).toBe('requires-audit');
+    expect(aspect.id).toBe('requires-audit');
     expect(aspect.artifacts).toBeDefined();
   });
 
@@ -36,14 +36,14 @@ describe('aspect-parser', () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('uses tag from directory name (3rd parameter)', async () => {
+  it('uses id from directory path (3rd parameter)', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-aspect-tag');
     await mkdir(tmpDir, { recursive: true });
     const aspectPath = path.join(tmpDir, 'aspect.yaml');
     await writeFile(aspectPath, `name: My Aspect\n`, 'utf-8');
 
     const aspect = await parseAspect(tmpDir, aspectPath, 'my-directory-name');
-    expect(aspect.tag).toBe('my-directory-name');
+    expect(aspect.id).toBe('my-directory-name');
     expect(aspect.name).toBe('My Aspect');
 
     await rm(tmpDir, { recursive: true, force: true });
@@ -63,7 +63,7 @@ implies:
       'utf-8',
     );
     const aspect = await parseAspect(tmpDir, aspectPath, 'requires-hipaa');
-    expect(aspect.tag).toBe('requires-hipaa');
+    expect(aspect.id).toBe('requires-hipaa');
     expect(aspect.implies).toEqual(['requires-audit', 'requires-encryption']);
     await rm(tmpDir, { recursive: true, force: true });
   });
@@ -76,7 +76,7 @@ implies:
 
     const aspect = await parseAspect(tmpDir, aspectPath, 'minimal-aspect');
     expect(aspect.name).toBe('Minimal Aspect');
-    expect(aspect.tag).toBe('minimal-aspect');
+    expect(aspect.id).toBe('minimal-aspect');
     expect(aspect.artifacts).toEqual([]);
 
     await rm(tmpDir, { recursive: true, force: true });

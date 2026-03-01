@@ -15,7 +15,7 @@ describe('graph-loader', () => {
     await mkdir(yggRoot, { recursive: true });
     await writeFile(
       path.join(yggRoot, 'config.yaml'),
-      'name: T\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x\ntags: []',
+      'name: T\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x',
       'utf-8',
     );
 
@@ -54,7 +54,7 @@ describe('graph-loader', () => {
 
     expect(graph.aspects).toHaveLength(1);
     expect(graph.aspects[0].name).toBe('Audit Logging');
-    expect(graph.aspects[0].tag).toBe('requires-audit');
+    expect(graph.aspects[0].id).toBe('requires-audit');
   });
 
   it('top-level nodes have parent = null', async () => {
@@ -141,7 +141,7 @@ describe('graph-loader', () => {
     await mkdir(path.join(modelDir, 'svc', 'empty-dir'), { recursive: true });
     await writeFile(
       path.join(yggRoot, 'config.yaml'),
-      'name: T\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x\ntags: []',
+      'name: T\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x',
     );
     await writeFile(path.join(modelDir, 'svc', 'node.yaml'), 'name: Svc\ntype: module\n');
     await writeFile(
@@ -168,7 +168,7 @@ describe('graph-loader', () => {
     await writeFile(path.join(yggRoot, 'aspects'), 'not-a-dir', 'utf-8');
     await writeFile(
       path.join(yggRoot, 'config.yaml'),
-      'name: T\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x\ntags: []',
+      'name: T\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x',
     );
     await writeFile(path.join(modelDir, 'node.yaml'), 'name: S\ntype: service\n');
 
@@ -189,7 +189,7 @@ describe('graph-loader', () => {
     await mkdir(modelDir, { recursive: true });
     await writeFile(
       path.join(yggRoot, 'config.yaml'),
-      'name: T\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x\ntags: []',
+      'name: T\nnode_types: [service]\nartifacts:\n  responsibility:\n    required: always\n    description: x',
     );
     await writeFile(path.join(modelDir, 'node.yaml'), 'name: S\ntype: service\n');
     // No aspects/, flows/, schemas/ dirs

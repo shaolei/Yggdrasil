@@ -1,6 +1,6 @@
 name: Validator
 type: library
-tags: [deterministic]
+aspects: [deterministic]
 
 relations:
   - target: cli/core/context

@@ -1,6 +1,6 @@
 name: DriftCommands
 type: library
-tags: [deterministic]
+aspects: [deterministic]
 
 relations:
   - target: cli/core/loader

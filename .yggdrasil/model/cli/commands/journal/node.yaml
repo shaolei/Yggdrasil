@@ -1,6 +1,6 @@
 name: JournalCommands
 type: library
-tags: [deterministic]
+aspects: [deterministic]
 
 relations:
   - target: cli/io

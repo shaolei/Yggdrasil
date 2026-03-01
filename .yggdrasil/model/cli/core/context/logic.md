@@ -5,11 +5,11 @@
 ## Sequence
 
 1. **Global** — config.yaml: stack, standards
-2. **Knowledge (2–5)** — collectKnowledgeItems: global scope → tag match → node scope → node-declared. Deduplication via `seenKnowledge` Set.
+2. **Knowledge (2–5)** — collectKnowledgeItems: global scope → aspect match → node scope → node-declared. Deduplication via `seenKnowledge` Set.
 3. **Hierarchy (6)** — collectAncestors from node.parent up to root; for each ancestor, filter artifacts by config, build hierarchy layer
 4. **Own (7)** — node.yaml (read from disk) + filtered artifacts
 5. **Relational (8)** — for each relation: structural (uses/calls/extends/implements) → buildStructuralRelationLayer (consumes, failure, structural_context artifacts); event (emits/listens) → buildEventRelationLayer
-6. **Aspects (9)** — for each node tag, find matching aspect by aspect.tag, build aspect layer
+6. **Aspects (9)** — for each node aspect, find matching aspect by aspect.id, build aspect layer
 7. **Flows (10)** — flows where node in flow.nodes; for each flow: flow artifacts + flow.knowledge (deduplicated with seenKnowledge)
 
 ## Deduplication

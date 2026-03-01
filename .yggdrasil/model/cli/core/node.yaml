@@ -1,5 +1,5 @@
 name: Core
 type: module
-tags: [deterministic]
+aspects: [deterministic]
 
 relations: []

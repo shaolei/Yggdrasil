@@ -1,6 +1,6 @@
 name: ComponentName
 type: service
-tags: []
+aspects: []
 blackbox: false
 
 relations:

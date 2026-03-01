@@ -11,8 +11,8 @@
 
 - `buildGlobalLayer(config: YggConfig): ContextLayer` — project name, stack, standards.
 - `buildKnowledgeLayer(k: KnowledgeItem, fromFlow?: boolean): ContextLayer`
-- `buildHierarchyLayer(ancestor: GraphNode, config: YggConfig, graph: Graph): ContextLayer` — filtered by config.artifacts; adds attrs.aspects from ancestor tags + expandTags.
-- `buildOwnLayer(node: GraphNode, config: YggConfig, graphRootPath: string, graph: Graph): Promise<ContextLayer>` — reads node.yaml from disk; uses node.artifacts; adds attrs.aspects from node tags + expandTags.
+- `buildHierarchyLayer(ancestor: GraphNode, config: YggConfig, graph: Graph): ContextLayer` — filtered by config.artifacts; adds attrs.aspects from ancestor aspects + expandAspects.
+- `buildOwnLayer(node: GraphNode, config: YggConfig, graphRootPath: string, graph: Graph): Promise<ContextLayer>` — reads node.yaml from disk; uses node.artifacts; adds attrs.aspects from node aspects + expandAspects.
 - `buildStructuralRelationLayer(target: GraphNode, relation: Relation, config: YggConfig): ContextLayer` — prefers structural_context artifacts; includes consumes, failure.
 - `buildEventRelationLayer(target: GraphNode, relation: Relation): ContextLayer`
 - `buildAspectLayer(aspect: AspectDef): ContextLayer` — no source param; renders aspect content only.

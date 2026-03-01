@@ -66,13 +66,25 @@ Each aspect is a directory containing \`aspect.yaml\` and any number of \`.md\` 
 \`\`\`
 aspects/
   requires-audit/
-    aspect.yaml       ← name (display), optional implies. Tag = directory name.
+    aspect.yaml       ← name (display), optional description, optional implies
     *.md              ← content files — requirements, rationale, guidance, examples
 \`\`\`
 
-All \`.md\` files in an aspect directory (except \`aspect.yaml\`) are content artifacts attached to every node carrying this tag. You choose filenames and structure — write them business-first: describe what must be satisfied and why, adding technical detail only when it clarifies the requirement.
+Aspects can be organized in nested directories for hierarchy:
 
-**Tag = directory name.** Each aspect lives in \`aspects/<tag>/\` (e.g. \`aspects/requires-audit/\`).
+\`\`\`
+aspects/
+  observability/
+    aspect.yaml              ← aspect "observability"
+    logging/
+      aspect.yaml            ← aspect "observability/logging"
+    tracing/
+      aspect.yaml            ← aspect "observability/tracing"
+\`\`\`
+
+All \`.md\` files in an aspect directory (except \`aspect.yaml\`) are content artifacts attached to every node carrying this aspect. You choose filenames and structure — write them business-first: describe what must be satisfied and why, adding technical detail only when it clarifies the requirement.
+
+**Aspect identifier = directory path under aspects/.** Each aspect lives in \`aspects/<id>/\` (e.g. \`aspects/requires-audit/\` or \`aspects/observability/logging/\`). Directories without \`aspect.yaml\` are pure organization (not aspects). No automatic parent-child relationship — \`implies\` is always explicit.
 
 ### flows/ — Why and in what process
 
@@ -81,7 +93,7 @@ Each flow is a directory with the following files:
 \`\`\`
 flows/
   customer-checkout/
-    flow.yaml         ← nodes (paths in model/), aspects (tags propagated to participants)
+    flow.yaml         ← nodes (paths in model/), aspects (aspect ids propagated to participants)
     description.md    ← business-first process description
 \`\`\`
 
@@ -107,7 +119,7 @@ aspects:
   - requires-idempotency
 \`\`\`
 
-Every participant receives these aspects in its context package even if the node itself does not carry the tag.
+Every participant receives these aspects in its context package even if the node itself does not carry the aspect.
 
 ---
 
@@ -118,10 +130,10 @@ Every participant receives these aspects in its context package even if the node
 \`\`\`
 1. GLOBAL             config.yaml: stack, standards
 2. HIERARCHICAL       artifacts of all ancestor nodes from root down to this node's parent.
-                      Each hierarchy block may have aspects="tag1,tag2" (omit if empty).
+                      Each hierarchy block may have aspects="id1,id2" (omit if empty).
 3. OWN                this node's node.yaml and all its artifact files.
-                      Node may have tags (aspects) in node.yaml.
-4. ASPECTS            union of tags from hierarchy + own + relational blocks.
+                      Node may have aspects in node.yaml.
+4. ASPECTS            union of aspect ids from hierarchy + own + relational blocks.
                       Expand implies recursively. Render all aspect content files.
 5. RELATIONAL         structural-context artifacts of each node this node depends on
                       (responsibility, interface, constraints, errors) + consumes and
@@ -174,7 +186,7 @@ You have broken Yggdrasil if you do any of the following:
 - ❌ Created or edited a graph element without reading its schema in \`schemas/\` first.
 - ❌ Ran \`yg drift-sync\` before updating graph artifacts.
 - ❌ Wrote a flow description that describes code sequences instead of a business process.
-- ❌ Used a tag that has no \`aspects/<tag>/\` directory.
+- ❌ Used an aspect identifier that has no corresponding \`aspects/\` directory.
 - ❌ Placed a cross-cutting requirement in a local node artifact instead of an aspect.
 - ❌ Invented a rationale, business rule, or architectural decision.
 - ❌ Used blackbox coverage for greenfield (new) code.
@@ -246,11 +258,11 @@ When you encounter information during mapping or conversation, use these rules t
 
 → **Local node artifact.** Read \`config.yaml artifacts\` to know which files are defined and what each captures. Use only configured artifact types — do not invent filenames.
 
-### Is it a rule that applies to many nodes of the same type or tag?
+### Is it a rule that applies to many nodes of the same type?
 
-→ **Aspect.** If an aspect for this rule exists — add the tag to the node. If no — create \`aspects/<tag>/\` with \`aspect.yaml\` and content \`.md\` files describing the requirement, rationale, and optionally implementation guidance. Then tag the node.
+→ **Aspect.** If an aspect for this rule exists — add the aspect to the node. If no — create \`aspects/<id>/\` with \`aspect.yaml\` and content \`.md\` files describing the requirement, rationale, and optionally implementation guidance. Then add the aspect to the node.
 
-If the rule applies to ALL nodes of a type — add it to \`node_types[*].required_tags\` in \`config.yaml\` (if supported). It will apply automatically without per-node tagging.
+If the rule applies to ALL nodes of a type — add it to \`node_types[*].required_aspects\` in \`config.yaml\` (if supported). It will apply automatically without per-node tagging.
 
 ### Is it a business process this node participates in?
 
@@ -258,7 +270,7 @@ If the rule applies to ALL nodes of a type — add it to \`node_types[*].require
 
 ### Is it shared context for all nodes in a domain?
 
-→ **Parent node artifact.** Place it in the parent module node. Children receive it through hierarchy. Do not repeat it in child nodes. For cross-cutting requirements shared by the whole module, add the tag to the parent's \`node.yaml\` — descendants receive that aspect in the hierarchy block during context assembly.
+→ **Parent node artifact.** Place it in the parent module node. Children receive it through hierarchy. Do not repeat it in child nodes. For cross-cutting requirements shared by the whole module, add the aspect to the parent's \`node.yaml\` — descendants receive that aspect in the hierarchy block during context assembly.
 
 ### Is it a technology stack choice or global coding standard?
 
@@ -279,8 +291,8 @@ When the user explains WHY something was decided:
 ### Creating a new aspect
 
 1. Read \`schemas/aspect.yaml\`.
-2. Create \`aspects/<tag>/\` directory (tag = directory name).
-3. Write \`aspect.yaml\` — name (display), optional implies. No \`tag\` field — directory name is the tag.
+2. Create \`aspects/<id>/\` directory (aspect identifier = directory path under aspects/).
+3. Write \`aspect.yaml\` — name (display), optional description, optional implies. Aspect id is derived from directory path.
 4. Write content \`.md\` files alongside \`aspect.yaml\`. Choose filenames that reflect the content. Every aspect should explain WHAT must be satisfied (specific, verifiable) and WHY this requirement exists (use the user's own words — do not paraphrase or invent). Optionally include HOW to satisfy it with code examples if needed. Write business-first — add technical detail only when it clarifies the requirement.
 5. Run \`yg validate\`.
 
@@ -293,8 +305,8 @@ When the user explains WHY something was decided:
 
 "Does this requirement apply to every node of a given type?"
 
-- Yes → add to \`node_types[*].required_tags\` in \`config.yaml\` (if supported).
-- No → optional aspect via tag on node.
+- Yes → add to \`node_types[*].required_aspects\` in \`config.yaml\` (if supported).
+- No → optional aspect on node.
 
 ---
 
@@ -350,7 +362,7 @@ When mapping existing source files to graph nodes:
 3. Create node directory. Read \`schemas/node.yaml\`. Create \`node.yaml\`.
 4. Analyze source. For each artifact type in \`config.artifacts\`: Does this node have content matching this artifact's description? Yes → create the artifact, extract content from source. Do not invent. No → skip.
 5. Identify relations — what does this code call, use, extend, implement? Add relations to \`node.yaml\`.
-6. Identify cross-cutting requirements — logging, auth, retry, saga, etc. Add matching tags. Create aspects if they do not exist.
+6. Identify cross-cutting requirements — logging, auth, retry, saga, etc. Add matching aspects. Create aspect directories if they do not exist.
 7. Identify business process participation. Add the node to the relevant flow's participants. If no flow exists — ask the user to describe the business process before creating one. Do not derive a flow description from code alone.
 8. Run \`yg validate\`. Fix errors.
 9. Run \`yg drift-sync --node <path>\`.
@@ -403,7 +415,7 @@ Triggered by: "we're done", "wrap up", "that's enough", "ok done", or equivalent
 yg owner --file <path>              Find the node that owns this file.
 yg build-context --node <path>      Assemble context package for this node.
 yg tree [--root <path>] [--depth N] Print graph structure.
-yg tags                             List valid aspect tags (aspect directory names).
+yg aspects                          List aspects with metadata (YAML output).
 yg deps --node <path> [--depth N] [--type structural|event|all]
                                     Show dependencies.
 yg impact --node <path> --simulate  Simulate blast radius of a planned change.
@@ -447,7 +459,7 @@ Before finishing any mapping or modification, ask:
 | Data shapes this node owns | \`model.md\` (local) |
 | State machine for this node | \`state.md\` (local) |
 | Local design decision + why | \`decisions.md\` (local) |
-| Rule that applies to many nodes | Aspect (content \`.md\` files in \`aspects/<tag>/\`) |
+| Rule that applies to many nodes | Aspect (content \`.md\` files in \`aspects/<id>/\`) |
 | Architectural invariant for a node type | Required aspect in \`config.yaml node_types\` |
 | Business process participation | Flow (\`flow.yaml participants\`) |
 | Process-level requirement | Flow \`aspects\` + aspect directory |

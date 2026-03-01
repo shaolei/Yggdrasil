@@ -4,8 +4,8 @@ I/O layer — parsing graph YAML files and persisting operational state. Separat
 
 **In scope:**
 
-- **config-parser:** Parse config.yaml. Enforces: name (non-empty), node_types (non-empty array), artifacts (non-empty object, no reserved `node`), quality (context_budget.error >= warning), tags (array). Uses yaml parser.
-- **node-parser:** Parse node.yaml — name, type, tags, blackbox, relations (valid RelationType, target required), mapping (paths array, relative to repo root, no leading slash)
+- **config-parser:** Parse config.yaml. Enforces: name (non-empty), node_types (non-empty array), artifacts (non-empty object, no reserved `node`), quality (context_budget.error >= warning). Uses yaml parser.
+- **node-parser:** Parse node.yaml — name, type, aspects, blackbox, relations (valid RelationType, target required), mapping (paths array, relative to repo root, no leading slash)
 - **aspect-parser, flow-parser:** Parse YAML for aspects, flows. Each reads artifacts from directory via readArtifacts.
 - **template-parser:** `parseSchema(filePath)` — validates YAML parseable, infers `schemaType` from filename stem. Used by loadSchemas; no artifacts.
 - **artifact-reader:** Read artifact files from directory. Exclude/include filters. Sorted by filename for determinism.

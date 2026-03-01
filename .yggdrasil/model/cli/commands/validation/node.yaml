@@ -1,6 +1,6 @@
 name: ValidationCommands
 type: library
-tags: [deterministic]
+aspects: [deterministic]
 
 relations:
   - target: cli/core/loader

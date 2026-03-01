@@ -1,6 +1,6 @@
 name: Docs
 type: module
-tags: []
+aspects: []
 blackbox: false
 
 relations: []

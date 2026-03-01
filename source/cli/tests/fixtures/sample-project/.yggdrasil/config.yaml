@@ -11,11 +11,6 @@ standards: |
   Clean Architecture pattern.
   Jest as test framework. Test coverage target: 80%.
 
-tags:
-  - requires-auth
-  - requires-audit
-  - public-api
-
 node_types:
   - module
   - service
