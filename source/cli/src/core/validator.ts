@@ -34,6 +34,8 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
     issues.push(...checkTagsDefined(graph));
     issues.push(...checkAspectTags(graph));
     issues.push(...checkAspectTagUniqueness(graph));
+    issues.push(...checkImpliedAspectsExist(graph));
+    issues.push(...checkImpliesNoCycles(graph));
     issues.push(...checkRequiredArtifacts(graph));
     issues.push(...checkInvalidArtifactConditions(graph));
     issues.push(...(await checkContextBudget(graph)));
@@ -200,6 +202,80 @@ function checkAspectTagUniqueness(graph: Graph): ValidationIssue[] {
       rule: 'duplicate-aspect-binding',
       message: `Tag '${tag}' is bound to multiple aspects (${names.join(', ')})`,
     });
+  }
+  return issues;
+}
+
+// --- Rule: Implied aspects exist ---
+
+function checkImpliedAspectsExist(graph: Graph): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const tagToAspect = new Map<string, { name: string }>();
+  for (const a of graph.aspects) {
+    tagToAspect.set(a.tag, { name: a.name });
+  }
+  for (const aspect of graph.aspects) {
+    for (const impliedTag of aspect.implies ?? []) {
+      if (!tagToAspect.has(impliedTag)) {
+        issues.push({
+          severity: 'error',
+          code: 'E016',
+          rule: 'implied-aspect-missing',
+          message: `Aspect '${aspect.name}' implies '${impliedTag}' but no aspect with that tag exists in aspects/`,
+        });
+      }
+    }
+  }
+  return issues;
+}
+
+// --- Rule: No cycles in aspect implies graph ---
+
+function checkImpliesNoCycles(graph: Graph): ValidationIssue[] {
+  const tagToAspect = new Map<string, { implies?: string[] }>();
+  for (const a of graph.aspects) {
+    tagToAspect.set(a.tag, { implies: a.implies });
+  }
+  const WHITE = 0;
+  const GRAY = 1;
+  const BLACK = 2;
+  const color = new Map<string, number>();
+  for (const tag of tagToAspect.keys()) color.set(tag, WHITE);
+
+  const issues: ValidationIssue[] = [];
+
+  function dfs(tag: string, path: string[]): boolean {
+    color.set(tag, GRAY);
+    path.push(tag);
+    const aspect = tagToAspect.get(tag);
+    for (const implied of aspect?.implies ?? []) {
+      if (color.get(implied) === GRAY) {
+        const cycle = path.slice(path.indexOf(implied)).concat(implied);
+        issues.push({
+          severity: 'error',
+          code: 'E017',
+          rule: 'aspect-implies-cycle',
+          message: `Aspect implies cycle: ${cycle.join(' → ')}`,
+        });
+        path.pop();
+        color.set(tag, BLACK);
+        return true;
+      }
+      if (color.get(implied) === WHITE && dfs(implied, path)) {
+        path.pop();
+        color.set(tag, BLACK);
+        return true;
+      }
+    }
+    path.pop();
+    color.set(tag, BLACK);
+    return false;
+  }
+
+  for (const tag of tagToAspect.keys()) {
+    if (color.get(tag) === WHITE) {
+      dfs(tag, []);
+    }
   }
   return issues;
 }

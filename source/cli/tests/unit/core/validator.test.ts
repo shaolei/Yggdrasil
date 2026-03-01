@@ -756,6 +756,40 @@ describe('validator', () => {
     expect(issues[0].message).toContain('multiple aspects');
   });
 
+  it('implied-aspect-missing returns error when implied tag has no aspect', async () => {
+    const graph = createGraph();
+    graph.nodes.set('a', createNode('a'));
+    graph.aspects = [
+      { name: 'HIPAA', tag: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
+    ];
+    graph.config.tags = ['requires-hipaa', 'requires-audit'];
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'implied-aspect-missing');
+    expect(issues).toHaveLength(1);
+    expect(issues[0].code).toBe('E016');
+    expect(issues[0].message).toContain('HIPAA');
+    expect(issues[0].message).toContain('requires-audit');
+  });
+
+  it('aspect-implies-cycle returns error when implies form cycle', async () => {
+    const graph = createGraph();
+    graph.nodes.set('a', createNode('a'));
+    graph.aspects = [
+      { name: 'A', tag: 'tag-a', implies: ['tag-b'], artifacts: [] },
+      { name: 'B', tag: 'tag-b', implies: ['tag-a'], artifacts: [] },
+    ];
+    graph.config.tags = ['tag-a', 'tag-b'];
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'aspect-implies-cycle');
+    expect(issues).toHaveLength(1);
+    expect(issues[0].code).toBe('E017');
+    expect(issues[0].message).toContain('cycle');
+    expect(issues[0].message).toContain('tag-a');
+    expect(issues[0].message).toContain('tag-b');
+  });
+
   it('unknown-node-type returns error for node type not in config', async () => {
     const graph = createGraph();
     graph.nodes.set('a', createNode('a', { type: 'unknown-type' }));
