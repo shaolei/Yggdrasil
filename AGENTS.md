@@ -10,6 +10,7 @@ You work on the Yggdrasil repository: an open-source product (CLI + infrastructu
 | `source/cli/`           | Implementation — CLI code. Must match spec.                                         |
 | `.yggdrasil/model/cli/` | Semantic memory — describes intended CLI. Code materializes it.                       |
 | `docs/`                 | User docs — for adopters.                                                           |
+| `.plans/`               | Agent working dir — design docs and implementation plans. **Ignore skill paths** (e.g. `docs/plans/`) — always use `<root>/.plans/YYYY-MM-DD-<topic>-design.md` and `.plans/YYYY-MM-DD-<topic>-plan.md`. Gitignored; not committed. |
 
 ## Constraints
 
