@@ -21,11 +21,21 @@ export async function parseFlow(flowDir: string, flowYamlPath: string): Promise<
     throw new Error(`flow.yaml at ${flowYamlPath}: 'nodes' must contain string node paths`);
   }
 
+  let aspects: string[] | undefined;
+  if (raw.aspects !== undefined) {
+    if (!Array.isArray(raw.aspects)) {
+      throw new Error(`flow.yaml at ${flowYamlPath}: 'aspects' must be an array of strings`);
+    }
+    const aspectTags = (raw.aspects as unknown[]).filter((a): a is string => typeof a === 'string');
+    aspects = aspectTags.length > 0 ? aspectTags : [];
+  }
+
   const artifacts = await readArtifacts(flowDir, ['flow.yaml']);
 
   return {
     name: (raw.name as string).trim(),
     nodes: nodePaths,
+    ...(aspects !== undefined && { aspects }),
     artifacts,
   };
 }

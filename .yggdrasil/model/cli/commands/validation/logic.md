@@ -15,5 +15,5 @@
 3. nodePath = options.node.trim(), strip trailing slash
 4. buildContext(graph, nodePath)
 5. budgetStatus = tokenCount >= errorThreshold ? 'error' : tokenCount >= warningThreshold ? 'warning' : 'ok'
-6. formatContextMarkdown(pkg); append "Budget status: {status}"
+6. formatContextText(pkg); append "Budget status: {status}"
 7. If budgetStatus === 'error' → stderr, exit 1

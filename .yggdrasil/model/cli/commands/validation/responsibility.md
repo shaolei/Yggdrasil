@@ -14,10 +14,10 @@
 - loadGraph(process.cwd()) — no tolerateInvalidConfig.
 - validate(graph, 'all'). If any structural errors (severity === 'error'): exit 1 "Error: build-context requires a structurally valid graph (N errors found)."
 - nodePath: options.node trim, strip trailing slash.
-- buildContext(graph, nodePath). formatContextMarkdown(pkg).
+- buildContext(graph, nodePath). formatContextText(pkg).
 - Budget: graph.config.quality.context_budget (warning default 5000, error default 10000). budgetStatus: error if >= errorThreshold, warning if >= warningThreshold, else ok.
-- Output: markdown + "Budget status: ${budgetStatus}". If budgetStatus === 'error': stderr "Error: context package exceeds error budget", exit 1.
+- Output: plain text with XML-like tags + "Budget status: ${budgetStatus}". If budgetStatus === 'error': stderr "Error: context package exceeds error budget", exit 1.
 
-**Consumes:** loadGraph (cli/core/loader); validate (cli/core/validator); buildContext (cli/core/context); formatContextMarkdown (cli/formatters).
+**Consumes:** loadGraph (cli/core/loader); validate (cli/core/validator); buildContext (cli/core/context); formatContextText (cli/formatters).
 
 **Out of scope:** Drift, journal, graph navigation.

@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { loadGraph } from '../core/graph-loader.js';
 import { buildContext } from '../core/context-builder.js';
 import { validate } from '../core/validator.js';
-import { formatContextMarkdown } from '../formatters/markdown.js';
+import { formatContextText } from '../formatters/context-text.js';
 
 export function registerBuildCommand(program: Command): void {
   program
@@ -34,7 +34,7 @@ export function registerBuildCommand(program: Command): void {
               ? 'warning'
               : 'ok';
 
-        let output = formatContextMarkdown(pkg);
+        let output = formatContextText(pkg);
         output += `Budget status: ${budgetStatus}\n`;
         process.stdout.write(output);
 

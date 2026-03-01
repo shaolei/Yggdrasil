@@ -14,7 +14,7 @@ relations:
     consumes: [validate]
   - target: cli/formatters
     type: uses
-    consumes: [formatContextMarkdown]
+    consumes: [formatContextText]
 
 mapping:
   paths:

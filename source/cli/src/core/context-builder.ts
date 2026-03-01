@@ -23,7 +23,6 @@ export async function buildContext(graph: Graph, nodePath: string): Promise<Cont
     throw new Error(`Node not found: ${nodePath}`);
   }
 
-  const nodeTags = new Set(node.meta.tags ?? []);
   const layers: ContextLayer[] = [];
 
   // 1. Global
@@ -32,11 +31,11 @@ export async function buildContext(graph: Graph, nodePath: string): Promise<Cont
   // 2. Hierarchy (only configured artifacts that exist in ancestor's directory)
   const ancestors = collectAncestors(node);
   for (const ancestor of ancestors) {
-    layers.push(buildHierarchyLayer(ancestor, graph.config));
+    layers.push(buildHierarchyLayer(ancestor, graph.config, graph));
   }
 
   // 3. Own (node.yaml + configured artifacts)
-  layers.push(await buildOwnLayer(node, graph.config, graph.rootPath));
+  layers.push(await buildOwnLayer(node, graph.config, graph.rootPath, graph));
 
   // 4. Relational (structural + event, with consumes/failure)
   for (const relation of node.meta.relations ?? []) {
@@ -51,15 +50,24 @@ export async function buildContext(graph: Graph, nodePath: string): Promise<Cont
     }
   }
 
-  // 5. Aspects (including implied)
-  const aspectsToInclude = expandAspectsForTags(nodeTags, graph.aspects);
-  for (const aspect of aspectsToInclude) {
-    layers.push(buildAspectLayer(aspect));
+  // 5. Flows (node + all ancestors) — built before aspects so we can collect flow tags
+  for (const flow of collectParticipatingFlows(graph, node)) {
+    layers.push(buildFlowLayer(flow, graph));
   }
 
-  // 6. Flows (node + all ancestors)
-  for (const flow of collectParticipatingFlows(graph, node)) {
-    layers.push(buildFlowLayer(flow));
+  // 6. Aspects: union of tags from hierarchy + own + flow layers
+  const allTags = new Set<string>();
+  for (const l of layers) {
+    const aspects = l.attrs?.aspects;
+    if (aspects) {
+      for (const tag of aspects.split(',').map((t) => t.trim()).filter(Boolean)) {
+        allTags.add(tag);
+      }
+    }
+  }
+  const aspectsToInclude = expandAspectsForTags(allTags, graph.aspects);
+  for (const aspect of aspectsToInclude) {
+    layers.push(buildAspectLayer(aspect));
   }
 
   const fullText = layers.map((l) => l.content).join('\n\n');
@@ -82,16 +90,13 @@ function collectParticipatingFlows(graph: Graph, node: GraphNode): FlowDef[] {
   return graph.flows.filter((f) => f.nodes.some((n) => paths.has(n)));
 }
 
-/** Expand tags to aspects including implied (recursive, with cycle detection). */
-export function expandAspectsForTags(
-  tags: Iterable<string>,
-  aspects: AspectDef[],
-): AspectDef[] {
+/** Expand tags to include implied tags recursively. Returns unique list. */
+export function expandTags(tags: string[], aspects: AspectDef[]): string[] {
   const tagToAspect = new Map<string, AspectDef>();
   for (const a of aspects) {
     tagToAspect.set(a.tag, a);
   }
-  const result: AspectDef[] = [];
+  const result: string[] = [];
   const visited = new Set<string>();
   const stack = new Set<string>();
 
@@ -102,9 +107,9 @@ export function expandAspectsForTags(
     if (visited.has(tag)) return;
     stack.add(tag);
     visited.add(tag);
+    result.push(tag);
     const aspect = tagToAspect.get(tag);
     if (aspect) {
-      result.push(aspect);
       for (const implied of aspect.implies ?? []) {
         collect(implied);
       }
@@ -116,6 +121,21 @@ export function expandAspectsForTags(
     collect(tag);
   }
   return result;
+}
+
+/** Expand tags to aspects including implied (recursive, with cycle detection). */
+export function expandAspectsForTags(
+  tags: Iterable<string>,
+  aspects: AspectDef[],
+): AspectDef[] {
+  const tagToAspect = new Map<string, AspectDef>();
+  for (const a of aspects) {
+    tagToAspect.set(a.tag, a);
+  }
+  const expandedTags = expandTags([...tags], aspects);
+  return expandedTags
+    .map((tag) => tagToAspect.get(tag))
+    .filter((a): a is AspectDef => a !== undefined);
 }
 
 // --- Layer builders (exported for testing) ---
@@ -138,13 +158,22 @@ function filterArtifactsByConfig(
   return artifacts.filter((a) => allowed.has(a.filename));
 }
 
-export function buildHierarchyLayer(ancestor: GraphNode, config: YggConfig): ContextLayer {
+export function buildHierarchyLayer(
+  ancestor: GraphNode,
+  config: YggConfig,
+  graph: Graph,
+): ContextLayer {
   const filtered = filterArtifactsByConfig(ancestor.artifacts, config);
   const content = filtered.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
+  const tags = ancestor.meta.tags ?? [];
+  const expanded = expandTags(tags, graph.aspects);
+  const attrs: Record<string, string> | undefined =
+    expanded.length > 0 ? { aspects: expanded.join(',') } : undefined;
   return {
     type: 'hierarchy',
     label: `Module Context (${ancestor.path}/)`,
     content,
+    attrs,
   };
 }
 
@@ -152,6 +181,7 @@ export async function buildOwnLayer(
   node: GraphNode,
   config: YggConfig,
   graphRootPath: string,
+  graph: Graph,
 ): Promise<ContextLayer> {
   const parts: string[] = [];
 
@@ -169,10 +199,15 @@ export async function buildOwnLayer(
   }
 
   const content = parts.join('\n\n');
+  const tags = node.meta.tags ?? [];
+  const expanded = expandTags(tags, graph.aspects);
+  const attrs: Record<string, string> | undefined =
+    expanded.length > 0 ? { aspects: expanded.join(',') } : undefined;
   return {
     type: 'own',
     label: `Node: ${node.meta.name}`,
     content,
+    attrs,
   };
 }
 
@@ -207,10 +242,18 @@ export function buildStructuralRelationLayer(
     content += filtered.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
   }
 
+  const attrs: Record<string, string> = {
+    target: target.path,
+    type: relation.type,
+  };
+  if (relation.consumes?.length) attrs.consumes = relation.consumes.join(', ');
+  if (relation.failure) attrs.failure = relation.failure;
+
   return {
     type: 'relational',
     label: `Dependency: ${target.meta.name} (${relation.type}) — ${target.path}`,
     content: content.trim(),
+    attrs,
   };
 }
 
@@ -223,10 +266,18 @@ export function buildEventRelationLayer(target: GraphNode, relation: Relation): 
   if (relation.consumes?.length) {
     content += `\nConsumes: ${relation.consumes.join(', ')}`;
   }
+  const attrs: Record<string, string> = {
+    target: target.path,
+    type: relation.type,
+    'event-name': eventName,
+  };
+  if (relation.consumes?.length) attrs.consumes = relation.consumes.join(', ');
+
   return {
     type: 'relational',
     label: `Event: ${eventName} [${relation.type}]`,
     content,
+    attrs,
   };
 }
 
@@ -239,12 +290,17 @@ export function buildAspectLayer(aspect: AspectDef): ContextLayer {
   };
 }
 
-function buildFlowLayer(flow: FlowDef): ContextLayer {
+function buildFlowLayer(flow: FlowDef, graph: Graph): ContextLayer {
   const content = flow.artifacts.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
+  const tags = flow.aspects ?? [];
+  const expanded = expandTags(tags, graph.aspects);
+  const attrs: Record<string, string> | undefined =
+    expanded.length > 0 ? { aspects: expanded.join(',') } : undefined;
   return {
     type: 'flows',
     label: `Flow: ${flow.name}`,
     content: content || '(no artifacts)',
+    attrs,
   };
 }
 

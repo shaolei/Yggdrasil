@@ -2,14 +2,16 @@
 
 Public API consumed by cli/commands/validation (build-context).
 
-## markdown.ts
+## context-text.ts (primary)
+
+- `formatContextText(pkg: ContextPackage): string`
+  - Converts a context package to plain text with XML-like tags.
+  - Input: `ContextPackage` from cli/model.
+  - Output: plain text. Tags: `<context-package>`, `<global>`, `<hierarchy>`, `<own-artifacts>`, `<aspect name="..." tag="..." source="node|flow:Name">`, `<dependency>`, `<flow>`. Content between tags is raw text (no CDATA, no escaping).
+  - Pure transformation — no I/O, no validation.
+
+## markdown.ts (legacy)
 
 - `formatContextMarkdown(pkg: ContextPackage): string`
-  - Converts a context package to Markdown.
-  - Input: `ContextPackage` from cli/model (nodePath, nodeName, layers, sections, mapping, tokenCount).
-  - Output: Markdown string.
-  - Header: `# Context Package: ${pkg.nodeName}`, `# Path: ${pkg.nodePath}`, `# Generated: ${new Date().toISOString()}`, `---`.
-  - For each section in pkg.sections: if section.layers.length > 0, emit `## ${section.key}`, then for each layer `### ${layer.label}`, layer.content, double newline.
-  - Footer: `Context size: ${pkg.tokenCount.toLocaleString()} tokens`, `Layers: ${pkg.layers.map(l => l.type).join(', ')}`.
-  - Skips sections where layers.length === 0.
-  - Pure transformation — no I/O, no validation.
+  - Converts a context package to Markdown. Used by tests.
+  - Output: Markdown with `##` sections, `###` layer labels.

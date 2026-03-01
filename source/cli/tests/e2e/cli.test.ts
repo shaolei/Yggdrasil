@@ -46,6 +46,23 @@ describe.skipIf(!distExists)('CLI E2E', () => {
     expect(status).toBe(0);
   });
 
+  it('yg tags lists aspect directory names', () => {
+    const { stdout, status } = run(['tags']);
+    expect(status).toBe(0);
+    expect(stdout).toContain('requires-audit');
+  });
+
+  it('yg tags without .yggdrasil returns exit 1', () => {
+    const emptyDir = mkdtempSync(path.join(tmpdir(), 'yg-e2e-tags-no-ygg-'));
+    try {
+      const { status, stderr } = run(['tags'], emptyDir);
+      expect(status).toBe(1);
+      expect(stderr).toContain('yg init');
+    } finally {
+      rmSync(emptyDir, { recursive: true, force: true });
+    }
+  });
+
   it('yg tree without .yggdrasil returns exit 1', () => {
     const emptyDir = mkdtempSync(path.join(tmpdir(), 'yg-e2e-no-ygg-'));
     try {
@@ -74,9 +91,10 @@ describe.skipIf(!distExists)('CLI E2E', () => {
   it('yg build-context', () => {
     const { stdout, status } = run(['build-context', '--node', 'orders/order-service']);
     expect(status).toBe(0);
-    expect(stdout).toContain('Context Package: OrderService');
-    expect(stdout).toContain('Global Context');
-    expect(stdout).toContain('Node: OrderService');
+    expect(stdout).toContain('<context-package ');
+    expect(stdout).toContain('node-name="OrderService"');
+    expect(stdout).toContain('<global>');
+    expect(stdout).toContain('<own-artifacts');
   });
 
   it('yg build-context nonexistent node', () => {

@@ -141,4 +141,40 @@ nodes: [a/b]
 
     await rm(tmpDir, { recursive: true, force: true });
   });
+
+  it('parses optional aspects array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-flow-aspects');
+    await mkdir(tmpDir, { recursive: true });
+    const flowYaml = path.join(tmpDir, 'flow.yaml');
+    await writeFile(
+      flowYaml,
+      `
+name: Saga Flow
+nodes: [a/b]
+aspects:
+  - requires-saga
+  - requires-idempotency
+`,
+      'utf-8',
+    );
+
+    const flow = await parseFlow(tmpDir, flowYaml);
+
+    expect(flow.aspects).toEqual(['requires-saga', 'requires-idempotency']);
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('returns undefined when aspects absent', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-flow-no-aspects');
+    await mkdir(tmpDir, { recursive: true });
+    const flowYaml = path.join(tmpDir, 'flow.yaml');
+    await writeFile(flowYaml, 'name: Plain\nnodes: [a/b]', 'utf-8');
+
+    const flow = await parseFlow(tmpDir, flowYaml);
+
+    expect(flow.aspects).toBeUndefined();
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
 });

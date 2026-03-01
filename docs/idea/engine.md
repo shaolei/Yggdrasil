@@ -72,9 +72,17 @@ Each step is deterministic.
         - event name and type
         - consumes annotation from the relation field (if declared)
 
-5.  ASPECTS       for each tag in T: content of the matching aspect, plus any aspects implied by
-                  that aspect (recursive). Implies are resolved with cycle detection; a cycle
-                  (A implies B implies A) is an error.
+5.  ASPECTS       Each block (hierarchy, own, flow) declares its own aspects. No inheritance —
+                  each block has an `aspects` field (comma-separated tags; omit if empty).
+                  Hierarchy block: each ancestor may have `aspects="tag1,tag2"` in its metadata.
+                  Own block: node.yaml has `aspects="tag1,tag2"` (or tags list).
+                  Flow block: flow.yaml has `aspects: [tag1, tag2]` for flows where N or an
+                  ancestor participates. Effective tags = union of all tags from these blocks.
+                  For each tag: content of the matching aspect (aspects/<tag>/) plus any aspects
+                  implied by that aspect (recursive). Implies are resolved with cycle detection;
+                  a cycle (A implies B implies A) is an error. No source attribute on aspect
+                  output — aspects are rendered without provenance. Aspects section = union of
+                  tags from hierarchy + own + flow blocks, expand implies, render content.
 
 6.  FLOWS         for each flow listing N or any of N's ancestors as a participant:
                   - flow content artifacts
@@ -146,151 +154,56 @@ annotate it with metadata from YAML. The agent interprets.
 
 ### Context Package Format
 
-The context package is a Markdown document with clearly separated sections. Section headers
-match the algorithm steps (Global, Hierarchy, OwnArtifacts, Dependencies, Aspects, Flows):
+The context package is a plain text document with XML-like tags. Tags provide structure and
+metadata; content between tags is raw text (no CDATA, no escaping).
 
-```markdown
-# Context Package: OrderService
-# Path: orders/order-service
-# Generated: 2024-01-15T10:30:00.000Z
+```text
+<context-package node-path="orders/order-service" node-name="OrderService" token-count="3200">
 
----
-
-## Global
-
-### Global Context
-
+<global>
 **Project:** my-project
+**Stack:** language: typescript, runtime: node, framework: nestjs
+**Standards:** Strict TypeScript, JSDoc on public functions
+</global>
 
-**Stack:**
-- language: typescript
-- runtime: node
-- framework: nestjs
-
-**Standards:**
-Strict TypeScript, JSDoc on public functions
-
----
-
-## Hierarchy
-
-### Module Context (orders/)
-
+<hierarchy path="orders/">
 ### responsibility.md
-
 <content of orders/responsibility.md>
+</hierarchy>
 
----
-
-## OwnArtifacts
-
-### Node: OrderService
-
+<own-artifacts>
 ### node.yaml
-
 name: OrderService
 type: service
-tags:
-  - requires-audit
-  - requires-auth
-relations:
-  - target: payments/payment-service
-    type: calls
-    consumes: [charge, refund]
-  - target: inventory/inventory-service
-    type: calls
-    consumes: [reserve, release]
-mapping:
-  type: file
-  path: src/modules/orders/order.service.ts
-
+tags: [requires-audit, requires-auth]
+relations: ...
 ### responsibility.md
-
 <content>
+</own-artifacts>
 
-### interface.md
-
+<aspect name="Audit logging" tag="requires-audit">
+### content.md
 <content>
+</aspect>
 
-### constraints.md
-
-<content>
-
-### state.md
-
-<content>
-
----
-
-## Dependencies
-
-### Dependency: PaymentService (calls) — payments/payment-service
-
+<dependency target="payments/payment-service" type="calls" consumes="charge, refund" failure="retry 3x">
 Consumes: charge, refund
-On failure: retry 3x, then mark order as payment-failed
-
-### Responsibility
-
-<responsibility.md content>
-
-### Interface
-
-<interface.md content>
-
-### Constraints
-
-<constraints.md content>
-
-### Errors
-
-<errors.md content>
-
-### Dependency: InventoryService (calls) — inventory/inventory-service
-
-Consumes: reserve, release
-
-### Responsibility
-
-<responsibility.md content>
-
-### Interface
-
-<interface.md content>
-
-### Constraints
-
-<constraints.md content>
-
-### Errors
-
-<errors.md content>
-
----
-
-## Aspects
-
-### Audit logging (tag: requires-audit)
-
+### responsibility.md
 <content>
+</dependency>
 
----
+<flow name="Checkout flow">
+### description.md
+<content>
+</flow>
 
-## Flows
-
-### Flow: Checkout flow
-
-<description.md>
-<sequence.md>
-
----
-
-Context size: 3,200 tokens
-Layers: global, hierarchy, own, relational, aspects, flows
+</context-package>
 ```
 
-Markdown is the natural format for agents — they read it fluently. The format is fixed — the
-same section layout regardless of project. Content is variable — depends on project config and
-the specific node.
+The format is fixed — the same tag structure regardless of project. Content between tags is
+variable — depends on project config and the specific node. Agents read the structured output
+fluently; the XML-like tags provide clear boundaries and provenance (e.g. `source="node"` vs
+`source="flow:Checkout"` for aspects).
 
 **The context package contains only graph content, not source code.** The agent fetches
 source files separately when it needs implementation details. If a person places code
@@ -336,7 +249,7 @@ a graph with errors cannot produce reliable context packages.
 
 - Every relation target must resolve to an existing node.
 - Every flow participant must resolve to an existing node.
-- Every tag must be defined in `config.yaml`.
+- Every tag must be an aspect directory name (exists under `aspects/<tag>/`).
 - Every tag in an aspect's `implies` must have a corresponding aspect in `aspects/`.
 - The aspect implies graph must be acyclic (no A implies B implies A).
 
@@ -641,12 +554,13 @@ the work of the agent or human — tools only read.
 Given graph state:
 
 ```
-config.yaml                          tags: service, requires-audit, data-access
+config.yaml
 model/orders/order-service/node.yaml tags: requires-audit
                                      relations: calls payments/payment-service
                                                         consumes: charge, refund
 
-aspects/audit-logging/aspect.yaml    bound to tag: requires-audit
+aspects/requires-audit/              tag = directory name
+  aspect.yaml                        name, optional implies
 
 flows/checkout/flow.yaml             lists orders/order-service as participant
 ```

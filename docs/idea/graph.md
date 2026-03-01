@@ -82,24 +82,6 @@ standards: |
 
 Both are attached to every context package as **global context**.
 
-### Tags
-
-```yaml
-tags:
-  - service
-  - repository
-  - controller
-  - gateway
-  - requires-audit
-  - requires-auth
-  - data-access
-  - high-throughput
-```
-
-Tags are the project's classification vocabulary. Any tag used anywhere in the graph — on nodes,
-within aspect bindings — must be defined here. Tools reject undefined
-tags. This prevents vocabulary drift and guarantees that tag-based mechanisms (aspects) are always valid.
-
 ### Node types
 
 ```yaml
@@ -296,6 +278,10 @@ mapping:
 | `mapping`   | No       | Link to source files (see Mapping section)                   |
 | `blackbox`  | No       | If `true`, node describes something existing, not controlled |
 
+Each block (hierarchy, own, flow) declares its own aspects. No inheritance — a node receives
+aspects only from blocks that explicitly list tags. See the [Engine](engine) document for the
+assembly algorithm.
+
 #### Blackbox nodes
 
 ```yaml
@@ -414,39 +400,42 @@ unavailable — critical information that cannot be inferred from code or interf
 ## Aspects: Cross-Cutting Requirements Bound by Tags
 
 An **aspect** is a requirement that applies to every node carrying a given tag. Each aspect is a
-directory containing `aspect.yaml` and content files.
+directory under `aspects/`. The **tag equals the directory name** — e.g. `aspects/requires-audit/`
+is the aspect for tag `requires-audit`. Each aspect directory contains `aspect.yaml` and content
+files.
 
 ```text
 aspects/
-  audit-logging/
+  requires-audit/
     aspect.yaml
     content.md
 ```
 
 ```yaml
-# aspects/audit-logging/aspect.yaml
+# aspects/requires-audit/aspect.yaml
 name: Audit logging
-tag: requires-audit
+# implies: [requires-logging]   # optional: other aspect tags to include automatically
 ```
 
+Only `name` and `implies` appear in `aspect.yaml`. The tag is implicit — it is the directory name.
+
 An aspect may declare `implies` — a list of tags of other aspects to include automatically.
-This enables composition: a bundle aspect (e.g. HIPAA) can include several sub-aspects.
+This enables composition: a bundle aspect (e.g. `hipaa`) can include several sub-aspects.
 
 ```yaml
 # aspects/hipaa/aspect.yaml
 name: HIPAA Compliance
-tag: requires-hipaa
 implies:
   - requires-audit
   - requires-encryption
   - requires-access-control
 ```
 
-A node with tag `requires-hipaa` receives the HIPAA aspect content plus all implied aspects.
+A node with tag `hipaa` receives the HIPAA aspect content plus all implied aspects.
 Tools resolve implications recursively and detect cycles (A implies B implies A = error).
 
 ```markdown
-<!-- aspects/audit-logging/content.md -->
+<!-- aspects/requires-audit/content.md -->
 
 Every operation that modifies data must emit an audit event containing:
 
@@ -459,9 +448,9 @@ Every operation that modifies data must emit an audit event containing:
 Audit events are published to the event bus, never written directly to the application database.
 ```
 
-Binding happens through the `tag` field in `aspect.yaml`. Tools resolve which nodes carry
-that tag and attach all aspect content files (except `aspect.yaml`) to those nodes' context
-packages.
+Binding happens through the directory name: `aspects/<tag>/` defines the aspect for that tag.
+Tools resolve which nodes carry that tag and attach all aspect content files (except `aspect.yaml`)
+to those nodes' context packages. Run `yg tags` to list valid tags (aspect directory names).
 
 Aspects encode requirements that cut **horizontally** across the system: security, audit,
 caching, rate limiting, logging conventions. Without aspects, these requirements would have
@@ -499,6 +488,10 @@ nodes:
   - payments/payment-service
   - inventory/inventory-service
   - notifications/email-service
+
+aspects:                    # optional — tags propagated to all participants
+  - requires-saga
+  - requires-idempotency
 ```
 
 Content artifacts in the flow directory (`description.md`, `sequence.md`, etc.) describe
@@ -507,6 +500,9 @@ one business process with all its paths — happy path, exceptions, cancellation
 `description.md` describes the full scope of that process, not just the success path.
 
 - `nodes` lists flow participants — paths are relative to `model/`.
+- `aspects` (optional) lists tags; aspects bound to these tags propagate to all participants.
+  Every participant receives these aspects in its context package (with `source="flow:Name"`)
+  even if the node itself does not carry the tag.
 
 When assembling a context package for a node, tools attach the flow's content artifacts as
 context if the node or any of its ancestors is listed as a participant.
@@ -539,7 +535,7 @@ reference type.
 | ------------------------------ | ------------------ | -------------------------- |
 | `node.yaml` `relations.target` | `model/`           | `payments/payment-service` |
 | `flow.yaml` `nodes`            | `model/`           | `orders/order-service`     |
-| `aspect.yaml` `tag`            | `config.yaml:tags` | `requires-audit`           |
+| Tag (aspect binding)          | `aspects/` dir name | `requires-audit`           |
 
 No ambiguity. No absolute paths. No guessing which directory a reference points to.
 

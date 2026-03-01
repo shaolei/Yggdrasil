@@ -9,7 +9,7 @@ Graph logic module — loading, context building, validation, drift detection, d
 - **Context reproducibility:** assembled context must suffice to reconstruct source behavior without reading raw code (invariants/001).
 - **Read-only graph writes:** CLI does not create or edit model nodes, artifacts, aspects, flows, knowledge (decisions/001).
 
-**Reference:** docs/idea/foundation.md (Division of labor), aspects/determinism.
+**Reference:** docs/idea/foundation.md (Division of labor), aspects/deterministic.
 
 **Flows:** loader, validator, context, drift-detector participate in build-context, validate, drift flows (see .yggdrasil/flows/).
 

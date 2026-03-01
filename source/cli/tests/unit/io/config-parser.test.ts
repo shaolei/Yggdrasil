@@ -214,7 +214,7 @@ tags: []
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('throws when tags field is missing', async () => {
+  it('defaults missing tags to empty array', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-no-tags');
     await mkdir(tmpDir, { recursive: true });
     await writeFile(
@@ -230,9 +230,8 @@ artifacts:
       'utf-8',
     );
 
-    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
-      "missing 'tags' field",
-    );
+    const config = await parseConfig(path.join(tmpDir, 'config.yaml'));
+    expect(config.tags).toEqual([]);
 
     await rm(tmpDir, { recursive: true, force: true });
   });
@@ -355,7 +354,7 @@ tags: []
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('throws when tags is not array', async () => {
+  it('defaults tags to empty array when tags is not array', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-tags-not-array');
     await mkdir(tmpDir, { recursive: true });
     await writeFile(
@@ -372,9 +371,8 @@ tags: "not-an-array"
       'utf-8',
     );
 
-    await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
-      "'tags' must be an array",
-    );
+    const config = await parseConfig(path.join(tmpDir, 'config.yaml'));
+    expect(config.tags).toEqual([]);
 
     await rm(tmpDir, { recursive: true, force: true });
   });

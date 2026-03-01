@@ -36,11 +36,6 @@ standards: | # string, optional, multiline
   Strict TypeScript. All public functions have JSDoc.
   Errors in RFC 7807 format. Dates in ISO 8601 UTC.
 
-tags: # list of strings, required (can be empty)
-  - service
-  - repository
-  - requires-audit
-
 node_types: # list of strings or {name, required_tags?}, required, non-empty
   - module
   - service
@@ -112,7 +107,7 @@ quality: # map, optional (has default values) — all keys snake_case
 - `node_types` must contain at least one element. Legacy format: list of strings. New format: list of `{ name, required_tags? }`. Node `type` must match a `name` (or the string itself in legacy format).
 - `artifacts` must contain at least one element.
 - Artifact filenames cannot be `node.yaml` (reserved in every node directory).
-- `has_tag:<name>` conditions must refer to tags from the `tags` list.
+- `has_tag:<name>` conditions must refer to aspect directory names (exist under `aspects/<name>/`).
 - `quality.context_budget.error` must be ≥ `quality.context_budget.warning`.
 
 ### node.yaml
@@ -122,7 +117,7 @@ Node identity and all its outgoing connections.
 ```yaml
 name: OrderService # string, required
 type: service # string, required — from config.node_types
-tags: [requires-audit, requires-auth] # list of strings, optional — from config.tags
+tags: [requires-audit, requires-auth] # list of strings, optional — aspect directory names (yg tags)
 blackbox: false # bool, optional, default false
 
 relations: # list, optional
@@ -161,7 +156,7 @@ mapping: # map, optional
 
 - `name` must be non-empty.
 - `type` must be from the `config.node_types` list.
-- Each tag must be from the `config.tags` list.
+- Each tag must be an aspect directory name (exists under `aspects/<tag>/`).
 - Each `relations[].target` must resolve to an existing node.
 - Each `relations[].type` must be from the table above.
 - Paths in `mapping` must be relative to the repository root.
@@ -171,11 +166,11 @@ mapping: # map, optional
 
 ### aspect.yaml
 
-Aspect metadata — a cross-cutting requirement bound by a tag.
+Aspect metadata — a cross-cutting requirement. The tag is the directory name (e.g.
+`aspects/requires-audit/` → tag `requires-audit`). Only `name` and `implies` appear in the YAML.
 
 ```yaml
 name: Audit logging # string, required
-tag: requires-audit # string, required — from config.tags
 implies: [requires-logging] # list of strings, optional — tags of other aspects to include automatically
 ```
 
@@ -186,8 +181,6 @@ plus all implied aspects' content is attached. Tools resolve implications recurs
 **Validation rules:**
 
 - `name` must be non-empty.
-- `tag` must be from the `config.tags` list.
-- Each tag can be bound to at most one aspect.
 - Every tag in `implies` must have a corresponding aspect in `aspects/`.
 - The aspect implies graph must be acyclic (no A implies B implies A).
 
@@ -200,16 +193,21 @@ name: Checkout flow # string, required
 nodes: # list of strings, required, non-empty
   - orders/order-service # path relative to model/
   - payments/payment-service
+aspects: # list of strings, optional — tags propagated to all participants
+  - requires-saga
+  - requires-idempotency
 ```
 
 All files in the flow directory except `flow.yaml` are content attached to the context
 packages of the listed nodes and their descendants (flows propagate down the hierarchy).
+Aspects declared in `aspects` propagate to all participants (with `source="flow:Name"`).
 
 **Validation rules:**
 
 - `name` must be non-empty.
 - `nodes` must be non-empty.
 - Each element in `nodes[]` must resolve to an existing node.
+- Each tag in `aspects[]` (if present) must be an aspect directory name (exists under `aspects/<tag>/`).
 
 ### description.md
 
@@ -318,6 +316,7 @@ yg init --platform cursor
 yg init --platform cursor --upgrade   # refreshes rules when .yggdrasil/ exists
 yg build-context --node orders/order-service
 yg tree
+yg tags
 yg status
 yg owner --file src/modules/orders/order.service.ts
 yg deps --node orders/order-service
@@ -395,8 +394,6 @@ stack:
 
 standards: ""
 
-tags: []
-
 node_types:
   - module
   - service
@@ -470,15 +467,17 @@ The 6-step algorithm defined in the [Engine](engine) document. Summary:
 3. **Own** — the node's `node.yaml` (raw) and content artifacts.
 4. **Relational** — for structural relations: interface + errors of the target with consumes
    and failure annotations. For event relations: event name and type with consumes annotation.
-5. **Aspects** — content of aspects matching the node's tags.
+5. **Aspects** — union of tags from hierarchy blocks, own block, and flow blocks (each block
+   declares its own; no inheritance). Expand implies recursively. Render content of each
+   matching aspect. No source attribute on aspect output.
 6. **Flows** — artifacts of flows listing this node or any ancestor as a participant.
 
 Token estimation: ~4 characters per token (heuristic from the [Engine](engine) document).
 
 **Result:**
 
-A Markdown document in the format defined in the [Engine](engine) document (Context package format section).
-Includes token estimation and budget status (`ok`, `warning`, `error`).
+Plain text with XML-like tags, as defined in the [Engine](engine) document (Context package format
+section). Includes token count and budget status (`ok`, `warning`, `error`).
 
 **Errors:**
 
@@ -523,6 +522,35 @@ Format: path, type in brackets, tags (if any), blackbox flag (if true), number o
 **Errors:**
 
 - The provided root does not exist.
+
+---
+
+### Tags
+
+Lists aspect tags (directory names in `aspects/`). Use to discover valid tags for `node.yaml`
+and `flow.yaml`.
+
+**Parameters:** none.
+
+**Behavior:**
+
+1. Resolve `.yggdrasil/` root (repository root or nearest parent).
+2. List directory names in `.yggdrasil/aspects/`.
+3. Sort alphabetically.
+4. Output one tag per line to stdout.
+
+**Result:**
+
+```text
+requires-audit
+requires-auth
+requires-encryption
+```
+
+**Errors:**
+
+- No `.yggdrasil/` directory — exit 1.
+- No `aspects/` directory — exit 1.
 
 ---
 
@@ -727,7 +755,7 @@ Two levels of severity defined in the [Engine](engine) document.
 | ------ | ---------------------------- | ------------------------------------------------------ |
 | `E001` | `invalid-node-yaml`          | `node.yaml` fails to parse or lacks required fields    |
 | `E002` | `unknown-node-type`          | Node type is not in `config.node_types`                |
-| `E003` | `unknown-tag`                | Tag is not in `config.tags`                            |
+| `E003` | `unknown-tag`                | Tag is not an aspect directory name (no `aspects/<tag>/`) |
 | `E004` | `broken-relation`            | Relation target does not resolve to an existing node   |
 | `E006` | `broken-flow-ref`            | Flow participant does not resolve                      |
 | `E007` | `broken-aspect-tag`          | Aspect tag does not exist in configuration             |

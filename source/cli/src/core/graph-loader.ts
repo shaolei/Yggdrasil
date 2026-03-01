@@ -24,7 +24,6 @@ const FALLBACK_CONFIG: YggConfig = {
   name: '',
   stack: {},
   standards: '',
-  tags: [],
   node_types: [],
   artifacts: {},
 };
@@ -155,7 +154,11 @@ async function loadAspects(aspectsDir: string): Promise<AspectDef[]> {
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const aspectYamlPath = path.join(aspectsDir, entry.name, 'aspect.yaml');
-      const aspect = await parseAspect(path.join(aspectsDir, entry.name), aspectYamlPath);
+      const aspect = await parseAspect(
+        path.join(aspectsDir, entry.name),
+        aspectYamlPath,
+        entry.name,
+      );
       aspects.push(aspect);
     }
     return aspects;

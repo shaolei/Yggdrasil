@@ -7,8 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- **Context format:** Aspects in hierarchy/own/flow blocks via `aspects="tag1,tag2"` attribute; no `source` on `<aspect>`.
+- **config.tags removed:** Tag = aspect directory name (e.g. `aspects/deterministic/` → tag `deterministic`). Valid tags = `yg tags` output.
+- **aspect.yaml:** `tag` field removed; tag inferred from directory name.
+- **New:** `yg tags` command — lists valid tags (aspect directory names).
+
 ### Added
 
+- **Hierarchy tag inheritance:** Tags from ancestors (root→parent) propagate to child nodes. Child receives aspects for all tags in its hierarchy. Provenance: `source="hierarchy:<path>"` for ancestor tags, `source="node"` for own tags. Precedence: node > hierarchy > flow.
+- **Flow aspects:** Optional `aspects: string[]` in `flow.yaml`. Tags propagate to all participants; aspects appear in context with `source="flow:Name"`. Validation: flow.aspects tags must exist in config and have corresponding aspect.
+- **Context format (XML-like tags):** `yg build-context` outputs plain text with XML-like tags (`<context-package>`, `<global>`, `<aspect>`, `<flow>`, etc.) instead of Markdown. Content between tags is raw text. Provenance on aspects: `source="node"` or `source="flow:Name"`.
 - **Flow description.md format:** Required sections (Business context, Trigger, Goal, Participants, Paths, Invariants). `## Paths` must contain at least `### Happy path`; each other business path gets its own subsection. One flow = one business process with all variants. Spec in graph.md, rules.ts, tools.md.
 - **Aspect composition (`implies`):** Aspects can declare `implies: [tag, ...]` to pull in other aspects automatically. Enables bundle aspects (e.g. HIPAA) that include sub-aspects. Tools resolve implications recursively with cycle detection.
 - **`node_types` with `required_tags`:** Config supports `{ name, required_tags? }` per node type. Nodes of that type must have coverage (direct tag or via implies) for required tags; W011 warns when missing.

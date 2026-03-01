@@ -11,7 +11,8 @@ export interface YggConfig {
   name: string;
   stack: Record<string, string>;
   standards: string;
-  tags: string[];
+  /** Optional. When absent, valid tags are derived from graph.aspects (aspect tag = directory name). */
+  tags?: string[];
   node_types: NodeTypeConfig[];
   artifacts: Record<string, ArtifactConfig>;
   quality?: QualityConfig;
@@ -98,6 +99,8 @@ export interface AspectDef {
 export interface FlowDef {
   name: string;
   nodes: string[];
+  /** Optional tags — aspects propagate to all participants */
+  aspects?: string[];
   artifacts: Artifact[];
 }
 
@@ -165,6 +168,8 @@ export interface ContextLayer {
   label: string;
   content: string;
   source?: string;
+  /** Optional attrs for formatters (e.g. target, type for dependency) */
+  attrs?: Record<string, string>;
 }
 
 export interface ContextSection {

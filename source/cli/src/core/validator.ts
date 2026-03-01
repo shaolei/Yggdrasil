@@ -48,6 +48,7 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   issues.push(...checkNoCycles(graph));
   issues.push(...checkMappingOverlap(graph));
   issues.push(...checkBrokenFlowRefs(graph));
+  issues.push(...checkFlowAspectTags(graph));
   issues.push(...(await checkDirectoriesHaveNodeYaml(graph)));
   issues.push(...(await checkShallowArtifacts(graph)));
   issues.push(...checkUnpairedEvents(graph));
@@ -148,19 +149,19 @@ function checkRelationTargets(graph: Graph): ValidationIssue[] {
   return issues;
 }
 
-// --- Rule 2: Tags defined in config.yaml ---
+// --- Rule 2: Node tags must reference an aspect (valid tags = graph.aspects) ---
 
 function checkTagsDefined(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const definedTags = new Set(graph.config.tags ?? []);
+  const validTags = new Set(graph.aspects.map((a) => a.tag));
   for (const [nodePath, node] of graph.nodes) {
     for (const tag of node.meta.tags ?? []) {
-      if (!definedTags.has(tag)) {
+      if (!validTags.has(tag)) {
         issues.push({
           severity: 'error',
           code: 'E003',
           rule: 'unknown-tag',
-          message: `Tag '${tag}' not defined in config.yaml`,
+          message: `Tag '${tag}' has no corresponding aspect in aspects/`,
           nodePath,
         });
       }
@@ -169,22 +170,11 @@ function checkTagsDefined(graph: Graph): ValidationIssue[] {
   return issues;
 }
 
-// --- Rule 3: Aspects reference valid tags ---
+// --- Rule 3: Aspect tags (derived from directory name) — always valid when aspect exists ---
 
-function checkAspectTags(graph: Graph): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
-  const definedTags = new Set(graph.config.tags ?? []);
-  for (const aspect of graph.aspects) {
-    if (!definedTags.has(aspect.tag)) {
-      issues.push({
-        severity: 'error',
-        code: 'E007',
-        rule: 'broken-aspect-tag',
-        message: `Aspect '${aspect.name}' references undefined tag '${aspect.tag}'`,
-      });
-    }
-  }
-  return issues;
+function checkAspectTags(_graph: Graph): ValidationIssue[] {
+  // validTags = graph.aspects.map(a => a.tag), so every aspect's tag is valid by definition
+  return [];
 }
 
 function checkAspectTagUniqueness(graph: Graph): ValidationIssue[] {
@@ -525,11 +515,32 @@ function checkBrokenFlowRefs(graph: Graph): ValidationIssue[] {
   return issues;
 }
 
-// --- E013: Invalid artifact condition (has_tag:X where X not in config.tags) ---
+// --- E007: Flow aspect tags must have corresponding aspect ---
+
+function checkFlowAspectTags(graph: Graph): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const validTags = new Set(graph.aspects.map((a) => a.tag));
+
+  for (const flow of graph.flows) {
+    for (const tag of flow.aspects ?? []) {
+      if (!validTags.has(tag)) {
+        issues.push({
+          severity: 'error',
+          code: 'E007',
+          rule: 'broken-aspect-tag',
+          message: `Flow '${flow.name}' references tag '${tag}' but no aspect with that tag exists in aspects/`,
+        });
+      }
+    }
+  }
+  return issues;
+}
+
+// --- E013: Invalid artifact condition (has_tag:X where X has no aspect) ---
 
 function checkInvalidArtifactConditions(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const definedTags = new Set(graph.config.tags ?? []);
+  const validTags = new Set(graph.aspects.map((a) => a.tag));
   const artifacts = graph.config.artifacts ?? {};
   for (const [artifactName, config] of Object.entries(artifacts)) {
     const required = config.required;
@@ -537,12 +548,12 @@ function checkInvalidArtifactConditions(graph: Graph): ValidationIssue[] {
       const when = (required as { when: string }).when;
       if (when.startsWith('has_tag:')) {
         const tag = when.slice(8);
-        if (!definedTags.has(tag)) {
+        if (!validTags.has(tag)) {
           issues.push({
             severity: 'error',
             code: 'E013',
             rule: 'invalid-artifact-condition',
-            message: `Artifact '${artifactName}' condition has_tag:${tag} references undefined tag`,
+            message: `Artifact '${artifactName}' condition has_tag:${tag} has no corresponding aspect in aspects/`,
           });
         }
       }

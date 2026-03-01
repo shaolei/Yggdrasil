@@ -6,8 +6,6 @@ stack:
 
 standards: ""
 
-tags: []
-
 node_types:
   - name: module
   - name: service

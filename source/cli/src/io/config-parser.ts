@@ -116,14 +116,11 @@ export async function parseConfig(filePath: string): Promise<YggConfig> {
     );
   }
 
-  if (!('tags' in raw)) {
-    throw new Error(`config.yaml: missing 'tags' field (required, may be empty list)`);
-  }
-  const tags = raw.tags;
-  if (!Array.isArray(tags)) {
-    throw new Error(`config.yaml: 'tags' must be an array`);
-  }
-  const tagsList = (tags as unknown[]).filter((t): t is string => typeof t === 'string');
+  const tagsRaw = raw.tags;
+  const tagsList: string[] =
+    Array.isArray(tagsRaw) ?
+      (tagsRaw as unknown[]).filter((t): t is string => typeof t === 'string')
+    : [];
 
   return {
     name: (raw.name as string).trim(),

@@ -43,7 +43,8 @@ Prints the full structure of the semantic memory.
 yg build-context --node <node-path>
 ```
 
-Shows the exact context package your agent reads before working on a node.
+Shows the exact context package your agent reads before working on a node (plain text with
+XML-like tags).
 
 ```bash
 yg owner --file <path>

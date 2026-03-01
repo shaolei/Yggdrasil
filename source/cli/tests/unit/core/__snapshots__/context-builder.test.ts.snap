@@ -122,6 +122,6 @@ Sequence: create order -> validate -> payment -> ship.
 ---
 
 Context size: 331 tokens
-Layers: global, hierarchy, own, relational, relational, aspects, flows
+Layers: global, hierarchy, own, relational, relational, flows, aspects
 "
 `;

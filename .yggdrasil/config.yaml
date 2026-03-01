@@ -8,9 +8,6 @@ standards: |
   Strict TypeScript. ESM modules (import/export). Vitest for tests.
   Commands: errors to stderr, process.exit(1) on failure. No default exports for command handlers.
 
-tags:
-  - deterministic
-
 node_types:
   - name: module
   - name: service

@@ -47,12 +47,11 @@ function createGraph(overrides: Partial<Graph> = {}): Graph {
       name: 'Test',
       stack: {},
       standards: '',
-      tags: ['valid-tag'],
       node_types: [{ name: 'service' }],
       artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
     },
     nodes: new Map(),
-    aspects: [],
+    aspects: [{ name: 'Valid', tag: 'valid-tag', artifacts: [] }],
     flows: [],
     schemas: [],
     rootPath: path.join(FIXTURE_PROJECT, '.yggdrasil'),
@@ -107,34 +106,19 @@ describe('validator', () => {
     expect(issues[0].nodePath).toBe('a');
   });
 
-  it('aspect-tags-valid returns error when aspect tag is undefined', async () => {
-    const graph = createGraph({
-      aspects: [
-        {
-          name: 'Bad Aspect',
-          tag: 'missing-tag',
-          artifacts: [],
-        },
-      ],
-    });
-    graph.nodes.set('a', createNode('a'));
+  it('unknown-tag (E003) returns error when node tag has no aspect', async () => {
+    const graph = createGraph();
+    graph.nodes.set('a', createNode('a', { tags: ['no-aspect-for-this'] }));
 
     const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'broken-aspect-tag');
+    const issues = result.issues.filter((i) => i.rule === 'unknown-tag');
     expect(issues).toHaveLength(1);
-    expect(issues[0].code).toBe('E007');
+    expect(issues[0].code).toBe('E003');
+    expect(issues[0].message).toContain('no corresponding aspect');
   });
 
   it('duplicate-aspect-binding returns E014 when tag bound to multiple aspects', async () => {
     const graph = createGraph({
-      config: {
-        name: 'Test',
-        stack: {},
-        standards: '',
-        tags: ['audit'],
-        node_types: [{ name: 'service' }],
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-      },
       aspects: [
         { name: 'Aspect One', tag: 'audit', artifacts: [] },
         { name: 'Aspect Two', tag: 'audit', artifacts: [] },
@@ -237,7 +221,6 @@ describe('validator', () => {
         name: 'Test',
         stack: {},
         standards: '',
-        tags: [],
         node_types: [{ name: 'service' }],
         artifacts: {
           responsibility: { required: 'always', description: 'x' },
@@ -309,7 +292,6 @@ describe('validator', () => {
         name: 'Test',
         stack: {},
         standards: '',
-        tags: [],
         node_types: [{ name: 'service' }],
         artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
@@ -491,13 +473,46 @@ describe('validator', () => {
     expect(issues.some((i) => i.message.includes('non-existent node'))).toBe(true);
   });
 
-  it('invalid-artifact-condition returns error when has_tag references undefined tag', async () => {
+  it('flow aspect tag must have corresponding aspect', async () => {
+    const graph = createGraph();
+    graph.nodes.set('a', createNode('a'));
+    graph.flows.push({
+      name: 'SagaFlow',
+      nodes: ['a'],
+      aspects: ['undefined-tag'],
+      artifacts: [{ filename: 'desc.md', content: 'x' }],
+    });
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'broken-aspect-tag');
+    expect(issues).toHaveLength(1);
+    expect(issues[0].message).toContain("Flow 'SagaFlow'");
+    expect(issues[0].message).toContain("undefined-tag");
+  });
+
+  it('flow aspect tag without corresponding aspect returns error', async () => {
+    const graph = createGraph({ aspects: [] });
+    graph.nodes.set('a', createNode('a'));
+    graph.flows.push({
+      name: 'F2',
+      nodes: ['a'],
+      aspects: ['valid-tag'],
+      artifacts: [{ filename: 'desc.md', content: 'x' }],
+    });
+    // aspects[] is empty — no aspect binds to valid-tag
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'broken-aspect-tag');
+    expect(issues).toHaveLength(1);
+    expect(issues[0].message).toContain("no aspect with that tag exists");
+  });
+
+  it('invalid-artifact-condition returns error when has_tag references tag with no aspect', async () => {
     const graph = createGraph({
       config: {
         name: 'Test',
         stack: {},
         standards: '',
-        tags: ['valid-tag'],
         node_types: [{ name: 'service' }],
         artifacts: {
           responsibility: { required: 'always', description: 'x' },
@@ -517,11 +532,11 @@ describe('validator', () => {
 
   it('artifactRequiredReason has_tag returns null when node lacks tag', async () => {
     const graph = createGraph({
+      aspects: [{ name: 'Special', tag: 'special', artifacts: [] }],
       config: {
         name: 'Test',
         stack: {},
         standards: '',
-        tags: ['special'],
         node_types: [{ name: 'service' }],
         artifacts: {
           responsibility: { required: 'always', description: 'x' },
@@ -635,7 +650,6 @@ describe('validator', () => {
         name: 'Test',
         stack: {},
         standards: '',
-        tags: [],
         node_types: [{ name: 'service' }],
         artifacts: {
           'responsibility.md': { required: 'always', description: 'x' },
@@ -665,7 +679,6 @@ describe('validator', () => {
         name: 'Test',
         stack: {},
         standards: '',
-        tags: [],
         node_types: [{ name: 'service' }],
         artifacts: {
           'responsibility.md': { required: 'always', description: 'x' },
@@ -691,11 +704,11 @@ describe('validator', () => {
 
   it('missing-artifact when required has_tag and node has tag', async () => {
     const graph = createGraph({
+      aspects: [{ name: 'PublicAPI', tag: 'public-api', artifacts: [] }],
       config: {
         name: 'Test',
         stack: {},
         standards: '',
-        tags: ['public-api'],
         node_types: [{ name: 'service' }],
         artifacts: {
           'responsibility.md': { required: 'always', description: 'x' },
@@ -745,13 +758,13 @@ describe('validator', () => {
   });
 
   it('aspect-tag-uniqueness returns error when tag bound to multiple aspects', async () => {
-    const graph = createGraph();
+    const graph = createGraph({
+      aspects: [
+        { name: 'Aspect1', tag: 'dup-tag', artifacts: [] },
+        { name: 'Aspect2', tag: 'dup-tag', artifacts: [] },
+      ],
+    });
     graph.nodes.set('a', createNode('a'));
-    graph.aspects.push(
-      { name: 'Aspect1', tag: 'dup-tag', artifacts: [] },
-      { name: 'Aspect2', tag: 'dup-tag', artifacts: [] },
-    );
-    graph.config.tags = ['dup-tag'];
 
     const result = await validate(graph);
     const issues = result.issues.filter((i) => i.rule === 'duplicate-aspect-binding');
@@ -761,12 +774,12 @@ describe('validator', () => {
   });
 
   it('implied-aspect-missing returns error when implied tag has no aspect', async () => {
-    const graph = createGraph();
+    const graph = createGraph({
+      aspects: [
+        { name: 'HIPAA', tag: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
+      ],
+    });
     graph.nodes.set('a', createNode('a'));
-    graph.aspects = [
-      { name: 'HIPAA', tag: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
-    ];
-    graph.config.tags = ['requires-hipaa', 'requires-audit'];
 
     const result = await validate(graph);
     const issues = result.issues.filter((i) => i.rule === 'implied-aspect-missing');
@@ -777,13 +790,13 @@ describe('validator', () => {
   });
 
   it('aspect-implies-cycle returns error when implies form cycle', async () => {
-    const graph = createGraph();
+    const graph = createGraph({
+      aspects: [
+        { name: 'A', tag: 'tag-a', implies: ['tag-b'], artifacts: [] },
+        { name: 'B', tag: 'tag-b', implies: ['tag-a'], artifacts: [] },
+      ],
+    });
     graph.nodes.set('a', createNode('a'));
-    graph.aspects = [
-      { name: 'A', tag: 'tag-a', implies: ['tag-b'], artifacts: [] },
-      { name: 'B', tag: 'tag-b', implies: ['tag-a'], artifacts: [] },
-    ];
-    graph.config.tags = ['tag-a', 'tag-b'];
 
     const result = await validate(graph);
     const issues = result.issues.filter((i) => i.rule === 'aspect-implies-cycle');
@@ -795,9 +808,16 @@ describe('validator', () => {
   });
 
   it('missing-required-tag-coverage returns warning when node type requires tag', async () => {
-    const graph = createGraph();
-    graph.config.node_types = [{ name: 'service', required_tags: ['requires-audit'] }];
-    graph.config.tags = ['requires-audit'];
+    const graph = createGraph({
+      aspects: [{ name: 'Audit', tag: 'requires-audit', artifacts: [] }],
+      config: {
+        name: 'Test',
+        stack: {},
+        standards: '',
+        node_types: [{ name: 'service', required_tags: ['requires-audit'] }],
+        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
+      },
+    });
     graph.nodes.set('svc', createNode('svc', { tags: [] }));
 
     const result = await validate(graph);
@@ -813,15 +833,14 @@ describe('validator', () => {
         name: 'Test',
         stack: {},
         standards: '',
-        tags: ['requires-hipaa', 'requires-audit'],
         node_types: [{ name: 'service', required_tags: ['requires-audit'] }],
         artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
+      aspects: [
+        { name: 'Audit', tag: 'requires-audit', artifacts: [] },
+        { name: 'HIPAA', tag: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
+      ],
     });
-    graph.aspects = [
-      { name: 'Audit', tag: 'requires-audit', artifacts: [] },
-      { name: 'HIPAA', tag: 'requires-hipaa', implies: ['requires-audit'], artifacts: [] },
-    ];
     graph.nodes.set('svc', createNode('svc', { tags: ['requires-hipaa'] }));
 
     const result = await validate(graph);

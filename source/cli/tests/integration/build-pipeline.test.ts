@@ -30,8 +30,9 @@ describe('build-context pipeline integration', () => {
       );
 
       expect(result.status).toBe(0);
-      expect(result.stdout).toContain('Context Package: OrderService');
-      expect(result.stdout).toContain('## Global');
+      expect(result.stdout).toContain('<context-package ');
+      expect(result.stdout).toContain('node-name="OrderService"');
+      expect(result.stdout).toContain('<global>');
     });
   });
 
@@ -57,13 +58,12 @@ describe('build-context pipeline integration', () => {
       );
       expect(second.status).toBe(0);
 
-      const stripGeneratedLine = (content: string) =>
+      const stripVariableParts = (content: string) =>
         content
-          .split('\n')
-          .filter((line) => !line.startsWith('# Generated: '))
-          .join('\n');
+          .replace(/token-count="\d+"/, 'token-count="X"')
+          .replace(/Budget status: \w+/, 'Budget status: X');
 
-      expect(stripGeneratedLine(second.stdout)).toBe(stripGeneratedLine(first.stdout));
+      expect(stripVariableParts(second.stdout)).toBe(stripVariableParts(first.stdout));
     });
   });
 

@@ -10,21 +10,21 @@ User runs `yg build-context --node <path>`.
 
 ## Goal
 
-Output Markdown document to stdout: assembled context (global, hierarchy, own, relational, aspects, flows) plus token count and budget status.
+Output plain text with XML-like tags to stdout: assembled context (global, hierarchy, own, relational, aspects, flows) plus token count and budget status.
 
 ## Participants
 
-- `cli/commands/validation` — orchestrates loadGraph, validate, buildContext, formatContextMarkdown
+- `cli/commands/validation` — orchestrates loadGraph, validate, buildContext, formatContextText
 - `cli/core/loader` — loads graph from `.yggdrasil/`
 - `cli/core/validator` — structural checks; build-context blocks if any errors
-- `cli/core/context` — 10-step layer assembly (global, hierarchy, own, relational, aspects, flows)
-- `cli/formatters` — formats context package as Markdown
+- `cli/core/context` — 6-step layer assembly (global, hierarchy, own, relational, aspects, flows); aspects include flow.aspects for participating flows
+- `cli/formatters` — formats context package as plain text with XML-like tags
 
 ## Paths
 
 ### Happy path
 
-Graph loads; validation passes (no errors). Context builder assembles layers; formatter outputs Markdown. Token count and budget status appended.
+Graph loads; validation passes (no errors). Context builder assembles layers; formatter outputs plain text with XML-like tags. Token count and budget status appended.
 
 ### Validation errors block
 
