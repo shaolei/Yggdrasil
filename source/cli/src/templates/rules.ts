@@ -195,7 +195,8 @@ When creating or editing a graph node, or mapping source files to a node, after 
 * **Routing:**
   * If it calls another module: Add an outgoing structural \`relation\` in \`node.yaml\`. (The engine will automatically fetch the target's structural-context artifacts: responsibility, interface, constraints, errors).
   * If it participates in an end-to-end process: Do not explain the whole process locally. Ensure the node is listed in \`.yggdrasil/flows/<flow_name>/flow.yaml\`. The engine will attach the flow artifacts automatically.
-* **Flows — writing flow content:** When creating or editing flow artifacts (e.g. \`description.md\` in \`flows/<name>/\`), write business-first: describe the process from user/business perspective. Technical details only as inserts when they clarify the flow. Not technical-first with business inserts.
+* **Flows — writing flow content:** When creating or editing flow artifacts (e.g. \`description.md\` in \`flows/<name>/\`), write business-first: describe the process from user/business perspective. Technical details only as inserts when they clarify the flow. Not technical-first with business inserts. \`description.md\` must describe the full scope of the process — all paths (happy path, exceptions, cancellations), not just the success path.
+* **Flow description.md — required structure:** Every flow \`description.md\` must have: \`## Business context\`, \`## Trigger\`, \`## Goal\`, \`## Participants\`, \`## Paths\`, \`## Invariants across all paths\`. \`## Paths\` is required and must contain at least \`### Happy path\`. Each other business path (error, cancellation, timeout, partial fulfillment) gets its own \`### [name]\` subsection. One flow = one business process with all its variants.
 
 ### Layer 3: Domain Context (Hierarchy)
 * **What goes here:** Business rules shared by a family of nodes.
