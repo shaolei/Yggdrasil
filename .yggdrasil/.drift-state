@@ -36,11 +36,11 @@ cli/model:
     source/cli/src/model/.gitkeep: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
     source/cli/src/model/types.ts: 2ac9d62f581851610aa2f77a70967500b231b2cccd0ce7659f56ad3c17fb8fd3
 cli/templates:
-  hash: 486a07be62db9aeda0f0d6ec51d25a1c7bec4823069abf95bae97cb34b26a6bf
+  hash: 8d93cab0a6edf4e42d58d04ca4844f1e8f12d78cae86266818fea6f0fc58965b
   files:
-    source/cli/src/templates/default-config.ts: 00349932fb952fe2ad4db2add857c26152a2ee94c6c5bc061d3ab44fa7a081a3
+    source/cli/src/templates/default-config.ts: 8c15a940899591482851ca8074e6e3e9bd7668e3d31cf6564784db3a999db2de
     source/cli/src/templates/platform.ts: c92d31c3944cc6134759c877ad0b06fa1ca38f1294649af7ca39ab74460105e1
-    source/cli/src/templates/rules.ts: 3017c4cbc0032e177b6fef43cdbbf65d91ca86c66478ee1e5287bb444006409e
+    source/cli/src/templates/rules.ts: 89890515cf7a53f115bf101b9949773ff45a76f5ff5958d1fa59ddc4f98df533
     source/cli/graph-templates/aspect.yaml: e6f58e943d4d824c4c6557002f096cd8b92d701b579ca1cf0e6980de55e6f797
     source/cli/graph-templates/flow.yaml: 35a854285c87ded352d6a435314e179c80cf85a61d2c804408e10ae30beaa93b
     source/cli/graph-templates/node.yaml: 5f022123eb4b96c43885e3eccd108bfc3d4a67dd8a82d64f6bb42bf47d5dfaa2

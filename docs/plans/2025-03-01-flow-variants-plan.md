@@ -63,12 +63,12 @@ git commit -m "docs: flow description.md required format — all paths, not just
 
 **Step 1: Extend "Flows — writing flow content" bullet**
 
-Find: `* **Flows — writing flow content:** When creating or editing flow artifacts (e.g. \`description.md\` in \`flows/<name>/\`), write business-first: describe the process from user/business perspective. Technical details only as inserts when they clarify the flow. Not technical-first with business inserts.`
+Find: `* **Flows — writing flow content:** When creating or editing flow artifacts (e.g. \`description.md\` in \`flows/&lt;name&gt;/\`), write business-first: describe the process from user/business perspective. Technical details only as inserts when they clarify the flow. Not technical-first with business inserts.`
 
 Replace with:
 
 ```
-* **Flows — writing flow content:** When creating or editing flow artifacts (e.g. \`description.md\` in \`flows/<name>/\`), write business-first: describe the process from user/business perspective. Technical details only as inserts when they clarify the flow. Not technical-first with business inserts. \`description.md\` must describe the full scope of the process — all paths (happy path, exceptions, cancellations), not just the success path.
+* **Flows — writing flow content:** When creating or editing flow artifacts (e.g. \`description.md\` in \`flows/&lt;name&gt;/\`), write business-first: describe the process from user/business perspective. Technical details only as inserts when they clarify the flow. Not technical-first with business inserts. \`description.md\` must describe the full scope of the process — all paths (happy path, exceptions, cancellations), not just the success path.
 ```
 
 **Step 2: Add "Flow description.md — required structure" block**
