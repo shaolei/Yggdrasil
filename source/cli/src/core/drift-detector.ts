@@ -43,6 +43,19 @@ export async function detectDrift(graph: Graph, filterNodePath?: string): Promis
       continue;
     }
 
+    // Check if source files are entirely missing (all mapping paths gone)
+    // This must happen BEFORE hash comparison — a node whose source files
+    // are all gone is 'missing' regardless of whether graph-only hashes match.
+    const sourceFilesMissing = await allPathsMissing(projectRoot, mappingPaths);
+    if (sourceFilesMissing) {
+      entries.push({
+        nodePath,
+        status: 'missing',
+        details: 'All source mapping paths are missing',
+      });
+      continue;
+    }
+
     // Collect all tracked files (source + graph) for this node
     const trackedFiles = collectTrackedFiles(node, graph);
     const { canonicalHash, fileHashes } = await hashTrackedFiles(projectRoot, trackedFiles);
@@ -91,12 +104,6 @@ export async function detectDrift(graph: Graph, filterNodePath?: string): Promis
     } else {
       // Hash changed but no individual file identified — fallback
       status = 'source-drift';
-    }
-
-    // Check if source files are entirely missing (all mapping paths gone)
-    const sourceFilesMissing = await allPathsMissing(projectRoot, mappingPaths);
-    if (sourceFilesMissing) {
-      status = 'missing';
     }
 
     const details =
