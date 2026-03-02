@@ -27,6 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enriched schema files (node.yaml, aspect.yaml, flow.yaml) with self-documenting
   YAML comments describing every field.
 
+### Fixed
+
+- `hashPath` no longer skips mapped single files when they match `.gitignore` patterns — gitignore filtering applies only to directory scans.
+- Reserved artifact name check uses `'node.yaml'` (the actual reserved filename) instead of `'node'`.
+- Validator fallback budget thresholds aligned to spec defaults (10000/20000 instead of 5000/10000).
+- **Crosscheck (31 items):** Comprehensive docs-vs-code-vs-rules audit fixing discrepancies across spec (`docs/idea/`), user docs (`docs/`), rules template, and code.
+
 ### Changed
 
 - `.drift-state` format extended — entries now include hashes for both source and
