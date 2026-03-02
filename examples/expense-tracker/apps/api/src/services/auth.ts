@@ -46,6 +46,6 @@ function createToken(userId: number, email: string, plan: string) {
 }
 
 export function verifyToken(token: string): { userId: number; email: string; plan: string } {
-  const decoded = jwt.verify(token, JWT_SECRET) as { sub: number; email: string; plan: string };
+  const decoded = jwt.verify(token, JWT_SECRET) as unknown as { sub: number; email: string; plan: string };
   return { userId: decoded.sub, email: decoded.email, plan: decoded.plan };
 }

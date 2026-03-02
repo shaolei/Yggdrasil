@@ -1,0 +1,147 @@
+api/auth:
+  hash: 14b6175d5eb9979646b7bb46b92a634a7a0e8688caa23e032c78c8913b2d0918
+  files:
+    .yggdrasil/model/api/auth/node.yaml: ad24b8b87a60ab76e3d2ac40e4d3403a663745c54cf48680a70875e27794f814
+    .yggdrasil/model/api/auth/responsibility.md: ac95790a0fdd5108dd38ac4e1991312d0e5272a66cc652833c553ac67fdd0de5
+    .yggdrasil/model/api/node.yaml: baebfc3b926735491e7b8ff7683bf98c804a65fdef75828b08505068afe38d04
+    .yggdrasil/model/api/responsibility.md: b700147b963ab3bedfd5f7ae2ed7f454acbc2bd3c4eae0a50504d3efa1e43c9c
+    apps/api/src/services/auth.ts: d90591d835738dc002a189187bf0c36cf3940d0e11bae45025a95b7f2fd599a2
+    apps/api/src/routes/auth.ts: 0e86f0bb23f57de1d81c17579de4b04f6da273084f78ef6abfb7fa9f197645be
+    apps/api/src/middleware/auth.ts: 9a21b5700e638450360df4e3b3d14744df78be86c0674603f2d4c8caf5e5e8a8
+api/budgets:
+  hash: d06139e9ab90c8e2e56ce3efe1c5e609e46ed624cba1f700141f049e56570e72
+  files:
+    .yggdrasil/model/api/budgets/node.yaml: a3c3c978dbf838af8bff626ebed902f94d586d875cb82164e943aee739ec2566
+    .yggdrasil/model/api/budgets/responsibility.md: 136670fec4726f534185e1a2d69c4e5ee03000c95ee60b8ed3d0753d3f17f325
+    .yggdrasil/model/api/node.yaml: baebfc3b926735491e7b8ff7683bf98c804a65fdef75828b08505068afe38d04
+    .yggdrasil/model/api/responsibility.md: b700147b963ab3bedfd5f7ae2ed7f454acbc2bd3c4eae0a50504d3efa1e43c9c
+    apps/api/src/services/budgets.ts: cb2bf23132d8cd07f9e3067fd708b95d3b30eab065cfd69db94fecf5fdc33828
+    apps/api/src/routes/budgets.ts: d5e2c994b7e70392577bdab6fb462b47edf92ee6a60a9574140170e84f538b8f
+api/categories:
+  hash: 6267ed2447a3d21181e5040d4ef766f6a112615319e10e09ca689a85162d55f4
+  files:
+    .yggdrasil/model/api/categories/node.yaml: a9582a6dcbcaeb1ea42e1fd90a54aa89b84ccce13294beccc932925112848acd
+    .yggdrasil/model/api/categories/responsibility.md: 2b1eb6e2f7fc727a202e90fd996ca5cf555b87e7b4b7d4fd3d667b84dc3347d2
+    .yggdrasil/model/api/node.yaml: baebfc3b926735491e7b8ff7683bf98c804a65fdef75828b08505068afe38d04
+    .yggdrasil/model/api/responsibility.md: b700147b963ab3bedfd5f7ae2ed7f454acbc2bd3c4eae0a50504d3efa1e43c9c
+    apps/api/src/services/categories.ts: 2f0cb5e4fb063ad752c89bb5e2526140b7db98dfcb04c2ad148a7345b2b98e9e
+    apps/api/src/routes/categories.ts: aae224bb91194c168df54da328afcc1ef08f273f55a4e6616b9d16a4220186d9
+api/db:
+  hash: 31f0ea0ea1acbd284d46f5bc51db41599c514b3fe252cf31fe2eddc5b2df0997
+  files:
+    .yggdrasil/model/api/db/node.yaml: a9009bf922ff15df9c4e416cc2f7eac3846edc9625ecca673a02ae7d691096b0
+    .yggdrasil/model/api/db/model.md: 058700f886f86e56b79ae805d4ba936e0e40ea9e67843f71be72c5b4ae3a8546
+    .yggdrasil/model/api/db/responsibility.md: d673d05ce97cdaa7768b1e232bc1ee67d1b72e26f88599b12e316c77e4cff8ed
+    .yggdrasil/model/api/node.yaml: baebfc3b926735491e7b8ff7683bf98c804a65fdef75828b08505068afe38d04
+    .yggdrasil/model/api/responsibility.md: b700147b963ab3bedfd5f7ae2ed7f454acbc2bd3c4eae0a50504d3efa1e43c9c
+    apps/api/src/db/index.ts: 8299d7039f85fd94e620bf7ea46004ab4fb3bc198674063edb712a60c9e036d7
+    apps/api/src/db/schema.ts: 05c022a93f160338ba29b6960be4bf9bed2f1d9c83bbe32f438ec7b8e287a21c
+api/expenses:
+  hash: abfa2594d06d3d15667441f5d8f9b1b7c10d6989003fd7d84108267d4d581918
+  files:
+    .yggdrasil/model/api/expenses/node.yaml: c3a57205df63bdb25753fc8b2042f22d046e2ac207da8266223f13483ec231f9
+    .yggdrasil/model/api/expenses/responsibility.md: 7ebfa52b84d2e180922827997c02f2e295048dac0e607f13fb9ac37efdfbbbcd
+    .yggdrasil/model/api/node.yaml: baebfc3b926735491e7b8ff7683bf98c804a65fdef75828b08505068afe38d04
+    .yggdrasil/model/api/responsibility.md: b700147b963ab3bedfd5f7ae2ed7f454acbc2bd3c4eae0a50504d3efa1e43c9c
+    apps/api/src/services/expenses.ts: b506d73d0580c2ee0b65f2771588d9f4a0d3963d780c3009c26bf853b6aa6d31
+    apps/api/src/routes/expenses.ts: 8bc62dd312a3c913d782e3c3773fdebc1dbbd55c82ab5a0d3fa8f494cc3a41fa
+api/reports:
+  hash: 177a5f0fbf290555ccfee9eed3dd3481b401ed1302c8241aa4d60474549860ac
+  files:
+    .yggdrasil/model/api/reports/node.yaml: 15df2a3b7e5e4abc4cfdbd468a89feea86c4b3ecd1f382572b476b2fd059c107
+    .yggdrasil/model/api/reports/responsibility.md: 4c2545ed1c18670173d8eb72fdf937533606b1a00f9573677a6145025009108b
+    .yggdrasil/model/api/node.yaml: baebfc3b926735491e7b8ff7683bf98c804a65fdef75828b08505068afe38d04
+    .yggdrasil/model/api/responsibility.md: b700147b963ab3bedfd5f7ae2ed7f454acbc2bd3c4eae0a50504d3efa1e43c9c
+    apps/api/src/services/reports.ts: f03098c54219cb56f64253a100ad0aeb5995e8d6172ae26d707ae9618e10b11f
+    apps/api/src/routes/reports.ts: 9156519c8a9791dc4ee8c412fd1301e0ccceb379887824bc6a0ab350dd1adb00
+api/subscriptions:
+  hash: 9d978b76acc2209de12622b3c94629761ad86a6e989a77bda03f85f706dc9597
+  files:
+    .yggdrasil/model/api/subscriptions/node.yaml: 4f6cf4378a334c3fcf30b4002439b616d78a36e66c511ba1f031e1abc0f0431f
+    .yggdrasil/model/api/subscriptions/responsibility.md: 73eddb0825c8ad5837a1cf3230eee8a76b61a8611b714d09e5ffd6fbae4e88ca
+    .yggdrasil/model/api/node.yaml: baebfc3b926735491e7b8ff7683bf98c804a65fdef75828b08505068afe38d04
+    .yggdrasil/model/api/responsibility.md: b700147b963ab3bedfd5f7ae2ed7f454acbc2bd3c4eae0a50504d3efa1e43c9c
+    apps/api/src/services/subscriptions.ts: 0762809ada28fac85276834b2e5d10859f4bfe2ad5d2c0519894a48c962f751f
+    apps/api/src/routes/subscriptions.ts: 1c3a1954d3ebd8e40fcee550e6fd9ace6bfa884d62bd43bdbab6cf749e6df1a3
+api/users:
+  hash: 6312479956d6191ad36eea7604d37a26ecdfb6d4d8516b34640d877a745ef7f5
+  files:
+    .yggdrasil/model/api/users/node.yaml: fe4eaefc3a4ebd11505760806e656dff857f1538ece244584cbd4a23f83678a0
+    .yggdrasil/model/api/users/responsibility.md: 6ef2f65656219c6627805e7682cb00eea78b076e2874c5b8c40a5fc57d6b24c8
+    .yggdrasil/model/api/node.yaml: baebfc3b926735491e7b8ff7683bf98c804a65fdef75828b08505068afe38d04
+    .yggdrasil/model/api/responsibility.md: b700147b963ab3bedfd5f7ae2ed7f454acbc2bd3c4eae0a50504d3efa1e43c9c
+    apps/api/src/services/users.ts: 341fe0603dc0a49a3e2094af525b68b7765e232f88c254460e19cb0f04330a7e
+    apps/api/src/routes/users.ts: 31099dc8c500b5bfff0a57d18d766025efafcb923d7f58bb64237f99a36535ea
+web/auth:
+  hash: 5f06db1ecee98699652c03e2674141301627e2aafb5eccb7e6691bd0a1f09020
+  files:
+    .yggdrasil/model/web/auth/node.yaml: bf04eef29d5cb3b9fc40c325bfc9ae1e406574db26e6f40fc545c2efe47d106d
+    .yggdrasil/model/web/auth/responsibility.md: 4c5c0aba2a611929d8d0a8e65621c1e40138539f6feb5c226a84e0e93b60b402
+    .yggdrasil/model/web/node.yaml: a1622f258456485802c3533627c0655c4eada6edc71275a57cfddeb6c269fdab
+    .yggdrasil/model/web/responsibility.md: d74930bda465fe6cb14425dbfb6215b5f0b8754cdef87d68ef5238a43fe3e9d3
+    apps/web/src/pages/Landing.tsx: 4715e3d1f43708187c7ad75adeece93fa74c6a13457cf323f1d56da1f0875197
+    apps/web/src/pages/Login.tsx: 8a7f7654bcc3c02d3d16e68c762f19d7e54ddeaeebf3006d48bb931fc00fd684
+    apps/web/src/pages/Register.tsx: 31d8e36b9dcc12b0a8cd2ad2916f03adfdd159d3ce3ceb2f2ae2bc793774b3d8
+    apps/web/src/contexts/AuthContext.tsx: be2a0a00798eca1f78a8339ba257a19ff80f4c4971c0eee58b8f1ab0c467ada8
+    apps/web/src/api/client.ts: 8df836822c79ffbdc34a93d1f704e1d012e2c35fd5f6cdd56fe37e499c2709cd
+web/budgets:
+  hash: 2105a0fb5579a615064e262828f2cbc2b38ca2c9587529233aea105230fd7fb6
+  files:
+    .yggdrasil/model/web/budgets/node.yaml: bfb7e5d490712575e3afbccf07324c49c3a75ec44e0166c974387f5a890a9550
+    .yggdrasil/model/web/budgets/responsibility.md: dde89590b18d4171b0f3b41089c4f2fe3a5a7b3f9656c8722b418503b7cce0bf
+    .yggdrasil/model/web/node.yaml: a1622f258456485802c3533627c0655c4eada6edc71275a57cfddeb6c269fdab
+    .yggdrasil/model/web/responsibility.md: d74930bda465fe6cb14425dbfb6215b5f0b8754cdef87d68ef5238a43fe3e9d3
+    apps/web/src/pages/Budgets.tsx: c041922cb5f7d172c3124a447bcc068df78205c953e7f82c9d35765dc63c3f8a
+web/categories:
+  hash: d94a84fcbddd376d9df228be7124f41c6ee285bab946d82a259a9cbc9ef8d2b0
+  files:
+    .yggdrasil/model/web/categories/node.yaml: 1303aa6af7e24d68a7493593e38f6104ee21b290082fedccada07297ffd3f017
+    .yggdrasil/model/web/categories/responsibility.md: 06812a37fc0d10528246a4ce148330207c72a3dd07328b48b1a136e3a993abf5
+    .yggdrasil/model/web/node.yaml: a1622f258456485802c3533627c0655c4eada6edc71275a57cfddeb6c269fdab
+    .yggdrasil/model/web/responsibility.md: d74930bda465fe6cb14425dbfb6215b5f0b8754cdef87d68ef5238a43fe3e9d3
+    apps/web/src/pages/Categories.tsx: caaa4ea17363a1e98a787178bc952356cb73d1db0ed9ff6dd9c469541a4a7a6d
+web/dashboard:
+  hash: e77e950ba6f8da1aaa7d2ddb29f944729ac1f55f9bbdaa489b2f83692e874c14
+  files:
+    .yggdrasil/model/web/dashboard/node.yaml: 9987ebeaed5266262f18ba3354159e3ac1d34e1c86b4583b4e81d4b985a89c75
+    .yggdrasil/model/web/dashboard/responsibility.md: 3e8c303f79068a1798bbd6ae9a6f07c1b77529540012013fecc1c35745280507
+    .yggdrasil/model/web/node.yaml: a1622f258456485802c3533627c0655c4eada6edc71275a57cfddeb6c269fdab
+    .yggdrasil/model/web/responsibility.md: d74930bda465fe6cb14425dbfb6215b5f0b8754cdef87d68ef5238a43fe3e9d3
+    apps/web/src/pages/Dashboard.tsx: d22cbb6a50a586e4150c28e98b7ed9ed179a538beb2eadde95518f01fc963355
+web/expenses:
+  hash: ba04ad99041e71e193c6f1cedb1eb46d92e2302925eb0a2d6f41e4df87db5c8a
+  files:
+    .yggdrasil/model/web/expenses/node.yaml: b78fb87a62226e291521b1c05ab366380d3e4ec4183cd3fa4201b24c2695b787
+    .yggdrasil/model/web/expenses/responsibility.md: aa3496b9b5c4240034b6392c6a60244e71848d0ec930d7f305b30f7a69ff4c19
+    .yggdrasil/model/web/node.yaml: a1622f258456485802c3533627c0655c4eada6edc71275a57cfddeb6c269fdab
+    .yggdrasil/model/web/responsibility.md: d74930bda465fe6cb14425dbfb6215b5f0b8754cdef87d68ef5238a43fe3e9d3
+    apps/web/src/pages/Expenses.tsx: da094331a1aa5a7f10c9752d86382ee57e1dee5bcae476a065796a627dc79a92
+    apps/web/src/pages/AddExpense.tsx: b0f52fc6c2681beeedf8014431c42f78e99b06625ecb6a1e372e441592d7afa7
+    apps/web/src/pages/EditExpense.tsx: 9e9616b51745b17bb4bc838bfe318329a279d0949e8f93a25fec22d329a16f4e
+web/layout:
+  hash: d93e3339cdb717567f68db569f6cbd2123b337ad05796a690a1133d6cc6b3b99
+  files:
+    .yggdrasil/model/web/layout/node.yaml: 93229f05f9c05f21cd31056eded2b17195bbcb6753402a6c78714f227fde2dee
+    .yggdrasil/model/web/layout/responsibility.md: 264a2d24cb72d2278fad988b0e40328e91e3e996b3eb8046ac8aeca817572b2e
+    .yggdrasil/model/web/node.yaml: a1622f258456485802c3533627c0655c4eada6edc71275a57cfddeb6c269fdab
+    .yggdrasil/model/web/responsibility.md: d74930bda465fe6cb14425dbfb6215b5f0b8754cdef87d68ef5238a43fe3e9d3
+    apps/web/src/components/Layout/Header.tsx: f270c45e2ca92eac952c8b47b18d4d171e385b2e0fae79cb319283c26d7b96e0
+    apps/web/src/components/Layout/Layout.tsx: 5c08c33912286d96be30d965dcac12f5a54ed1ff9d1f13c388b399c7d3fd38bd
+    apps/web/src/components/ProtectedRoute.tsx: 16918b4ac67d619e1b30e4296c99e1e08eae30e03cd51252d20ce3cc7a20e3ac
+web/reports:
+  hash: 5b261cc0ae51f727aa138c9982074c135a4fc718f1064810ea4d50d83ea1c566
+  files:
+    .yggdrasil/model/web/reports/node.yaml: d76fa37f0acccee79dc64b73e52546b4105276d01d0aa29aa40b43822c3a2b7d
+    .yggdrasil/model/web/reports/responsibility.md: 181306cfa30f5ac9eb93a0b06135809e6f0873b65134eaf05dfa5064e485ce89
+    .yggdrasil/model/web/node.yaml: a1622f258456485802c3533627c0655c4eada6edc71275a57cfddeb6c269fdab
+    .yggdrasil/model/web/responsibility.md: d74930bda465fe6cb14425dbfb6215b5f0b8754cdef87d68ef5238a43fe3e9d3
+    apps/web/src/pages/Reports.tsx: 71d714bf5adcc6b4df1e9d700d111580bf64750313e9779cdc36dd6257eaa8aa
+web/settings:
+  hash: f01e244bc1a6aacaeb22a90b314000266335bca0796ee735bb289e2aaa3a7b2f
+  files:
+    .yggdrasil/model/web/settings/node.yaml: 5addb19905a244478e2687b3b3dcb43f0de6050dbd5618b220e464afdde99565
+    .yggdrasil/model/web/settings/responsibility.md: e8d2884678d47831b64deb165fb22e124437dcac6f9d801b603bf25d4b5be8c1
+    .yggdrasil/model/web/node.yaml: a1622f258456485802c3533627c0655c4eada6edc71275a57cfddeb6c269fdab
+    .yggdrasil/model/web/responsibility.md: d74930bda465fe6cb14425dbfb6215b5f0b8754cdef87d68ef5238a43fe3e9d3
+    apps/web/src/pages/Settings.tsx: 3ada7e2a23a205b5bf7619cb09f04298a31fa911fe9a32666bc9fd40da0ae08a
+    apps/web/src/pages/Subscription.tsx: b28b26cd8be113b18a4afd6ee991982de3bbb71afdae619ef5a346b2ef256b32

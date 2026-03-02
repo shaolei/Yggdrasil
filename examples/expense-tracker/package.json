@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
     "dev:api": "npm run dev -w @expense-tracker/api",
-    "dev:web": "npm run dev -w @expense-tracker/web"
+    "dev:web": "npm run dev -w @expense-tracker/web",
+    "check": "bash scripts/check.sh"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
