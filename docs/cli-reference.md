@@ -131,11 +131,18 @@ Records current file hash after resolving drift.
 
 ```bash
 yg impact --node <path> [--simulate]
+yg impact --aspect <id> [--simulate]
+yg impact --flow <name> [--simulate]
 ```
 
-Shows what depends on a node and how changes would propagate.
+Shows the blast radius of changes to a node, aspect, or flow.
 
+- `--node` — Show reverse dependencies, descendants, flows, aspects, and co-aspect nodes
+- `--aspect` — Show all nodes where this aspect is effective (own, hierarchy, flow, or implied)
+- `--flow` — Show all participants and their descendants
 - `--simulate` — Simulate context package impact (compare HEAD vs current)
+
+Exactly one of `--node`, `--aspect`, or `--flow` is required.
 
 ---
 

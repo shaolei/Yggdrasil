@@ -727,34 +727,28 @@ orders/order-service
 
 ### Impact analysis
 
-Shows nodes dependent on the specified node (reverse dependencies) and optionally
-simulates the impact of planned changes on context packages.
+Shows the blast radius of changes to a node, aspect, or flow. Supports three
+mutually exclusive modes and an optional simulation pass.
 
 **Parameters:**
 
-| Parameter  | Type   | Required | Description                                                       |
-| ---------- | ------ | -------- | ----------------------------------------------------------------- |
-| `node`     | string | Yes      | Node path relative to `model/`                                    |
-| `simulate` | bool   | No       | Whether to simulate impact on context packages. Default: `false`. |
+| Parameter  | Type   | Required              | Description                                                       |
+| ---------- | ------ | --------------------- | ----------------------------------------------------------------- |
+| `node`     | string | One of three required | Node path relative to `model/`                                    |
+| `aspect`   | string | One of three required | Aspect id (directory path under `aspects/`)                       |
+| `flow`     | string | One of three required | Flow name (directory name under `flows/`)                         |
+| `simulate` | bool   | No                    | Whether to simulate impact on context packages. Default: `false`. |
 
-**Basic mode behavior** (`simulate: false`):
+Exactly one of `node`, `aspect`, or `flow` must be provided.
 
-1. Find all nodes whose structural relations point to the specified node (reverse graph edge).
+#### Node mode (`--node`)
+
+1. Find all nodes whose structural relations point to the target (reverse graph edge).
 2. Recursively follow reverse edges (transitive reverse dependencies).
-3. Find flows listing the specified node.
-4. Find aspects whose scope covers the specified node.
-
-**Simulation mode behavior** (`simulate: true`):
-
-1. Execute basic mode steps.
-2. For each affected node, assemble a context package in the current graph state.
-3. Assemble a context package in the hypothetical state (current graph + on-disk changes
-   since last commit, or staged git changes).
-4. Calculate differences: added/removed elements, changed dependency artifacts, budget shifts.
-5. For each affected node with mapping, report drift status of mapped source files (on-disk
-   changes since last `drift-sync`): ok, source-drift, graph-drift, full-drift, missing, or unmaterialized.
-
-**Basic mode result:**
+3. Collect descendants of the target node (hierarchy impact).
+4. Find flows listing the target node.
+5. Compute effective aspects (own + hierarchy + flow + implies).
+6. Find co-aspect nodes sharing any aspect with the target.
 
 ```text
 Impact of changes in payments/payment-service:
@@ -766,13 +760,68 @@ Directly dependent:
 Transitively dependent:
   <- orders/order-service <- checkout/checkout-controller
 
+Descendants (hierarchy impact):
+  payments/payment-service/stripe-adapter
+
 Flows: checkout
 Aspects (scope covers node): requires-saga, requires-idempotency
+Nodes sharing aspects:
+  orders/order-service (requires-saga, requires-idempotency)
 
-Total scope: 3 nodes, 1 flows, 2 aspects
+Total scope: 4 nodes, 1 flows, 2 aspects
 ```
 
-**Simulation mode result** (additionally):
+#### Aspect mode (`--aspect`)
+
+1. For every node, compute effective aspects (own + hierarchy + flow + implies).
+2. Collect all nodes where the specified aspect is effective.
+3. Report source of the aspect for each node: own, hierarchy, flow, or implied.
+4. List flows propagating this aspect and implies relationships.
+
+```text
+Impact of changes in aspect requires-audit:
+
+Affected nodes (3):
+  orders (own)
+  orders/order-service (hierarchy from orders)
+  payments/payment-service (flow: checkout)
+
+Flows propagating this aspect: (none)
+Implied by: (none)
+Implies: (none)
+
+Total scope: 3 nodes, 0 flows
+```
+
+#### Flow mode (`--flow`)
+
+1. List all declared participants.
+2. Expand each participant's descendants (hierarchy impact).
+3. Report flow-level aspects.
+
+```text
+Impact of changes in flow Checkout Flow:
+
+Participants:
+  auth/auth-api
+  orders/order-service
+  payments/payment-service
+  payments/payment-service/stripe-adapter (descendant)
+
+Flow aspects: requires-saga
+
+Total scope: 4 nodes
+```
+
+#### Simulation mode (`--simulate`)
+
+Available with any mode. For each affected node:
+
+1. Assemble a context package in the current graph state.
+2. Assemble a baseline context package from the HEAD commit.
+3. Report token budget shift (baseline → current) with ok/warning/error status.
+4. In node mode, flag nodes with a changed dependency interface to the target.
+5. Report drift status of mapped source files.
 
 ```text
 Changes in context packages:
@@ -790,7 +839,9 @@ subscriptions/billing-service:
 
 **Errors:**
 
-- Node does not exist.
+- Node / aspect / flow does not exist.
+- Multiple modes specified (mutually exclusive).
+- No mode specified.
 
 ---
 

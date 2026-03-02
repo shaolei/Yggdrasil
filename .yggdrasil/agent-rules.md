@@ -262,6 +262,8 @@ yg aspects                          List aspects with metadata (YAML output).
 yg deps --node <path> [--depth N] [--type structural|event|all]
                                     Show dependencies.
 yg impact --node <path> --simulate  Simulate blast radius of a planned change.
+yg impact --aspect <id>             Show all nodes where aspect is effective.
+yg impact --flow <name>             Show flow participants and descendants.
 yg status                           Graph health: nodes, coverage, drift summary.
 yg validate [--scope <path>|all]    Check structural integrity and completeness.
 yg drift [--scope <path>|all] [--drifted-only]
