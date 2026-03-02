@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-02
+
 ### Added
 
 - **`yg status` quality metrics:** New Quality section showing artifact fill rate, relation
