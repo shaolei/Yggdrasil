@@ -1,0 +1,11 @@
+name: Auth
+type: service
+aspects: []
+
+relations: []
+
+mapping:
+  paths:
+    - apps/api/src/services/auth.ts
+    - apps/api/src/routes/auth.ts
+    - apps/api/src/middleware/auth.ts
