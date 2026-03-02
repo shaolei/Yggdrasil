@@ -14,7 +14,8 @@
 
 - loadGraph(process.cwd()), detectDrift(graph), validate(graph, 'all').
 - Count nodes by type, blackbox count. Count structural (uses, calls, extends, implements) vs event relations.
-- Output: graph name, nodes (type breakdown + blackbox), relations, aspects, flows, knowledge, drift counts, validation (errors, warnings).
+- Output: graph name, nodes (type breakdown + blackbox), relations, aspects, flows, drift counts, validation (errors, warnings).
+- Quality section: artifact fill rate (filled/total slots with percentage), relations per node (avg and max with node path), mapping coverage (mapped/total nodes), aspect coverage (nodes with effective aspects/total nodes).
 - Pluralize: 1 module vs 2 modules, 1 library vs 2 libraries.
 
 **tree:**

@@ -1,21 +1,17 @@
 # Context Builder Logic
 
-10-step deterministic assembly. Order is fixed; each step appends layers.
+5-step deterministic assembly. Order is fixed; each step appends layers.
 
 ## Sequence
 
 1. **Global** — config.yaml: stack, standards
-2. **Knowledge (2–5)** — collectKnowledgeItems: global scope → aspect match → node scope → node-declared. Deduplication via `seenKnowledge` Set.
-3. **Hierarchy (6)** — collectAncestors from node.parent up to root; for each ancestor, filter artifacts by config, build hierarchy layer
-4. **Own (7)** — node.yaml (read from disk) + filtered artifacts
-5. **Relational (8)** — for each relation: structural (uses/calls/extends/implements) → buildStructuralRelationLayer (consumes, failure, structural_context artifacts); event (emits/listens) → buildEventRelationLayer
-6. **Aspects (9)** — for each node aspect, find matching aspect by aspect.id, build aspect layer
-7. **Flows (10)** — flows where node in flow.nodes; for each flow: flow artifacts + flow.knowledge (deduplicated with seenKnowledge)
+2. **Hierarchy** — collectAncestors from node.parent up to root; for each ancestor, filter artifacts by config, build hierarchy layer
+3. **Own** — node.yaml (read from disk) + filtered artifacts
+4. **Relational** — for each relation: structural (uses/calls/extends/implements) → buildStructuralRelationLayer (consumes, failure, structural_context artifacts); event (emits/listens) → buildEventRelationLayer
+5. **Flows** — flows where node or ancestor in flow.nodes; for each flow: flow artifacts
+6. **Aspects** — union of aspect ids from hierarchy + own + flow layers (expanded via implies); for each resolved aspect, build aspect layer
 
-## Deduplication
-
-- Knowledge: `seenKnowledge` Set ensures each knowledge element appears at most once
-- Flow knowledge: checked against `seenKnowledge` before adding
+Implementation note: steps 4–5 execute before step 6 internally so that flow-propagated aspect ids can be collected. buildSections reorders the output to match the spec: Global → Hierarchy → OwnArtifacts → Aspects → Relational (which merges structural deps, events, and flows).
 
 ## Output
 

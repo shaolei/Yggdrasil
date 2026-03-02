@@ -587,6 +587,8 @@ Summary of the graph state: numbers, metrics, problems.
 3. Count aspects and flows.
 4. Read drift state for mapped nodes.
 5. Run validation (only counting errors and warnings, without full messages).
+6. Compute quality metrics: artifact fill rate, relation distribution, mapping coverage,
+   aspect coverage.
 
 **Result:**
 
@@ -597,6 +599,12 @@ Relations: 15 structural, 4 event
 Aspects: 3    Flows: 2
 Drift: 1 source-drift, 1 graph-drift, 0 full-drift, 1 missing, 2 unmaterialized, 7 ok
 Validation: 0 errors, 3 warnings
+
+Quality:
+  Artifacts: 42/96 slots filled (44%) — 8 types × 12 nodes
+  Relations: avg 1.6/node, max 5 (orders/order-service)
+  Mapping: 10/12 nodes mapped to source
+  Aspects: 8/12 nodes have aspect coverage
 ```
 
 **Errors:**

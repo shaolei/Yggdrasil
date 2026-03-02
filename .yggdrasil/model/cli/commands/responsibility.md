@@ -11,7 +11,7 @@ CLI commands module — groups 14 command handlers registered in Commander. Each
 - Each command's `action` callback wraps logic in try/catch; propagates errors from core/io, reports once, exits.
 - **No default exports** for command handlers — use named exports (e.g. `registerBuildCommand`).
 
-**Reference:** config.yaml standards, knowledge/patterns/command-error-handling.
+**Reference:** config.yaml standards.
 
 **Flows:** cli/commands/validation → build-context, validate; cli/commands/drift → drift; cli/commands/init → init.
 

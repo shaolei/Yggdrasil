@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`yg status` quality metrics:** New Quality section showing artifact fill rate, relation
+  distribution (avg/max with node path), source mapping coverage, and aspect coverage.
 - **`yg preflight` command:** Unified diagnostic combining journal, drift, status, and validation into a single report with exit code support.
 - **Bidirectional drift detection:** `yg drift` now tracks changes to graph artifacts
   (aspects, flows, parent nodes, dependency context) alongside source files.
@@ -94,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Stale references to removed knowledge items concept from graph artifacts, spec,
+  CHANGELOG, and test fixtures. Graph elements are: node, aspect, flow (no knowledge).
 - Legacy flat string format in `.drift-state` (entries must be objects with `hash`
   and `files`).
 - `getCanonicalHash` and `getFileHashes` helpers from drift-state-store (no longer
@@ -124,7 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **README:** Primary goals (build knowledge for new projects, reverse-engineer existing codebases, autonomous maintenance). Upgrade section with CLI update and `yg init --upgrade` instructions.
-- **Rules:** Reverse-engineering order — when mapping existing code, create aspects → flows → knowledge → model (never model before cross-cutting rules and shared wisdom).
+- **Rules:** Reverse-engineering order — when mapping existing code, create aspects → flows → model (never model before cross-cutting rules).
 
 ## [0.3.2] - 2026-02-25
 
@@ -144,7 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Flow writing instruction in rules: write flow content (e.g. `description.md`) business-first — user/business perspective, technical details as inserts only
 - **Flow propagation down hierarchy:** flows now attach to listed nodes and their descendants. A child node receives flow context when its ancestor (parent, grandparent, etc.) is a participant, even if the child is not explicitly listed in `flow.nodes`
-- Tests for flow ancestor propagation, flow-scoped knowledge, and scope-nodes knowledge
+- Tests for flow ancestor propagation
 
 ### Changed
 

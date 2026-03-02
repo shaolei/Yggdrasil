@@ -15,21 +15,8 @@ auth/auth-api:
 orders/order-service:
   hash: "0000000000000000000000000000000000000000000000000000000000000000"
   files:
-    .yggdrasil/model/orders/order-service/node.yaml: "0000000000000000000000000000000000000000000000000000000000000000"
     src/orders/order.service.ts: "0000000000000000000000000000000000000000000000000000000000000000"
-users/user-repo:
-  hash: c4b2ac2ce0aa0efa2038c57087fb341d4e6295a5ead00c98bccb1fad94d0dae8
-  files:
-    .yggdrasil/model/users/user-repo/node.yaml: 7f58ed04bbbc6f2c1f998a6701967cac2dd9859738e8c5febda2136731295559
-    .yggdrasil/model/users/user-repo/description.md: e1702b771e0879516d26e5e891755c66ab8463f99d09aabf9053aad34cedf57b
-    .yggdrasil/model/users/user-repo/responsibility.md: e1702b771e0879516d26e5e891755c66ab8463f99d09aabf9053aad34cedf57b
-    .yggdrasil/model/users/node.yaml: 0327e84c7e819608e532c319b0b1f9f2a70d9ffe2c6d85d4db6b669ab809f796
-    .yggdrasil/model/users/responsibility.md: 3c008e8f2d07f2fbdb9011bcad9a93bd44c7fc3c4dd8eca4e0619ac91831a5fe
-    src/users/user.repository.ts: da22ab3ea28c2090fc0bf04824609ae017f37cc15811efe0466b0f033b0db162
 users/missing-service:
-  hash: e40aae1dff8360806f6a51c87ef96ddc39dbca2b9e8c2c6dd1777d48fe205b7b
+  hash: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   files:
-    .yggdrasil/model/users/missing-service/node.yaml: ddec56d943a7f3bcc4089d563ba99450631601e2a1bffa1ac5ad4ff3d242646a
-    .yggdrasil/model/users/missing-service/responsibility.md: dc274824fa34fcf3cabc6fab0b1bf8d8b61eda325726eeb119f17840b7cc0781
-    .yggdrasil/model/users/node.yaml: 0327e84c7e819608e532c319b0b1f9f2a70d9ffe2c6d85d4db6b669ab809f796
-    .yggdrasil/model/users/responsibility.md: 3c008e8f2d07f2fbdb9011bcad9a93bd44c7fc3c4dd8eca4e0619ac91831a5fe
+    src/users/missing.service.ts: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
