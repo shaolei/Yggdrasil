@@ -104,7 +104,7 @@ artifacts:
     expect(config.quality?.context_budget.error).toBe(16000);
   });
 
-  it('throws when artifact name is node (reserved)', async () => {
+  it('throws when artifact name is node.yaml (reserved)', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-node');
     await mkdir(tmpDir, { recursive: true });
     await writeFile(
@@ -113,7 +113,7 @@ artifacts:
 name: "Reserved"
 node_types: [service]
 artifacts:
-  node:
+  node.yaml:
     required: always
     description: "x"
   responsibility:
@@ -124,7 +124,7 @@ artifacts:
     );
 
     await expect(parseConfig(path.join(tmpDir, 'config.yaml'))).rejects.toThrow(
-      "artifact name 'node' is reserved",
+      "artifact name 'node.yaml' is reserved",
     );
 
     await rm(tmpDir, { recursive: true, force: true });

@@ -90,7 +90,7 @@ describe('hash', () => {
       await rm(tmpDir, { recursive: true, force: true });
     });
 
-    it('returns empty hash for ignored file when projectRoot provided', async () => {
+    it('hashes gitignored file when directly mapped (gitignore only applies to directory scans)', async () => {
       const tmpDir = path.join(__dirname, '../../fixtures/tmp-hash-ignored-file');
       await mkdir(tmpDir, { recursive: true });
       await writeFile(path.join(tmpDir, '.gitignore'), 'ignored.txt\n', 'utf-8');
@@ -98,8 +98,9 @@ describe('hash', () => {
       await writeFile(ignoredPath, 'secret', 'utf-8');
 
       const hash = await hashPath(ignoredPath, { projectRoot: tmpDir });
-      expect(hash).toBe(hashString(''));
-      expect(hash).not.toBe(hashString('secret'));
+      // Mapped files are always hashed regardless of gitignore
+      expect(hash).not.toBe(hashString(''));
+      expect(hash).toMatch(/^[a-f0-9]{64}$/);
 
       await rm(tmpDir, { recursive: true, force: true });
     });

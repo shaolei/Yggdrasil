@@ -23,9 +23,7 @@ export async function hashPath(targetPath: string, options: HashPathOptions = {}
   const targetStat = await stat(targetPath);
 
   if (targetStat.isFile()) {
-    if (isIgnoredPath(targetPath, projectRoot, gitignoreMatcher)) {
-      return hashString('');
-    }
+    // Mapped files are always hashed — gitignore only applies to directory scans.
     return hashFile(targetPath);
   }
 

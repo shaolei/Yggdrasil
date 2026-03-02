@@ -63,8 +63,8 @@ export async function parseConfig(filePath: string): Promise<YggConfig> {
 
   const artifactsMap: Record<string, ArtifactConfig> = {};
   for (const [key, val] of Object.entries(artifacts)) {
-    if (key === 'node') {
-      throw new Error(`config.yaml: artifact name 'node' is reserved`);
+    if (key === 'node.yaml') {
+      throw new Error(`config.yaml: artifact name 'node.yaml' is reserved`);
     }
     const a = val as Record<string, unknown>;
     const required = a.required;
