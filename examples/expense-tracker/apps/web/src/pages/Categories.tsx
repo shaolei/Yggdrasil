@@ -39,36 +39,46 @@ export function Categories() {
   const customCategories = categories.filter((c) => c.user_id !== null);
 
   return (
-    <div>
+    <div className="page">
       <h1>Categories</h1>
-      <form onSubmit={handleAdd} style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem" }}>
+      <form onSubmit={handleAdd} className="toolbar" style={{ marginBottom: "1rem" }}>
         <input
           type="text"
+          className="form-input"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="New category name"
-          style={{ padding: "0.5rem", flex: 1 }}
+          style={{ flex: 1 }}
         />
-        <button type="submit" style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
+        <button type="submit" className="btn btn--primary">
           Add
         </button>
       </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <p>Custom categories: {customCategories.length}/5 (Free plan limit)</p>
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {categories.map((c) => (
-          <li key={c.id} style={{ padding: "0.5rem 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span>
-              {c.icon} {c.name}
-            </span>
-            {c.user_id !== null && (
-              <button onClick={() => handleDelete(c.id)} style={{ cursor: "pointer", color: "red", background: "none", border: "none" }}>
-                Delete
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      {error && <div className="alert alert--error">{error}</div>}
+      <p style={{ color: "var(--color-text-muted)", fontSize: "0.875rem", marginBottom: "1rem" }}>
+        Custom categories: {customCategories.length}/5 (Free plan limit)
+      </p>
+      <div className="card">
+        <ul className="category-list">
+          {categories.map((c) => (
+            <li key={c.id} className="category-list__item">
+              <span className="category-chip" style={c.color ? { backgroundColor: `${c.color}20`, color: c.color } : undefined}>
+                {c.icon} {c.name}
+              </span>
+              {c.user_id !== null && (
+                <button
+                  type="button"
+                  onClick={() => handleDelete(c.id)}
+                  className="btn btn--danger btn"
+                  style={{ padding: "0.25rem 0.5rem", fontSize: "0.875rem" }}
+                >
+                  Delete
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

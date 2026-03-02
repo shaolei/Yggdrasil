@@ -27,48 +27,63 @@ export function Expenses() {
   };
 
   return (
-    <div>
-      <h1>Expenses</h1>
-      <div style={{ marginBottom: "1rem", display: "flex", gap: "1rem", alignItems: "center" }}>
-        <label>
-          Month:{" "}
-          <input
-            type="month"
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
-          />
-        </label>
-        <Link to="/expenses/new" style={{ padding: "0.5rem 1rem", background: "#4CAF50", color: "#fff", borderRadius: "4px", textDecoration: "none" }}>
+    <div className="page">
+      <div className="toolbar toolbar--between">
+        <h1>Expenses</h1>
+        <Link to="/expenses/new" className="btn btn--primary">
           Add expense
         </Link>
       </div>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: "left" }}>Date</th>
-            <th style={{ textAlign: "left" }}>Category</th>
-            <th style={{ textAlign: "left" }}>Description</th>
-            <th style={{ textAlign: "right" }}>Amount</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {expenses.map((e) => (
-            <tr key={e.id}>
-              <td>{e.date}</td>
-              <td>{e.category_name}</td>
-              <td>{e.description ?? ""}</td>
-              <td style={{ textAlign: "right" }}>{formatAmount(e.amount)} USD</td>
-              <td>
-                <Link to={`/expenses/${e.id}/edit`}>Edit</Link>{" "}
-                <button onClick={() => handleDelete(e.id)} style={{ cursor: "pointer", color: "red", background: "none", border: "none" }}>
-                  Delete
-                </button>
-              </td>
+      <div className="toolbar">
+        <label className="form-label" style={{ marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          Month:
+          <input
+            type="month"
+            className="form-input"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            style={{ width: "auto" }}
+          />
+        </label>
+      </div>
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th className="amount">Amount</th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {expenses.map((e) => (
+              <tr key={e.id}>
+                <td>{e.date}</td>
+                <td>{e.category_name}</td>
+                <td>{e.description ?? ""}</td>
+                <td className="amount">{formatAmount(e.amount)} USD</td>
+                <td style={{ textAlign: "right" }}>
+                  <span style={{ display: "inline-flex", gap: "0.5rem" }}>
+                    <Link to={`/expenses/${e.id}/edit`} className="btn btn--ghost btn" style={{ padding: "0.25rem 0.5rem", fontSize: "0.875rem" }}>
+                      Edit
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(e.id)}
+                      className="btn btn--danger btn"
+                      style={{ padding: "0.25rem 0.5rem", fontSize: "0.875rem" }}
+                    >
+                      Delete
+                    </button>
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

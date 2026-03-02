@@ -22,46 +22,46 @@ export function Register() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "0 auto" }}>
+    <div className="page page--narrow">
       <h1>Register</h1>
-      <form onSubmit={handleSubmit}>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Email</label>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        {error && <div className="alert alert--error">{error}</div>}
+        <div className="form-group">
+          <label className="form-label">Email</label>
           <input
             type="email"
+            className="form-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: "100%", padding: "0.5rem" }}
           />
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Password</label>
+        <div className="form-group">
+          <label className="form-label">Password</label>
           <input
             type="password"
+            className="form-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={8}
-            style={{ width: "100%", padding: "0.5rem" }}
           />
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Confirm password</label>
+        <div className="form-group">
+          <label className="form-label">Confirm password</label>
           <input
             type="password"
+            className="form-input"
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}
             required
-            style={{ width: "100%", padding: "0.5rem" }}
           />
         </div>
-        <button type="submit" style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
+        <button type="submit" className="btn btn--primary">
           Register
         </button>
       </form>
-      <p style={{ marginTop: "1rem" }}>
+      <p className="auth-form__footer">
         Already have an account? <Link to="/login">Log in</Link>
       </p>
     </div>

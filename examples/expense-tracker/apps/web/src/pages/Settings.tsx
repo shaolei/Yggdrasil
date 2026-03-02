@@ -35,57 +35,68 @@ export function Settings() {
   };
 
   return (
-    <div>
+    <div className="page page--narrow">
       <h1>Settings</h1>
-      <section style={{ marginBottom: "2rem" }}>
-        <h2>Profile</h2>
-        <p>Email: {user?.email ?? "..."}</p>
+      <section className="section">
+        <h2 className="section__title">Profile</h2>
+        <div className="card card--compact">
+          <p style={{ margin: 0 }}>
+            Email: <strong>{user?.email ?? "..."}</strong>
+          </p>
+          <span className={`badge badge--${user?.plan ?? "free"}`} style={{ marginTop: "0.5rem", display: "inline-block" }}>
+            {user?.plan ?? "free"}
+          </span>
+        </div>
       </section>
-      <section style={{ marginBottom: "2rem" }}>
-        <h2>Change password</h2>
-        <form onSubmit={handleChangePassword} style={{ maxWidth: "400px" }}>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          {success && <p style={{ color: "green" }}>Password updated</p>}
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem" }}>Current password</label>
+      <section className="section">
+        <h2 className="section__title">Change password</h2>
+        <form onSubmit={handleChangePassword}>
+          {error && <div className="alert alert--error">{error}</div>}
+          {success && <div className="alert alert--success">Password updated</div>}
+          <div className="form-group">
+            <label className="form-label">Current password</label>
             <input
               type="password"
+              className="form-input"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
-              style={{ width: "100%", padding: "0.5rem" }}
             />
           </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem" }}>New password</label>
+          <div className="form-group">
+            <label className="form-label">New password</label>
             <input
               type="password"
+              className="form-input"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
               minLength={8}
-              style={{ width: "100%", padding: "0.5rem" }}
             />
           </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem" }}>Confirm new password</label>
+          <div className="form-group">
+            <label className="form-label">Confirm new password</label>
             <input
               type="password"
+              className="form-input"
               value={newPasswordConfirm}
               onChange={(e) => setNewPasswordConfirm(e.target.value)}
               required
-              style={{ width: "100%", padding: "0.5rem" }}
             />
           </div>
-          <button type="submit" style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
+          <button type="submit" className="btn btn--primary">
             Save
           </button>
         </form>
       </section>
-      <section>
-        <h2>Subscription</h2>
-        <p>Plan: {user?.plan ?? "..."}</p>
-        <Link to="/settings/subscription">Manage subscription</Link>
+      <section className="section">
+        <h2 className="section__title">Subscription</h2>
+        <div className="card card--compact">
+          <p style={{ margin: "0 0 0.5rem" }}>Plan: <strong>{user?.plan ?? "..."}</strong></p>
+          <Link to="/settings/subscription" className="btn btn--secondary btn" style={{ padding: "0.375rem 0.75rem" }}>
+            Manage subscription
+          </Link>
+        </div>
       </section>
     </div>
   );

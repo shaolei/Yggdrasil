@@ -1,11 +1,29 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+
+const navItems = [
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/expenses", label: "Expenses" },
+  { to: "/categories", label: "Categories" },
+  { to: "/budgets", label: "Budgets" },
+  { to: "/reports", label: "Reports" },
+];
 
 export function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    if (open) document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [open]);
 
   const handleLogout = () => {
     logout();
@@ -14,48 +32,34 @@ export function Header() {
   };
 
   return (
-    <header style={{ display: "flex", justifyContent: "space-between", padding: "1rem 2rem", borderBottom: "1px solid #eee" }}>
-      <Link to="/dashboard" style={{ fontSize: "1.25rem", fontWeight: "bold", textDecoration: "none", color: "#333" }}>
+    <header className="header">
+      <Link to="/dashboard" className="header__logo">
         Expense Tracker
       </Link>
-      <nav style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-        <Link to="/dashboard">Dashboard</Link>
-        <Link to="/expenses">Expenses</Link>
-        <Link to="/categories">Categories</Link>
-        <Link to="/budgets">Budgets</Link>
-        <Link to="/reports">Reports</Link>
-        <div style={{ position: "relative" }}>
+      <nav className="header__nav">
+        {navItems.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={location.pathname.startsWith(item.to) ? "active" : ""}
+          >
+            {item.label}
+          </Link>
+        ))}
+        <div className="header__dropdown" ref={ref}>
           <button
+            type="button"
+            className="header__dropdown-btn"
             onClick={() => setOpen(!open)}
-            style={{ padding: "0.5rem", background: "#eee", border: "none", borderRadius: "4px", cursor: "pointer" }}
           >
             {user?.email ?? "..."} ▼
           </button>
           {open && (
-            <div
-              style={{
-                position: "absolute",
-                right: 0,
-                top: "100%",
-                marginTop: "0.25rem",
-                background: "#fff",
-                border: "1px solid #eee",
-                borderRadius: "4px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                minWidth: "200px",
-              }}
-            >
-              <Link
-                to="/settings"
-                style={{ display: "block", padding: "0.75rem 1rem", textDecoration: "none", color: "#333" }}
-                onClick={() => setOpen(false)}
-              >
+            <div className="header__dropdown-menu">
+              <Link to="/settings" onClick={() => setOpen(false)}>
                 Settings
               </Link>
-              <button
-                onClick={handleLogout}
-                style={{ width: "100%", padding: "0.75rem 1rem", textAlign: "left", border: "none", background: "none", cursor: "pointer" }}
-              >
+              <button type="button" onClick={handleLogout}>
                 Logout
               </button>
             </div>

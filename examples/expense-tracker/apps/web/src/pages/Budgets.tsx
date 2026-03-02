@@ -36,34 +36,45 @@ export function Budgets() {
   const budgetByCategory = budgetMap(budgets);
 
   return (
-    <div>
+    <div className="page">
       <h1>Budgets</h1>
-      <label style={{ marginBottom: "1rem", display: "block" }}>
-        Month: <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
-      </label>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: "left" }}>Category</th>
-            <th style={{ textAlign: "right" }}>Spent</th>
-            <th style={{ textAlign: "right" }}>Limit</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((c) => {
-            const b = budgetByCategory.get(c.id);
-            return (
-              <BudgetRow
-                key={c.id}
-                category={c}
-                budget={b}
-                onSave={handleSave}
-                formatAmount={formatAmount}
-              />
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="toolbar">
+        <label className="form-label" style={{ marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          Month:
+          <input
+            type="month"
+            className="form-input"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            style={{ width: "auto" }}
+          />
+        </label>
+      </div>
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th className="amount">Spent</th>
+              <th>Limit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((c) => {
+              const b = budgetByCategory.get(c.id);
+              return (
+                <BudgetRow
+                  key={c.id}
+                  category={c}
+                  budget={b}
+                  onSave={handleSave}
+                  formatAmount={formatAmount}
+                />
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -97,22 +108,27 @@ function BudgetRow({
     }
   };
 
+  const isOver = budget && budget.current_total > budget.limit_amount;
+
   return (
     <tr>
       <td>{category.name}</td>
-      <td style={{ textAlign: "right" }}>{budget ? formatAmount(budget.current_total) : "0"} USD</td>
+      <td className="amount" style={isOver ? { color: "var(--color-danger)" } : undefined}>
+        {budget ? formatAmount(budget.current_total) : "0"} USD
+      </td>
       <td>
         <form onSubmit={handleSubmit} style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
           <input
             type="number"
+            className="form-input"
             step="0.01"
             min="0"
             value={limit}
             onChange={(e) => setLimit(e.target.value)}
             placeholder="Limit"
-            style={{ width: "100px", padding: "0.25rem" }}
+            style={{ width: "100px" }}
           />
-          <button type="submit" style={{ padding: "0.25rem 0.5rem", cursor: "pointer" }}>
+          <button type="submit" className="btn btn--secondary btn" style={{ padding: "0.375rem 0.75rem" }}>
             Save
           </button>
         </form>

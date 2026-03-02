@@ -60,17 +60,17 @@ export function EditExpense() {
   };
 
   return (
-    <div style={{ maxWidth: "400px" }}>
+    <div className="page page--narrow">
       <h1>Edit expense</h1>
       <form onSubmit={handleSubmit}>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Category</label>
+        {error && <div className="alert alert--error">{error}</div>}
+        <div className="form-group">
+          <label className="form-label">Category</label>
           <select
+            className="form-select"
             value={categoryId}
             onChange={(e) => setCategoryId(Number(e.target.value))}
             required
-            style={{ width: "100%", padding: "0.5rem" }}
           >
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -79,42 +79,42 @@ export function EditExpense() {
             ))}
           </select>
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Amount (USD)</label>
+        <div className="form-group">
+          <label className="form-label">Amount (USD)</label>
           <input
             type="number"
+            className="form-input"
             step="0.01"
             min="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
-            style={{ width: "100%", padding: "0.5rem" }}
           />
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Date</label>
+        <div className="form-group">
+          <label className="form-label">Date</label>
           <input
             type="date"
+            className="form-input"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
-            style={{ width: "100%", padding: "0.5rem" }}
           />
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Description</label>
+        <div className="form-group">
+          <label className="form-label">Description</label>
           <input
             type="text"
+            className="form-input"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem" }}
           />
         </div>
         <div style={{ display: "flex", gap: "1rem" }}>
-          <button type="submit" style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
+          <button type="submit" className="btn btn--primary">
             Save
           </button>
-          <button type="button" onClick={handleDelete} style={{ padding: "0.5rem 1rem", cursor: "pointer", color: "red" }}>
+          <button type="button" onClick={handleDelete} className="btn btn--danger">
             Delete
           </button>
         </div>

@@ -21,30 +21,47 @@ export function Reports() {
   const formatAmount = (n: number) => (n / 100).toFixed(2);
 
   return (
-    <div>
+    <div className="page">
       <h1>Reports</h1>
-      <label style={{ marginBottom: "1rem", display: "block" }}>
-        Month: <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
-      </label>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: "left" }}>Category</th>
-            <th style={{ textAlign: "right" }}>Amount</th>
-            <th style={{ textAlign: "right" }}>%</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((r) => (
-            <tr key={r.id}>
-              <td>{r.icon} {r.name}</td>
-              <td style={{ textAlign: "right" }}>{formatAmount(r.total)} USD</td>
-              <td style={{ textAlign: "right" }}>{total > 0 ? ((r.total / total) * 100).toFixed(1) : "0"}%</td>
+      <div className="toolbar">
+        <label className="form-label" style={{ marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          Month:
+          <input
+            type="month"
+            className="form-input"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            style={{ width: "auto" }}
+          />
+        </label>
+      </div>
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th className="amount">Amount</th>
+              <th className="amount">%</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <p style={{ marginTop: "1rem", fontWeight: "bold" }}>Total: {formatAmount(total)} USD</p>
+          </thead>
+          <tbody>
+            {data.map((r) => (
+              <tr key={r.id}>
+                <td>
+                  <span className="category-chip" style={r.color ? { backgroundColor: `${r.color}20`, color: r.color } : undefined}>
+                    {r.icon} {r.name}
+                  </span>
+                </td>
+                <td className="amount">{formatAmount(r.total)} USD</td>
+                <td className="amount">{total > 0 ? ((r.total / total) * 100).toFixed(1) : "0"}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style={{ marginTop: "1rem", fontWeight: 600, fontSize: "1.125rem" }}>
+        Total: {formatAmount(total)} USD
+      </p>
     </div>
   );
 }

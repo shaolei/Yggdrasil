@@ -20,22 +20,29 @@ export function Dashboard() {
   const formatAmount = (n: number) => (n / 100).toFixed(2);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <Link to="/expenses/new" style={{ display: "inline-block", marginBottom: "1rem", padding: "0.5rem 1rem", background: "#4CAF50", color: "#fff", borderRadius: "4px", textDecoration: "none" }}>
-        Add expense
-      </Link>
+    <div className="page">
+      <div className="toolbar toolbar--between">
+        <h1>Dashboard</h1>
+        <Link to="/expenses/new" className="btn btn--primary">
+          Add expense
+        </Link>
+      </div>
       {summary && (
-        <div style={{ marginBottom: "2rem", padding: "1rem", background: "#f5f5f5", borderRadius: "8px" }}>
+        <div className="card">
           <h2>This month</h2>
-          <p style={{ fontSize: "1.5rem", fontWeight: "bold" }}>{formatAmount(summary.total)} USD</p>
+          <p style={{ fontSize: "1.75rem", fontWeight: 700, margin: "0.5rem 0" }}>
+            {formatAmount(summary.total)} USD
+          </p>
           {summary.topCategories.length > 0 && (
-            <div>
+            <div style={{ marginTop: "1rem" }}>
               <h3>Top categories</h3>
-              <ul style={{ listStyle: "none", padding: 0 }}>
+              <ul className="category-list" style={{ marginTop: "0.5rem" }}>
                 {summary.topCategories.map((c) => (
-                  <li key={c.name}>
-                    {c.icon} {c.name}: {formatAmount(c.total)} USD
+                  <li key={c.name} className="category-list__item">
+                    <span className="category-chip">
+                      {c.icon} {c.name}
+                    </span>
+                    <span className="amount">{formatAmount(c.total)} USD</span>
                   </li>
                 ))}
               </ul>
@@ -43,29 +50,33 @@ export function Dashboard() {
           )}
         </div>
       )}
-      <div>
+      <div className="card">
         <h2>Recent expenses</h2>
         {recent.length === 0 ? (
-          <p>No expenses yet. Add your first one!</p>
+          <p style={{ color: "var(--color-text-muted)", margin: 0 }}>
+            No expenses yet. Add your first one!
+          </p>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: "left" }}>Date</th>
-                <th style={{ textAlign: "left" }}>Category</th>
-                <th style={{ textAlign: "right" }}>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recent.map((e) => (
-                <tr key={e.id}>
-                  <td>{e.date}</td>
-                  <td>{e.category_name}</td>
-                  <td style={{ textAlign: "right" }}>{formatAmount(e.amount)} USD</td>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th className="amount">Amount</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recent.map((e) => (
+                  <tr key={e.id}>
+                    <td>{e.date}</td>
+                    <td>{e.category_name}</td>
+                    <td className="amount">{formatAmount(e.amount)} USD</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

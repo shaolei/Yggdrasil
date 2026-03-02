@@ -17,23 +17,30 @@ export function Subscription() {
   };
 
   return (
-    <div>
+    <div className="page page--narrow">
       <h1>Subscription</h1>
-      <p>Current plan: {user?.plan ?? "..."}</p>
-      {user?.plan === "free" ? (
-        <div>
-          <p>Upgrade to Pro for unlimited expenses and categories.</p>
-          <button
-            onClick={handleUpgrade}
-            disabled={loading}
-            style={{ padding: "0.5rem 1rem", cursor: loading ? "wait" : "pointer", background: "#4CAF50", color: "#fff", border: "none", borderRadius: "4px" }}
-          >
-            {loading ? "Upgrading..." : "Upgrade to Pro (mock)"}
-          </button>
-        </div>
-      ) : (
-        <p>You have Pro plan.</p>
-      )}
+      <div className="card">
+        <p style={{ margin: "0 0 1rem" }}>
+          Current plan: <span className={`badge badge--${user?.plan ?? "free"}`}>{user?.plan ?? "..."}</span>
+        </p>
+        {user?.plan === "free" ? (
+          <div>
+            <p style={{ color: "var(--color-text-muted)", marginBottom: "1rem" }}>
+              Upgrade to Pro for unlimited expenses and categories.
+            </p>
+            <button
+              type="button"
+              onClick={handleUpgrade}
+              disabled={loading}
+              className="btn btn--primary"
+            >
+              {loading ? "Upgrading..." : "Upgrade to Pro (mock)"}
+            </button>
+          </div>
+        ) : (
+          <p style={{ color: "var(--color-accent)", fontWeight: 600 }}>You have Pro plan.</p>
+        )}
+      </div>
     </div>
   );
 }
