@@ -82,7 +82,7 @@ cli/io:
     source/cli/src/io/node-parser.ts: 36500e4fa618d99a90f19a6c0e6de09fffd3a9a965cc4e7120b050766a681bad
     source/cli/src/io/schema-parser.ts: 368e5897845e6ada6fbe58b4289c9363b3c77970d2be234117431d66cade2d6f
 cli/model:
-  hash: 646a90b17ac857552f1f6a234eb5001c106137ece921f3a483f4d615151623ad
+  hash: 9c0a5773bbbea7fab698506109abe9f41d803ffab4e28e77d951118bab151d63
   files:
     .yggdrasil/model/cli/model/node.yaml: 98cd88e2e8ad4184e86a618bfc8e3ac020838a738ec1d87da39ee243e82215f1
     .yggdrasil/model/cli/model/decisions.md: 5b68440fcdc070181c8dfad62a6dc1fdb299c0bbaba1732d63e1be449449d3ca
@@ -93,9 +93,9 @@ cli/model:
     .yggdrasil/model/cli/decisions.md: d37de2f879fd4b21e564d1d674dd504fb63159ea85565ba9cfdcb8e4c63ba199
     .yggdrasil/model/cli/responsibility.md: 44679b088e45d7811ffdd0bb994a94bdc3ee7f63b1a4c456af4a3e5fae65a987
     source/cli/src/model/.gitkeep: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-    source/cli/src/model/types.ts: 73c36a54d47187409f63a7a1d7de0541ba4bf32a5d76fb7f1efa81e0f9aeab33
+    source/cli/src/model/types.ts: 2d77082b214d56333a9eb7000e14bd9e88c68464ecd28c10b99c7645fe3d2452
 cli/templates:
-  hash: 0742542e1d6cd466f4a79d35eec4e6909af7858b8104e114e232e4dc597b5987
+  hash: 1430c05d9455c2b066934a98c6a0d778eb10f83dd4464bf6b1c6827e9cb80452
   files:
     .yggdrasil/model/cli/templates/node.yaml: a196b7cb80715efb9b8b433fe3833176f1bc5e887660d8d5e1a68ed5009ad4fd
     .yggdrasil/model/cli/templates/decisions.md: 4e33f3de4cbe1919194cbb36270b5fc013ba1bcfee5fe6b32d7e905c3fb8af88
@@ -112,7 +112,7 @@ cli/templates:
     .yggdrasil/flows/init/description.md: 7ab06dca456fe57c748e343faba4dff4db88ef73792ab2eaf28298ff595adba0
     source/cli/src/templates/default-config.ts: 3b91fc645ba78e5b1a4a2704ed3d25b0312870c629adf3473d124a029e720980
     source/cli/src/templates/platform.ts: c92d31c3944cc6134759c877ad0b06fa1ca38f1294649af7ca39ab74460105e1
-    source/cli/src/templates/rules.ts: 121a15a70f791ba77d828d1bbb237ad6e2e80a276834ad38318fbe379f33b2d2
+    source/cli/src/templates/rules.ts: 2b4aa0102b7cb7f7c597366ad166ff993d19f26f87c36ed5db49dd8d8e84cd9e
     source/cli/graph-schemas/aspect.yaml: 543dd82f91efa0f353e905f8f3ecd93770abe0ef19a3194c40f33c2940ec0718
     source/cli/graph-schemas/flow.yaml: 5bf15115678617fef1175e25ac28e54482513e275254bd4a8680cc8268d2d463
     source/cli/graph-schemas/node.yaml: 5e6fdf9da862ac7ad0ea364fa85c90ccf0c80ac8ed51a99162654c71ada92c6e
@@ -244,7 +244,7 @@ cli/commands/journal:
     source/cli/src/cli/journal-read.ts: fc864082c5cdea63c79e5eb8460236d0c2543f9de7eac1b6693fc4f7cca09dc5
     source/cli/src/cli/journal-archive.ts: 7f82b08311355bdd2b34493af0a7c1e347eb3231b26c691d54b39754dbea7663
 cli/commands/graph-ops:
-  hash: 2b5ed7e835b865f4921c141c8be3b0f87490d96ed76aeb6535550d31ffcfa68e
+  hash: 9a999104ca6c4f210729bc0ac362bb0d694e56109a6ce1d46444d3db8e429833
   files:
     .yggdrasil/model/cli/commands/graph-ops/node.yaml: a019d315f5d84a2ed370ff3dabc0247663f3d64b81f4b3a911ece6609fee9845
     .yggdrasil/model/cli/commands/graph-ops/errors.md: 4b3194555e3bd531dd40e870f45299bce08db2e418d4b51fbe7ac7340a667aa7
@@ -287,11 +287,11 @@ cli/commands/graph-ops:
     source/cli/src/cli/tree.ts: 16737878e0c4c9acc86739d5087a043d253666a0dc8cecc6a492d682f725e9ab
     source/cli/src/cli/owner.ts: 33baba8da8e2ea4bffd8e524107d44811408c1e4fb67c784ac28fa426b8d2f56
     source/cli/src/cli/deps.ts: 3c8fdba935c13c6490205ea3d04d9e0ed3764abeb80eb10bb8fdd29701b7d3a9
-    source/cli/src/cli/impact.ts: e047fb95d0e99e6dda222438e9802052635d2f0c31e1cd7ee3131011d5a0ed95
+    source/cli/src/cli/impact.ts: a0c685c3d1f63380387a945bef4ca8e8edefa268b38d0fb60ea690c7c8d510ab
     source/cli/src/cli/status.ts: 4fc59d2416fb4c2a30e2be54970447f384e217f1878a5a80f6155097adfddcfb
     source/cli/src/cli/preflight.ts: cd466eae3b1106de2251c7b9c6c358a3e3d2f1d040743d4f954fbb429bb795c6
 cli/core/loader:
-  hash: 8caf0dfb75911feca13674b601d224fef74abe992fc13509730990691a5ea23d
+  hash: 35327c0eaf1761bfb4fd2b7c6874c43cbb5694fca05ce8c02a59e99ff47cf1ee
   files:
     .yggdrasil/model/cli/core/loader/node.yaml: 94980bc15dbcdce521976f6f8794feec7746631fffefacc49a48ba7aae835b35
     .yggdrasil/model/cli/core/loader/errors.md: 428e06d3ca7b4df7db09bb0ab5bd12f44ab6b447fa5b0be1fecebc6d119fa282
@@ -324,10 +324,10 @@ cli/core/loader:
     .yggdrasil/flows/drift/description.md: ac41d0633df7faed0cfe81f52c895344076a08657bdd65372e96abf8cf4d02c3
     .yggdrasil/flows/validate/flow.yaml: a50a42b81665319ae478d268f44f5f6b1a3e159efaef4f5d0d4390356e1544be
     .yggdrasil/flows/validate/description.md: c4485c3e3430963988c8ce4ff6a70b13e3b1aa6485cc1ac0a881f081f131c523
-    source/cli/src/core/graph-loader.ts: 2b4bf81d93aa7025ed5ab21bd65d73aedb2ee0cd0bf667de843d97cb205696c8
+    source/cli/src/core/graph-loader.ts: ac6f9d167aae0cd3cdc0b96b599d86ba64c4c4838d70d01dd206f9668cdedce5
     source/cli/src/core/graph-from-git.ts: d3a9faad4509eba0417651ba01095e2440e0771a34be67522c77c19e03f97809
 cli/core/context:
-  hash: 867bbec2cbf486de6daf26d6b5395e4e96779a1d2a5273f5b48593c26e8d48e2
+  hash: 219fc32a1e9552a07c2a2c43976689c640cfa49a219fb1026d950191200a1dbd
   files:
     .yggdrasil/model/cli/core/context/node.yaml: aa410c11c8c4e7c49df164e5f65bf779b999b5357fbef752f298eacb1185e330
     .yggdrasil/model/cli/core/context/errors.md: ac1c53e7ae29e3d038502250166f0ff048bf723c5a6df78b9b2ae4848bda57a3
@@ -352,7 +352,7 @@ cli/core/context:
     .yggdrasil/model/cli/utils/errors.md: 0da11fdc6ce498eda2ba854fbd0547114428da5e51162f5c7f06eb0af9528fda
     .yggdrasil/flows/build-context/flow.yaml: 34d2c8cb7b9d08f40e2afebc0c1130af674cc55b71294041f6bcbcbc6a5dedc8
     .yggdrasil/flows/build-context/description.md: 9c3d6df9ba08ba8666f9e6c43d1baf1de9dac037786ae1893a6ab2e959d478f3
-    source/cli/src/core/context-builder.ts: 199d129bcd9801be840e187c8deb6c77814b979d7badf5f775182c4dec040c0f
+    source/cli/src/core/context-builder.ts: ed239c638a58158739a0ca7264ca8c620c1f392b7afd368f6fa71de9ec71708f
 cli/core/validator:
   hash: 3a64bbe68b693be286e539ab7051fb7cbce6b20f8ca70f033cdf54625248f71c
   files:
@@ -439,11 +439,11 @@ cli/core/dependency-resolver:
     .yggdrasil/model/cli/model/errors.md: c66f5814cc82092e078f7a816e982ef6dba6de5c3b82cc45c188d01b3e916631
     source/cli/src/core/dependency-resolver.ts: 604a78da0634acc6134d90f77929b827027f1c122f347b196ab0ab6080785d1a
 docs:
-  hash: 6c9648acf51b1c4cf8f5b7afad1dd3312b2d66be704a17657ef4e58cbed9e84c
+  hash: db9e30825827b1ac1b0dac818ae240ee0e6f9c9e26c0973d86561e2ad092d031
   files:
     .yggdrasil/model/docs/node.yaml: 1182af1dc3aeceb24262745dc13a456dc75d280a313d4bb5b364b5d3e8e6f1e3
     .yggdrasil/model/docs/responsibility.md: 40ebb143b914bbd5454e7ec1cf481f9c43e61193ca30f10e9c468fecd8da1a3b
-    docs/cli-reference.md: e6dd32fe5afd59a7ab6e4eaf0ef14403e648138943e32c6dfa974cc3d6f767f4
+    docs/cli-reference.md: 1eea1e7cb470e4fa994f47d49a2b7a16f1efa40395e6f76146b366bcb82e3d98
     docs/configuration.md: 0570612df6e6a9eeff8c5cbeac81c512dec6ce0f51ec9cab4ae69bd729b39cd8
     docs/getting-started.md: 46d80ce1256041fef674c2137dd3c3525c65ed2073c325c7cd5226a2e951cb75
     docs/index.md: b80d645c5bee975943604a39ce0e4f0fb800816e5bebc25345d7bce86b42915e
@@ -451,7 +451,7 @@ docs:
     docs/package.json: e3c48dc4ed7f4a2fc56f5d8dec2cbf2a07ffcad6f566d41a206a88a68225d756
     docs/package-lock.json: 5de0744623b0f0d3ae0f73845845ae1d5c89623da74cf542447129cb159f167e
 docs/idea:
-  hash: 2e338a45b88d401f1a03c89aeb507f220dc60829f5353d316c16a52f0709255e
+  hash: 71801c6e41e5989f8e1096eb69109910e0debb4d833b0207552894c651681b9e
   files:
     .yggdrasil/model/docs/idea/node.yaml: 93f4c0ace7cd178e44c4852d6cc3b7d48017fa10ec8e74765c2792a2cf0e56be
     .yggdrasil/model/docs/idea/responsibility.md: 9f5fd2ffc3710647b62f51f4e7624ace26e635e070012f5524b9a5b4af934927
@@ -462,4 +462,4 @@ docs/idea:
     docs/idea/graph.md: f617c86ea57aa520ee1b41cd8b0d4d7adc68154a721de9a0151e98ffaf43b14e
     docs/idea/integration.md: b80b7a354b6e33e99394a078ba9da9ad9fb1ad5bccd25c845250c64085b7daa7
     docs/idea/materialization.md: 16e764d0b35c0d71e471b4ea1406fcca26cbb5ce71a45f5689b0a2c9c670cffb
-    docs/idea/tools.md: b5d7779d8a4bf8e1b1169f9a5afc90674a43b53a6f555d6e9ea4a3d1a7ac8f59
+    docs/idea/tools.md: c6c4ccbc813d97ddda447e0875b8788e9f80bfc2d4255de53791926c726b89c0
