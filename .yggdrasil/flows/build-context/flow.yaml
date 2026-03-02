@@ -1,6 +1,6 @@
 name: Build context
 nodes:
-  - cli/commands/validation
+  - cli/commands/build-context
   - cli/core/loader
   - cli/core/validator
   - cli/core/context

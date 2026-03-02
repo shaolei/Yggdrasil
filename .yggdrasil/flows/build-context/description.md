@@ -14,7 +14,7 @@ Output plain text with XML-like tags to stdout: assembled context (global, hiera
 
 ## Participants
 
-- `cli/commands/validation` — orchestrates loadGraph, validate, buildContext, formatContextText
+- `cli/commands/build-context` — orchestrates loadGraph, validate, buildContext, formatContextText
 - `cli/core/loader` — loads graph from `.yggdrasil/`
 - `cli/core/validator` — structural checks; build-context blocks if any errors
 - `cli/core/context` — 5-step layer assembly (global, hierarchy, own, aspects, relational); relational merges structural dependencies and flows into one section; aspects include flow.aspects for participating flows

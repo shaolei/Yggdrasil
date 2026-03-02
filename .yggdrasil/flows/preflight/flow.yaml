@@ -1,0 +1,7 @@
+name: Preflight diagnostics
+nodes:
+  - cli/commands/preflight
+  - cli/core/loader
+  - cli/core/validator
+  - cli/core/drift-detector
+  - cli/io

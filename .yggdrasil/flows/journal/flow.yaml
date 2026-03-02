@@ -1,0 +1,4 @@
+name: Journal management
+nodes:
+  - cli/commands/journal
+  - cli/io
