@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Expense Tracker example:** Mini SaaS in `examples/expense-tracker/` with full Yggdrasil graph (API + Web nodes), auth, expenses, categories, budgets, reports, subscription mock.
+- **Examples blackbox node:** `examples/` mapped as blackbox in main graph — intentional coarse coverage.
 
 ## [1.0.0] - 2026-03-02
 

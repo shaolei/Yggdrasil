@@ -1,0 +1,10 @@
+name: Examples
+type: module
+aspects: []
+blackbox: true
+
+relations: []
+
+mapping:
+  paths:
+    - examples
