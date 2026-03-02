@@ -14,6 +14,7 @@ import { registerAspectsCommand } from './cli/aspects.js';
 import { registerJournalAddCommand } from './cli/journal-add.js';
 import { registerJournalReadCommand } from './cli/journal-read.js';
 import { registerJournalArchiveCommand } from './cli/journal-archive.js';
+import { registerPreflightCommand } from './cli/preflight.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -43,5 +44,6 @@ registerAspectsCommand(program);
 registerJournalAddCommand(program);
 registerJournalReadCommand(program);
 registerJournalArchiveCommand(program);
+registerPreflightCommand(program);
 
 program.parse();
