@@ -14,9 +14,10 @@ Public API consumed by cli/core and cli/commands.
 
 - `hashFile(filePath: string): Promise<string>` — SHA-256 hex of file content
 - `hashString(content: string): string` — SHA-256 hex of string
-- `hashPath(targetPath: string, options?: { projectRoot?: string }): Promise<string>` — file: hashFile (or hashString('') if ignored); directory: sorted path:hash digest
-- `perFileHashes(projectRoot: string, mapping: { paths?: string[] }): Promise<Array<{ path: string; hash: string }>>` — returns [] for empty paths; respects .gitignore
+- `hashPath(targetPath: string, options?: { projectRoot?: string }): Promise<string>` — file: hashFile; directory: sorted path:hash digest. Respects hierarchical .gitignore (root + nested)
+- `perFileHashes(projectRoot: string, mapping: { paths?: string[] }): Promise<Array<{ path: string; hash: string }>>` — returns [] for empty paths; respects hierarchical .gitignore
 - `hashForMapping(projectRoot: string, mapping: { paths?: string[] }): Promise<string>` — drift hash; throws "Invalid mapping for hash: no paths" if no paths
+- `hashTrackedFiles(projectRoot: string, trackedFiles: TrackedFile[]): Promise<{ canonicalHash: string; fileHashes: Record<string, string> }>` — drift detection hash; expands directories with hierarchical .gitignore filtering
 
 ## tokens.ts
 

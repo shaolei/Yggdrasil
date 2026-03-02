@@ -12,6 +12,8 @@ type HashPathOptions = {
   projectRoot?: string;
 };
 
+type GitignoreEntry = { basePath: string; matcher: Ignore };
+
 export async function hashFile(filePath: string): Promise<string> {
   const content = await readFile(filePath);
   return createHash('sha256').update(content).digest('hex');
@@ -19,7 +21,7 @@ export async function hashFile(filePath: string): Promise<string> {
 
 export async function hashPath(targetPath: string, options: HashPathOptions = {}): Promise<string> {
   const projectRoot = options.projectRoot ? path.resolve(options.projectRoot) : undefined;
-  const gitignoreMatcher = await loadGitignoreMatcher(projectRoot);
+  const gitignoreStack = await loadRootGitignoreStack(projectRoot);
   const targetStat = await stat(targetPath);
 
   if (targetStat.isFile()) {
@@ -30,7 +32,7 @@ export async function hashPath(targetPath: string, options: HashPathOptions = {}
   if (targetStat.isDirectory()) {
     const fileHashes = await collectDirectoryFileHashes(targetPath, targetPath, {
       projectRoot,
-      gitignoreMatcher,
+      gitignoreStack,
     });
     const digestInput = fileHashes
       .sort((a, b) => a.path.localeCompare(b.path))
@@ -45,15 +47,26 @@ export async function hashPath(targetPath: string, options: HashPathOptions = {}
 async function collectDirectoryFileHashes(
   directoryPath: string,
   rootDirectoryPath: string,
-  options: { projectRoot?: string; gitignoreMatcher?: Ignore },
+  options: { projectRoot?: string; gitignoreStack?: GitignoreEntry[] },
 ): Promise<Array<{ path: string; hash: string }>> {
+  // Inherit parent stack and check for local .gitignore in this directory
+  let stack = options.gitignoreStack ?? [];
+  try {
+    const localContent = await readFile(path.join(directoryPath, '.gitignore'), 'utf-8');
+    const localMatcher = ignoreFactory();
+    localMatcher.add(localContent);
+    stack = [...stack, { basePath: directoryPath, matcher: localMatcher }];
+  } catch {
+    // No local .gitignore — continue with inherited stack
+  }
+
   const entries = await readdir(directoryPath, { withFileTypes: true });
   const result: Array<{ path: string; hash: string }> = [];
 
   for (const entry of entries) {
     const absoluteChildPath = path.join(directoryPath, entry.name);
 
-    if (isIgnoredPath(absoluteChildPath, options.projectRoot, options.gitignoreMatcher)) {
+    if (isIgnoredByStack(absoluteChildPath, stack)) {
       continue;
     }
 
@@ -61,14 +74,10 @@ async function collectDirectoryFileHashes(
       const nested = await collectDirectoryFileHashes(
         absoluteChildPath,
         rootDirectoryPath,
-        options,
+        { projectRoot: options.projectRoot, gitignoreStack: stack },
       );
-      for (const nestedEntry of nested) {
-        result.push({
-          path: path.relative(rootDirectoryPath, path.join(absoluteChildPath, nestedEntry.path)),
-          hash: nestedEntry.hash,
-        });
-      }
+      // Nested entries already have paths relative to rootDirectoryPath
+      result.push(...nested);
       continue;
     }
 
@@ -85,33 +94,25 @@ async function collectDirectoryFileHashes(
   return result;
 }
 
-async function loadGitignoreMatcher(projectRoot?: string): Promise<Ignore | undefined> {
-  if (!projectRoot) {
-    return undefined;
-  }
-
+async function loadRootGitignoreStack(projectRoot?: string): Promise<GitignoreEntry[]> {
+  if (!projectRoot) return [];
   try {
-    const gitignorePath = path.join(projectRoot, '.gitignore');
-    const gitignoreContent = await readFile(gitignorePath, 'utf-8');
+    const content = await readFile(path.join(projectRoot, '.gitignore'), 'utf-8');
     const matcher = ignoreFactory();
-    matcher.add(gitignoreContent);
-    return matcher;
+    matcher.add(content);
+    return [{ basePath: projectRoot, matcher }];
   } catch {
-    return undefined;
+    return [];
   }
 }
 
-function isIgnoredPath(candidatePath: string, projectRoot?: string, matcher?: Ignore): boolean {
-  if (!projectRoot || !matcher) {
-    return false;
+function isIgnoredByStack(candidatePath: string, stack: GitignoreEntry[]): boolean {
+  for (const { basePath, matcher } of stack) {
+    const relativePath = path.relative(basePath, candidatePath);
+    if (relativePath === '' || relativePath.startsWith('..')) continue;
+    if (matcher.ignores(relativePath) || matcher.ignores(relativePath + '/')) return true;
   }
-
-  const relativePath = path.relative(projectRoot, candidatePath);
-  if (relativePath === '' || relativePath.startsWith('..')) {
-    return false;
-  }
-
-  return matcher.ignores(relativePath) || matcher.ignores(relativePath + '/');
+  return false;
 }
 
 export function hashString(content: string): string {
@@ -128,7 +129,7 @@ export async function perFileHashes(
   if (paths.length === 0) return [];
 
   const result: Array<{ path: string; hash: string }> = [];
-  const gitignoreMatcher = await loadGitignoreMatcher(root);
+  const gitignoreStack = await loadRootGitignoreStack(root);
 
   for (const p of paths) {
     const absPath = path.join(root, p);
@@ -138,7 +139,7 @@ export async function perFileHashes(
     } else if (st.isDirectory()) {
       const hashes = await collectDirectoryFileHashes(absPath, absPath, {
         projectRoot: root,
-        gitignoreMatcher,
+        gitignoreStack,
       });
       for (const h of hashes) {
         result.push({
@@ -191,6 +192,7 @@ export async function hashTrackedFiles(
   trackedFiles: TrackedFile[],
 ): Promise<{ canonicalHash: string; fileHashes: Record<string, string> }> {
   const fileHashes: Record<string, string> = {};
+  const gitignoreStack = await loadRootGitignoreStack(projectRoot);
 
   for (const tf of trackedFiles) {
     const absPath = path.join(projectRoot, tf.path);
@@ -198,7 +200,10 @@ export async function hashTrackedFiles(
       const st = await stat(absPath);
       if (st.isDirectory()) {
         // Expand directory (for source mapping directories)
-        const dirHashes = await collectDirectoryFileHashes(absPath, absPath, { projectRoot });
+        const dirHashes = await collectDirectoryFileHashes(absPath, absPath, {
+          projectRoot,
+          gitignoreStack,
+        });
         for (const entry of dirHashes) {
           const fullRelPath = path.join(tf.path, entry.path).replace(/\\/g, '/');
           fileHashes[fullRelPath] = entry.hash;

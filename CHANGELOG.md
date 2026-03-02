@@ -58,6 +58,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Hierarchical `.gitignore` support in drift detection:** Directory hashing now discovers and
+  respects `.gitignore` files at every level, not just the project root. Previously, patterns
+  from nested `.gitignore` files (e.g. `*.db` in a subdirectory) were ignored during hash
+  computation.
+- **Missing gitignore filtering in `hashTrackedFiles`:** The drift detection hash function
+  (`hashTrackedFiles`) was not applying any `.gitignore` filtering when expanding directory
+  mappings, causing git-ignored files (`node_modules/`, `dist/`, `*.db`) to be included in
+  drift hashes. This produced false drift on CI pipelines.
+- **Path doubling in nested directory hashing:** `collectDirectoryFileHashes` was re-joining
+  already-relative nested paths with parent paths, causing doubled path prefixes in hash
+  digests.
 - `yg impact --simulate` now reports correct baseline token counts (previously baseline
   context was missing node.yaml content due to temp directory cleanup).
 - `yg impact` transitive dependency chains no longer include the target node in output.
