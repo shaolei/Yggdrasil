@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FAILED=()
 
 run_step() {
   local label="$1"
@@ -11,10 +12,14 @@ run_step() {
   local command="$3"
 
   echo "[repo-check] $label"
-  (
+  if (
     cd "$cwd"
     eval "$command"
-  )
+  ); then
+    : # ok
+  else
+    FAILED+=("$label")
+  fi
 }
 
 run_step "CLI: typecheck" "$REPO_ROOT/source/cli" "npm run typecheck"
@@ -39,4 +44,9 @@ run_step "Markdown: lint" "$REPO_ROOT" "npx markdownlint-cli2 \"**/*.md\" \".mar
 run_step "Graph: validate" "$REPO_ROOT" "node source/cli/dist/bin.js validate"
 run_step "Graph: drift" "$REPO_ROOT" "node source/cli/dist/bin.js drift"
 
+if [ ${#FAILED[@]} -gt 0 ]; then
+  echo ""
+  echo "[repo-check] Failed: ${FAILED[*]}"
+  exit 1
+fi
 echo "[repo-check] All checks passed"
