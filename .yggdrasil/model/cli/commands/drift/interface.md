@@ -5,7 +5,7 @@ Public API consumed by cli/entry. Named exports only.
 | Function | Signature | Command | Options |
 | -------- | --------- | ------- | ------- |
 | registerDriftCommand | (program: Command) => void | drift | --scope (default: all), --drifted-only. Scope: all or node-path. |
-| registerDriftSyncCommand | (program: Command) => void | drift-sync | --node (required). |
+| registerDriftSyncCommand | (program: Command) => void | drift-sync | --node or --all (one required), --recursive (optional). |
 
 **Return:** void. Both register subcommands on the Commander program.
 

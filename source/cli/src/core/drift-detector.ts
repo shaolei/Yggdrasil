@@ -22,7 +22,7 @@ export async function detectDrift(graph: Graph, filterNodePath?: string): Promis
   const entries: DriftEntry[] = [];
 
   for (const [nodePath, node] of graph.nodes) {
-    if (filterNodePath && nodePath !== filterNodePath) continue;
+    if (filterNodePath && nodePath !== filterNodePath && !nodePath.startsWith(filterNodePath + '/')) continue;
     const mapping = node.meta.mapping;
     if (!mapping) continue;
 
@@ -58,7 +58,12 @@ export async function detectDrift(graph: Graph, filterNodePath?: string): Promis
 
     // Collect all tracked files (source + graph) for this node
     const trackedFiles = collectTrackedFiles(node, graph);
-    const { canonicalHash, fileHashes } = await hashTrackedFiles(projectRoot, trackedFiles);
+    // Pass stored file data for mtime-based optimization: skip hashing files whose
+    // modification time has not changed since the last drift-sync.
+    const storedFileData = storedEntry.files
+      ? { hashes: storedEntry.files, mtimes: storedEntry.mtimes ?? {} }
+      : undefined;
+    const { canonicalHash, fileHashes } = await hashTrackedFiles(projectRoot, trackedFiles, storedFileData);
 
     if (canonicalHash === storedEntry.hash) {
       entries.push({ nodePath, status: 'ok' });
@@ -160,13 +165,26 @@ export async function syncDriftState(
   if (!node.meta.mapping) throw new Error(`Node has no mapping: ${nodePath}`);
 
   const trackedFiles = collectTrackedFiles(node, graph);
-  const { canonicalHash, fileHashes } = await hashTrackedFiles(projectRoot, trackedFiles);
+  // For sync, pass stored data so unchanged files can reuse cached hashes.
+  const existingState = await readDriftState(graph.rootPath);
+  const existingEntry = existingState[nodePath];
+  const storedFileData = existingEntry?.files
+    ? { hashes: existingEntry.files, mtimes: existingEntry.mtimes ?? {} }
+    : undefined;
+  const { canonicalHash, fileHashes, fileMtimes } = await hashTrackedFiles(projectRoot, trackedFiles, storedFileData);
 
-  const state = await readDriftState(graph.rootPath);
-  const previousHash = state[nodePath]?.hash;
+  const previousHash = existingEntry?.hash;
 
-  state[nodePath] = { hash: canonicalHash, files: fileHashes };
-  await writeDriftState(graph.rootPath, state);
+  existingState[nodePath] = { hash: canonicalHash, files: fileHashes, mtimes: fileMtimes };
+
+  // Garbage collection: remove orphaned entries for nodes that no longer exist
+  for (const key of Object.keys(existingState)) {
+    if (!graph.nodes.has(key)) {
+      delete existingState[key];
+    }
+  }
+
+  await writeDriftState(graph.rootPath, existingState);
 
   return { previousHash, currentHash: canonicalHash };
 }

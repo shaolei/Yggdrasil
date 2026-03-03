@@ -13,7 +13,8 @@ export function registerDriftCommand(program: Command): void {
     .action(async (opts: { scope: string; driftedOnly?: boolean }) => {
       try {
         const graph = await loadGraph(process.cwd());
-        const scope = (opts.scope ?? 'all').trim() || 'all';
+        const rawScope = (opts.scope ?? 'all').trim() || 'all';
+        const scope = rawScope === 'all' ? 'all' : rawScope.replace(/^\.\//, '').replace(/\/+$/, '');
 
         if (scope !== 'all') {
           const node = graph.nodes.get(scope);
@@ -21,7 +22,10 @@ export function registerDriftCommand(program: Command): void {
             process.stderr.write(`Error: Node not found: ${scope}\n`);
             process.exit(1);
           }
-          if (!node.meta.mapping) {
+          // Check if scope or any descendant has a mapping
+          const hasAnyMapping = node.meta.mapping ||
+            [...graph.nodes.entries()].some(([p, n]) => p.startsWith(scope + '/') && n.meta.mapping);
+          if (!hasAnyMapping) {
             process.stderr.write(`Error: Node has no mapping: ${scope}\n`);
             process.exit(1);
           }

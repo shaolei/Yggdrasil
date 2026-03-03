@@ -957,6 +957,31 @@ describe('validator', () => {
     expect(issues).toHaveLength(0);
   });
 
+  it('scoped validate returns parse error instead of "not found" for broken node', async () => {
+    const graph = createGraph({
+      nodeParseErrors: [
+        { nodePath: 'broken/node', message: 'node.yaml at broken/node/node.yaml: file is empty' },
+      ],
+    });
+    // The broken node is NOT in graph.nodes (it failed to parse)
+    const result = await validate(graph, 'broken/node');
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0].code).toBe('E001');
+    expect(result.issues[0].rule).toBe('invalid-node-yaml');
+    expect(result.issues[0].message).toContain('empty');
+  });
+
+  it('scoped validate returns parse error for child of broken node', async () => {
+    const graph = createGraph({
+      nodeParseErrors: [
+        { nodePath: 'broken', message: 'node.yaml at broken/node.yaml: file is empty' },
+      ],
+    });
+    const result = await validate(graph, 'broken/child');
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0].code).toBe('E001');
+  });
+
   describe('CLI exit codes', () => {
     it('exit code 0 when no errors', () => {
       const fixturePath = path.resolve(CLI_ROOT, 'tests', 'fixtures', 'sample-project');

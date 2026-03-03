@@ -47,6 +47,7 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   issues.push(...checkRelationTargets(graph));
   issues.push(...checkNoCycles(graph));
   issues.push(...checkMappingOverlap(graph));
+  issues.push(...(await checkMappingPathsExist(graph)));
   issues.push(...checkBrokenFlowRefs(graph));
   issues.push(...checkFlowAspectIds(graph));
   issues.push(...(await checkDirectoriesHaveNodeYaml(graph)));
@@ -57,13 +58,30 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   let nodesScanned = graph.nodes.size;
   if (scope !== 'all' && scope.trim()) {
     if (!graph.nodes.has(scope)) {
+      // Check if the node exists but has a parse error
+      const parseError = (graph.nodeParseErrors ?? []).find(
+        (e) => e.nodePath === scope || scope.startsWith(e.nodePath + '/'),
+      );
+      if (parseError) {
+        return {
+          issues: [{
+            severity: 'error',
+            code: 'E001',
+            rule: 'invalid-node-yaml',
+            message: parseError.message,
+            nodePath: parseError.nodePath,
+          }],
+          nodesScanned: 0,
+        };
+      }
       return {
         issues: [{ severity: 'error', rule: 'invalid-scope', message: `Node not found: ${scope}` }],
         nodesScanned: 0,
       };
     }
-    filtered = issues.filter((i) => !i.nodePath || i.nodePath === scope);
-    nodesScanned = 1;
+    const scopePrefix = scope + '/';
+    filtered = issues.filter((i) => !i.nodePath || i.nodePath === scope || i.nodePath.startsWith(scopePrefix));
+    nodesScanned = [...graph.nodes.keys()].filter((p) => p === scope || p.startsWith(scopePrefix)).length;
   }
 
   return { issues: filtered, nodesScanned };
@@ -403,6 +421,33 @@ function checkMappingOverlap(graph: Graph): ValidationIssue[] {
     }
   }
 
+  return issues;
+}
+
+// --- Rule: Mapping paths should exist on disk (W012) ---
+
+async function checkMappingPathsExist(graph: Graph): Promise<ValidationIssue[]> {
+  const issues: ValidationIssue[] = [];
+  const projectRoot = path.dirname(graph.rootPath);
+  const { access } = await import('node:fs/promises');
+
+  for (const [nodePath, node] of graph.nodes) {
+    const mappingPaths = normalizeMappingPaths(node.meta.mapping);
+    for (const mp of mappingPaths) {
+      const absPath = path.join(projectRoot, mp);
+      try {
+        await access(absPath);
+      } catch {
+        issues.push({
+          severity: 'warning',
+          code: 'W012',
+          rule: 'mapping-path-missing',
+          message: `Mapping path '${mp}' does not exist on disk`,
+          nodePath,
+        });
+      }
+    }
+  }
   return issues;
 }
 

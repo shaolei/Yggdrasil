@@ -265,11 +265,12 @@ Test: "Does this describe what happens in the world, or only in the software?" I
 ### CLI Reference
 
 ```
-yg preflight                        Unified diagnostic: journal + drift + status + validate.
+yg preflight [--quick]              Unified diagnostic: journal + drift + status + validate.
 yg owner --file <path>              Find the node that owns this file.
 yg build-context --node <path>      Assemble context package for this node.
 yg tree [--root <path>] [--depth N] Print graph structure.
 yg aspects                          List aspects with metadata (YAML output).
+yg flows                            List flows with metadata (YAML output).
 yg deps --node <path> [--depth N] [--type structural|event|all]
                                     Show dependencies.
 yg impact --node <path> --simulate  Simulate blast radius of a planned change.
@@ -279,7 +280,8 @@ yg status                           Graph health: nodes, coverage, drift summary
 yg validate [--scope <path>|all]    Check structural integrity and completeness.
 yg drift [--scope <path>|all] [--drifted-only]
                                     Detect source and graph drift (bidirectional).
-yg drift-sync --node <path>         Record file hashes as new baseline.
+yg drift-sync --node <path> [--recursive] | --all
+                                    Record file hashes as new baseline.
 yg journal-read                     Read pending journal entries.
 yg journal-add --note "<content>" [--target <node_path>]
                                     Add a journal entry.

@@ -19,8 +19,12 @@
 
 **drift-sync:**
 
-- Load graph via loadGraph(process.cwd()). Node path: --node (required). Trim and strip trailing slash.
-- Call syncDriftState(graph, nodePath). Output "Synchronized: ${nodePath}" (green). Output hash line: previousHash (first 8 chars or "none") -> currentHash (first 8 chars).
+- Either --node or --all is required. If neither, exit 1 with usage hint.
+- Load graph via loadGraph(process.cwd()).
+- If --all: collect all nodes with non-empty mappings. Sort alphabetically.
+- If --node: Trim and strip trailing slash. If --recursive: collect the target node plus all descendant nodes (paths starting with nodePath + '/'). Sort alphabetically.
+- Nodes without mapping are skipped silently (unless it is the explicitly requested node without --recursive/--all, in which case syncDriftState throws).
+- Call syncDriftState(graph, np) for each collected node. Output "Synchronized: ${np}" (green). Output hash line: previousHash (first 8 chars or "none") -> currentHash (first 8 chars).
 - Exit 0 on success.
 
 **Error handling:** try/catch around action; on error write to stderr, process.exit(1).

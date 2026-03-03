@@ -39,6 +39,10 @@ yg build-context --node orders/order-service
 
 ## Core Commands
 
+**Diagnostics:**
+
+- `yg preflight` — Unified diagnostic report: journal, drift, status, validation
+
 **Reading and analysis:**
 
 - `yg build-context --node <path>` — Assemble context package for a node
@@ -47,6 +51,7 @@ yg build-context --node orders/order-service
 - `yg owner --file <path>` — Find which graph node owns a source file
 - `yg deps --node <path>` — Forward dependency tree and materialization order
 - `yg impact --node <path> [--simulate]` — Reverse dependencies and context impact
+- `yg aspects` — List aspects with metadata (YAML output)
 
 **Validation and drift:**
 
@@ -63,9 +68,21 @@ yg build-context --node orders/order-service
 **Setup:**
 
 - `yg init --platform <name>` — Initialize `.yggdrasil/` structure (once per repository)
+- `yg init --platform <name> --upgrade` — Refresh rules only (config and graph stay unchanged)
 
 Node paths are relative to `.yggdrasil/model/`. File paths are relative to the
 repository root.
+
+## Upgrade
+
+```bash
+npm install -g @chrisdudek/yg
+cd your-project
+yg init --platform <platform> --upgrade
+```
+
+`--upgrade` overwrites only the rules file. Your `.yggdrasil/` config and graph
+are not modified.
 
 ## Supported Platforms
 
@@ -74,6 +91,13 @@ repository root.
 | Cursor      | `yg init --platform cursor`      | `.cursor/rules/yggdrasil.mdc`     |
 | Claude Code | `yg init --platform claude-code` | `AGENTS.md` (Yggdrasil section)   |
 | Copilot     | `yg init --platform copilot`     | `.github/copilot-instructions.md` |
+| Cline       | `yg init --platform cline`       | `.clinerules/yggdrasil.md`        |
+| RooCode     | `yg init --platform roocode`     | `.roo/rules/yggdrasil.md`         |
+| Codex       | `yg init --platform codex`       | `AGENTS.md` (Yggdrasil section)   |
+| Windsurf    | `yg init --platform windsurf`    | `.windsurf/rules/yggdrasil.md`    |
+| Aider       | `yg init --platform aider`       | `.yggdrasil/agent-rules.md`       |
+| Gemini CLI  | `yg init --platform gemini`      | `GEMINI.md` (import)              |
+| Amp         | `yg init --platform amp`         | `AGENTS.md` (import)              |
 | Generic     | `yg init --platform generic`     | `.yggdrasil/agent-rules.md`       |
 
 ## License
