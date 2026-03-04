@@ -1,0 +1,9 @@
+name: Team Collections
+type: module
+aspects: [pessimistic-locking, pubsub-events]
+
+relations: []
+
+mapping:
+  paths:
+    - packages/hoppscotch-backend/src/team-collection/
