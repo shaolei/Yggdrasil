@@ -27,10 +27,7 @@ Public API consumed by cli/core and cli/commands.
 
 - `getLastCommitTimestamp(projectRoot: string, relativePath: string): number | null` — git log -1 --format=%ct; null if not git repo or path has no commits
 
-
 ## Failure Modes
-
-# Utils Errors
 
 - **findYggRoot:** Throws if .yggdrasil not found ("Run yg init first") or exists but is not a directory. ENOENT triggers upward search; rethrows other errors.
 - **normalizeProjectRelativePath:** Throws if path empty or outside project root.

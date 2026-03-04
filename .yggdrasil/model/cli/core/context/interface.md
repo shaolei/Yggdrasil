@@ -19,10 +19,7 @@
 
 **Constants (internal):** `STRUCTURAL_RELATION_TYPES`, `EVENT_RELATION_TYPES`.
 
-
 ## Failure Modes
-
-# Context Builder Errors
 
 - **Node not found**: Throws `Error("Node not found: ${nodePath}")` if nodePath not in graph.nodes.
 - **Broken relation**: Throws `Error("Broken relation: ${nodePath} -> ${relation.target} (target not found)")` when structural or event relation target not in graph.

@@ -12,10 +12,7 @@ Public API consumed by cli/entry. Named exports only.
 
 **Return:** void for registerOwnerCommand. Contract: errors to stderr, process.exit(1) on failure.
 
-
 ## Failure Modes
-
-# Owner Command Errors
 
 **Propagated from loadGraph:**
 

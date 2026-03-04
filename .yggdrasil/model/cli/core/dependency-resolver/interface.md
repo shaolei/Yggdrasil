@@ -23,10 +23,7 @@
 - `formatDependencyTree(graph: Graph, nodePath: string, options?: { depth?: number; relationType?: 'structural'|'event'|'all' }): string`
   - ASCII tree output. Throws if node not found.
 
-
 ## Failure Modes
-
-# Dependency Resolver Errors
 
 - **resolveDeps**:
   - `Error("Relation target not found: ${target}")` when relation target not in graph (during candidate validation or collectTransitiveDeps for mode node).

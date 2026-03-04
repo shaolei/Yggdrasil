@@ -15,5 +15,6 @@
     "**/dist/**",
     "**/tests/**",
     ".plans/**",
+    "experiments/**",
   ],
 }

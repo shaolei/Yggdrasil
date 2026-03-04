@@ -6,10 +6,7 @@
 
 **Return:** void. Contract: errors to stderr, process.exit(1) on failure.
 
-
 ## Failure Modes
-
-# Flows Command Errors
 
 **Propagated from loadGraph:**
 

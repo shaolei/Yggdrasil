@@ -81,6 +81,35 @@ implies:
     await rm(tmpDir, { recursive: true, force: true });
   });
 
+  it('throws when id is empty', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-aspect-empty-id');
+    await mkdir(tmpDir, { recursive: true });
+    const aspectPath = path.join(tmpDir, 'aspect.yaml');
+    await writeFile(aspectPath, `name: Test\n`, 'utf-8');
+
+    await expect(parseAspect(tmpDir, aspectPath, '')).rejects.toThrow(
+      'Aspect id must be non-empty',
+    );
+    await expect(parseAspect(tmpDir, aspectPath, '   ')).rejects.toThrow(
+      'Aspect id must be non-empty',
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when implies is not an array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-aspect-bad-implies');
+    await mkdir(tmpDir, { recursive: true });
+    const aspectPath = path.join(tmpDir, 'aspect.yaml');
+    await writeFile(aspectPath, `name: Test\nimplies: "not-an-array"\n`, 'utf-8');
+
+    await expect(parseAspect(tmpDir, aspectPath, 'bad-implies')).rejects.toThrow(
+      "'implies' must be an array of strings",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
   it('defaults optional fields when missing', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-aspect');
     await mkdir(tmpDir, { recursive: true });

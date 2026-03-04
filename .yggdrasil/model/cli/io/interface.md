@@ -46,10 +46,7 @@ Library used by cli/core (loader, drift-detector) and cli/commands (journal). Al
 - `appendJournalEntry(yggRoot: string, note: string, target?: string): Promise<JournalEntry>` — appends with ISO timestamp
 - `archiveJournal(yggRoot: string): Promise<{ archiveName: string; entryCount: number } | null>` — moves .journal.yaml to journals-archive/.journal.YYYYMMDD-HHMMSS.yaml; returns null if empty or missing
 
-
 ## Failure Modes
-
-# IO Errors
 
 Parsers and stores throw `Error` on invalid input. No dedicated error codes — standard Error with descriptive message.
 

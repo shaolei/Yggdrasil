@@ -191,6 +191,19 @@ aspects:
     await rm(tmpDir, { recursive: true, force: true });
   });
 
+  it('throws when aspects is not an array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-flow-bad-aspects');
+    await mkdir(tmpDir, { recursive: true });
+    const flowYaml = path.join(tmpDir, 'flow.yaml');
+    await writeFile(flowYaml, 'name: Test\nnodes: [a/b]\naspects: "not-an-array"\n', 'utf-8');
+
+    await expect(parseFlow(tmpDir, flowYaml)).rejects.toThrow(
+      "'aspects' must be an array of strings",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
   it('returns undefined when aspects absent', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-flow-no-aspects');
     await mkdir(tmpDir, { recursive: true });

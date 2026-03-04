@@ -16,10 +16,7 @@ Public API consumed by cli/commands/validation (build-context).
   - Converts a context package to Markdown. Used by tests.
   - Output: Markdown with `##` sections, `###` layer labels.
 
-
 ## Failure Modes
-
-# Formatters Errors
 
 No thrown errors — pure transformation. Callers must ensure valid `ContextPackage` input.
 

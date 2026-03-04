@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-04
+
 ### Added
 
 - **`aspect_exceptions` in node.yaml:** Per-node exceptions to aspect-level generalizations.

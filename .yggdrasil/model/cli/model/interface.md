@@ -30,17 +30,11 @@ Type library — exports TypeScript interfaces and types only. No runtime functi
 
 **Graph:** config, nodes (Map), aspects, flows, schemas, rootPath, optional configError, nodeParseErrors
 
-
 ## Failure Modes
-
-# Model Errors
 
 Model is a TypeScript type library — it contains no executable code and does not throw runtime errors. Errors occur only at compile time (TypeScript).
 
-
 ## Data Structures
-
-# Model Type Hierarchy
 
 ## Config types
 

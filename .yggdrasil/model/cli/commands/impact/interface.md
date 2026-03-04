@@ -12,10 +12,7 @@
 
 **Return:** void for registerImpactCommand. Contract: errors to stderr, process.exit(1) on failure.
 
-
 ## Failure Modes
-
-# Impact Command Errors
 
 **Propagated from loadGraph:**
 

@@ -1,9 +1,4 @@
-
-
-
 ## Failure Modes
-
-# Core Errors
 
 Core functions signal errors by throwing. Callers (commands) catch and present.
 

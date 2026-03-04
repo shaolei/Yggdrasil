@@ -23,10 +23,7 @@ Platform paths: Cursor (.cursor/rules/yggdrasil.mdc), Claude Code (CLAUDE.md + i
 
 Directory (source/cli/graph-schemas/) — node.yaml, aspect.yaml, flow.yaml. Schemas for each graph layer. Copied to .yggdrasil/schemas/ during init. Not imported directly; init reads via readdir/readFile.
 
-
 ## Failure Modes
-
-# Templates Errors
 
 - **installRulesForPlatform:** May throw on mkdir/writeFile failures (ENOENT, EACCES). Unknown platform falls through to generic.
 - **DEFAULT_CONFIG, AGENT_RULES_CONTENT:** Pure strings — no runtime errors.

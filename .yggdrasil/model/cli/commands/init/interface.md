@@ -12,10 +12,7 @@ Public API consumed by cli/entry. Named exports only.
 
 **Contract:** Errors to stderr, process.exit(1) on failure. Implements patterns/command-error-handling.
 
-
 ## Failure Modes
-
-# Init Command Errors
 
 - **.yggdrasil/ exists (without --upgrade):** `Error: .yggdrasil/ already exists. Use --upgrade to refresh rules only.`
 - **.yggdrasil exists but is not a directory:** `Error: .yggdrasil exists but is not a directory.`

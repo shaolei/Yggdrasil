@@ -12,10 +12,7 @@ Public API consumed by cli/entry. Named exports only.
 
 **Contract:** Errors to stderr, process.exit(1) on failure. Implements patterns/command-error-handling.
 
-
 ## Failure Modes
-
-# Journal Commands Errors
 
 **Propagated from findYggRoot:**
 
