@@ -186,7 +186,7 @@ describe('collectDescendants', () => {
 describe('collectEffectiveAspectIds', () => {
   it('collects own aspects', () => {
     const node = makeNode('a', {
-      meta: { name: 'a', type: 'service', aspects: ['tag-a'] },
+      meta: { name: 'a', type: 'service', aspects: [{ aspect: 'tag-a' }] },
     });
     const graph = makeGraph([node]);
     graph.aspects = [{ name: 'A', id: 'tag-a', artifacts: [] }];
@@ -196,7 +196,7 @@ describe('collectEffectiveAspectIds', () => {
 
   it('collects hierarchy aspects from parent', () => {
     const parent = makeNode('mod', {
-      meta: { name: 'mod', type: 'module', aspects: ['tag-parent'] },
+      meta: { name: 'mod', type: 'module', aspects: [{ aspect: 'tag-parent' }] },
     });
     const child = makeNode('mod/svc', { parent });
     parent.children = [child];
@@ -220,7 +220,7 @@ describe('collectEffectiveAspectIds', () => {
 
   it('expands implies recursively', () => {
     const node = makeNode('a', {
-      meta: { name: 'a', type: 'service', aspects: ['tag-a'] },
+      meta: { name: 'a', type: 'service', aspects: [{ aspect: 'tag-a' }] },
     });
     const graph = makeGraph([node]);
     graph.aspects = [
@@ -248,7 +248,7 @@ describe('collectEffectiveAspectIds', () => {
 
   it('expands multi-level implies chains', () => {
     const node = makeNode('a', {
-      meta: { name: 'a', type: 'service', aspects: ['hipaa'] },
+      meta: { name: 'a', type: 'service', aspects: [{ aspect: 'hipaa' }] },
     });
     const graph = makeGraph([node]);
     graph.aspects = [
@@ -264,11 +264,11 @@ describe('collectEffectiveAspectIds', () => {
 
   it('combines own + hierarchy + flow + implies into effective set', () => {
     const parent = makeNode('mod', {
-      meta: { name: 'mod', type: 'module', aspects: ['parent-aspect'] },
+      meta: { name: 'mod', type: 'module', aspects: [{ aspect: 'parent-aspect' }] },
     });
     const child = makeNode('mod/svc', {
       parent,
-      meta: { name: 'svc', type: 'service', aspects: ['own-aspect'] },
+      meta: { name: 'svc', type: 'service', aspects: [{ aspect: 'own-aspect' }] },
     });
     parent.children = [child];
     const graph = makeGraph([parent, child]);
@@ -299,11 +299,11 @@ describe('collectEffectiveAspectIds', () => {
 
   it('deduplicates aspects from multiple sources', () => {
     const parent = makeNode('mod', {
-      meta: { name: 'mod', type: 'module', aspects: ['shared'] },
+      meta: { name: 'mod', type: 'module', aspects: [{ aspect: 'shared' }] },
     });
     const child = makeNode('mod/svc', {
       parent,
-      meta: { name: 'svc', type: 'service', aspects: ['shared'] },
+      meta: { name: 'svc', type: 'service', aspects: [{ aspect: 'shared' }] },
     });
     parent.children = [child];
     const graph = makeGraph([parent, child]);
@@ -320,10 +320,10 @@ describe('collectEffectiveAspectIds', () => {
 describe('co-aspect nodes detection', () => {
   it('finds nodes sharing aspects via effective aspect set', () => {
     const a = makeNode('svc-a', {
-      meta: { name: 'svc-a', type: 'service', aspects: ['audit'] },
+      meta: { name: 'svc-a', type: 'service', aspects: [{ aspect: 'audit' }] },
     });
     const b = makeNode('svc-b', {
-      meta: { name: 'svc-b', type: 'service', aspects: ['audit'] },
+      meta: { name: 'svc-b', type: 'service', aspects: [{ aspect: 'audit' }] },
     });
     const c = makeNode('svc-c', {
       meta: { name: 'svc-c', type: 'service' },
@@ -348,10 +348,10 @@ describe('co-aspect nodes detection', () => {
 
   it('detects co-aspect via implies chain', () => {
     const a = makeNode('svc-a', {
-      meta: { name: 'svc-a', type: 'service', aspects: ['hipaa'] },
+      meta: { name: 'svc-a', type: 'service', aspects: [{ aspect: 'hipaa' }] },
     });
     const b = makeNode('svc-b', {
-      meta: { name: 'svc-b', type: 'service', aspects: ['audit'] },
+      meta: { name: 'svc-b', type: 'service', aspects: [{ aspect: 'audit' }] },
     });
     const graph = makeGraph([a, b]);
     graph.aspects = [
@@ -369,7 +369,7 @@ describe('co-aspect nodes detection', () => {
 
   it('detects co-aspect via flow propagation', () => {
     const a = makeNode('svc-a', {
-      meta: { name: 'svc-a', type: 'service', aspects: ['logging'] },
+      meta: { name: 'svc-a', type: 'service', aspects: [{ aspect: 'logging' }] },
     });
     const b = makeNode('svc-b');
     const graph = makeGraph([a, b]);

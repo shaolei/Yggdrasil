@@ -457,7 +457,7 @@ mapping:
         nodeYaml: `name: AuditedService
 type: service
 aspects:
-  - requires-audit
+  - aspect: requires-audit
 mapping:
   paths:
     - src/audited.ts
@@ -577,7 +577,7 @@ mapping:
         nodeYaml: `name: GraphSvc
 type: service
 aspects:
-  - test-aspect
+  - aspect: test-aspect
 mapping:
   paths:
     - src/graph.ts

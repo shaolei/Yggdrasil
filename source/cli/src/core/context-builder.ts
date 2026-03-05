@@ -70,8 +70,9 @@ export async function buildContext(graph: Graph, nodePath: string): Promise<Cont
   }
   const aspectsToInclude = resolveAspects(allAspectIds, graph.aspects);
   for (const aspect of aspectsToInclude) {
-    const exception = node.meta.aspect_exceptions?.find((e) => e.aspect === aspect.id);
-    layers.push(buildAspectLayer(aspect, exception?.note));
+    const entry = node.meta.aspects?.find(a => a.aspect === aspect.id);
+    const exceptionNote = entry?.exceptions?.join('; ');
+    layers.push(buildAspectLayer(aspect, exceptionNote));
   }
 
   const fullText = layers.map((l) => l.content).join('\n\n');
@@ -173,7 +174,7 @@ export function buildHierarchyLayer(
 ): ContextLayer {
   const filtered = filterArtifactsByConfig(ancestor.artifacts, config);
   const content = filtered.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
-  const nodeAspects = ancestor.meta.aspects ?? [];
+  const nodeAspects = (ancestor.meta.aspects ?? []).map(a => a.aspect);
   const expanded = expandAspects(nodeAspects, graph.aspects);
   const attrs: Record<string, string> | undefined =
     expanded.length > 0 ? { aspects: expanded.join(',') } : undefined;
@@ -211,7 +212,7 @@ export async function buildOwnLayer(
   }
 
   const content = parts.join('\n\n');
-  const nodeAspects = node.meta.aspects ?? [];
+  const nodeAspects = (node.meta.aspects ?? []).map(a => a.aspect);
   const expanded = expandAspects(nodeAspects, graph.aspects);
   const attrs: Record<string, string> | undefined =
     expanded.length > 0 ? { aspects: expanded.join(',') } : undefined;
@@ -364,12 +365,12 @@ export function collectEffectiveAspectIds(graph: Graph, nodePath: string): Set<s
   const node = graph.nodes.get(nodePath);
   if (!node) return new Set();
 
-  const raw = new Set<string>(node.meta.aspects ?? []);
+  const raw = new Set<string>((node.meta.aspects ?? []).map(a => a.aspect));
 
   // Hierarchy aspects
   let ancestor = node.parent;
   while (ancestor) {
-    for (const id of ancestor.meta.aspects ?? []) raw.add(id);
+    for (const entry of ancestor.meta.aspects ?? []) raw.add(entry.aspect);
     ancestor = ancestor.parent;
   }
 
