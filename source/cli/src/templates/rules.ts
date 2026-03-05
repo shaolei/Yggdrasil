@@ -275,7 +275,7 @@ const KNOWLEDGE_BASE = `## KNOWLEDGE BASE
 
 \`\`\`
 .yggdrasil/
-  config.yaml        ← vocabulary, stack, node types, artifact rules, required aspects
+  config.yaml        ← vocabulary, node types, artifact rules, required aspects
   model/             ← what exists: nodes, hierarchy, relations, file mappings
   aspects/           ← what must: cross-cutting requirements with rationale and guidance
   flows/             ← why and in what process: business processes with node participation
@@ -306,7 +306,7 @@ Projects can define additional artifact types in \`config.yaml\` under \`artifac
 
 ### Context Assembly
 
-Run \`yg build-context --node <path>\` to get the deterministic context package for a node. The package assembles global config, hierarchy, own artifacts, aspects, and relational context. It is your architectural map. For implementation-level claims (exact call patterns, error handling, await vs fire-and-forget) — verify against source code. If the package is insufficient, enrich the graph.
+Run \`yg build-context --node <path>\` to get the deterministic context package for a node. The package assembles global project identity, hierarchy, own artifacts, aspects, and relational context. It is your architectural map. For implementation-level claims (exact call patterns, error handling, await vs fire-and-forget) — verify against source code. If the package is insufficient, enrich the graph.
 
 ### Information Routing
 
@@ -316,8 +316,8 @@ When you encounter information, route it to the correct location:
 - **Rule for many nodes** → aspect (\`aspects/<id>/\` with \`aspect.yaml\` + content \`.md\` files). If applies to ALL nodes of a type → \`node_types.<type>.required_aspects\` in \`config.yaml\`
 - **Business process** → flow (\`flows/<name>/\` with \`flow.yaml\` + \`description.md\`). Ask user if process unclear.
 - **Shared across a domain** → parent node artifact. Children receive it through hierarchy.
-- **Technology stack or standard** → \`config.yaml\` under \`stack\` or \`standards\` (free-text key-value pairs)
-- **Decision (why + why NOT):** one node → Decisions section of \`internals.md\` with format "Chose X over Y because Z"; category of nodes → aspect content files; tech choice → \`config.yaml\` stack entry (embed rationale in the value text). Always include rejected alternatives — they are the highest-value graph content. If the rationale is unknown: record the decision with "rationale: unknown" and note what CAN be observed from the code. Never invent a plausible-sounding rationale.
+- **Technology stack or standard** → node artifact at the appropriate hierarchy level (e.g., root node's \`responsibility.md\` for single-stack repos, or deployment unit node for monorepos)
+- **Decision (why + why NOT):** one node → Decisions section of \`internals.md\` with format "Chose X over Y because Z"; category of nodes → aspect content files; tech choice → node artifact at the level where the technology applies. Always include rejected alternatives — they are the highest-value graph content. If the rationale is unknown: record the decision with "rationale: unknown" and note what CAN be observed from the code. Never invent a plausible-sounding rationale.
 
 ### Creating Aspects
 
@@ -408,7 +408,7 @@ yg journal-archive                  Archive consolidated journal entries.
 | Business process participation | Flow (\`flow.yaml participants\`) |
 | Process-level requirement | Flow \`aspects\` + aspect directory |
 | Context shared across a domain | Parent node artifact |
-| Technology stack | \`config.yaml stack\` (free-text key-value pairs) |
-| Global coding standards | \`config.yaml standards\` |`;
+| Technology stack | Node artifact at appropriate hierarchy level |
+| Coding standards | Node artifact at appropriate hierarchy level |`;
 
 export const AGENT_RULES_CONTENT = [CORE_PROTOCOL, OPERATIONS, KNOWLEDGE_BASE].join('\n\n---\n\n') + '\n';
