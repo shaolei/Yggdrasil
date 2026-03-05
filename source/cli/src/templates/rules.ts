@@ -95,7 +95,22 @@ Before preflight:
 
 - Verify \`yg\` CLI is available. If not found, inform user and stop.
 - If \`yg preflight\` shows 0 nodes → enter BOOTSTRAP MODE (see Operations).
-- If drift report shows >10 drifted nodes → report scope to user, ask which area to prioritize. Do not resolve all at once.`;
+- If drift report shows >10 drifted nodes → report scope to user, ask which area to prioritize. Do not resolve all at once.
+
+### Delegating to Subagents
+
+When you delegate work to a subagent (any subprocess, tool agent, or spawned assistant), the subagent does NOT inherit your Yggdrasil knowledge. Before any other instruction, the subagent MUST:
+
+1. Read \`.yggdrasil/agent-rules.md\` — this is the complete operating manual
+2. Follow the Quick Start Protocol from that file before touching any mapped code
+
+Include this as the FIRST instruction in every subagent prompt:
+
+\`\`\`
+BEFORE doing anything else: read .yggdrasil/agent-rules.md and follow its protocol.
+\`\`\`
+
+A subagent that skips this step will read code without graph context, miss architectural constraints, and produce changes that break graph-code consistency.`;
 
 // prettier-ignore
 const OPERATIONS = `## OPERATIONS
@@ -275,12 +290,7 @@ Key facts:
 - **Aspect id = directory path** under \`aspects/\`. Each aspect has \`aspect.yaml\` + content \`.md\` files. No automatic parent-child — use \`implies\` explicitly.
 - **Flows = business processes.** A flow describes what happens in the world, not code sequences. Flow aspects propagate to all participants.
 
-**Node type guidance:**
-
-- \`module\` — business logic unit with clear domain responsibility
-- \`service\` — component providing functionality to other nodes
-- \`library\` — shared utility code with no domain knowledge
-- \`infrastructure\` — guards, resolvers, middleware, interceptors, validators that intercept or modify request flow. These affect blast radius of changes but are invisible in call graphs. Map them to make blast radius analysis accurate. Key signal: code that runs WITHOUT being explicitly called by business logic (e.g., NestJS guards, Express middleware, GraphQL resolvers).
+**Node type guidance:** Each type in \`config.yaml node_types\` has a \`description\` that tells you when to use it. Check the project's config for the full list and descriptions. Common types: \`module\` (business logic), \`service\` (providing functionality), \`library\` (shared utilities), \`infrastructure\` (guards, middleware, interceptors — invisible in call graphs but affect blast radius).
 
 ### Artifact Structure
 
@@ -303,7 +313,7 @@ Run \`yg build-context --node <path>\` to get the deterministic context package 
 When you encounter information, route it to the correct location:
 
 - **Specific to this node** → local node artifact (check \`config.yaml artifacts\` for available types)
-- **Rule for many nodes** → aspect (\`aspects/<id>/\` with \`aspect.yaml\` + content \`.md\` files). If applies to ALL nodes of a type → \`node_types[*].required_aspects\` in \`config.yaml\`
+- **Rule for many nodes** → aspect (\`aspects/<id>/\` with \`aspect.yaml\` + content \`.md\` files). If applies to ALL nodes of a type → \`node_types.<type>.required_aspects\` in \`config.yaml\`
 - **Business process** → flow (\`flows/<name>/\` with \`flow.yaml\` + \`description.md\`). Ask user if process unclear.
 - **Shared across a domain** → parent node artifact. Children receive it through hierarchy.
 - **Technology stack or standard** → \`config.yaml\` under \`stack\` or \`standards\` (free-text key-value pairs)
