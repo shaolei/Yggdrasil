@@ -36,14 +36,16 @@ standards: | # string, optional, multiline
   Strict TypeScript. All public functions have JSDoc.
   Errors in RFC 7807 format. Dates in ISO 8601 UTC.
 
-node_types: # list of {name, required_aspects?}, required, non-empty
-  - name: module
-  - name: service
-  - name: library
-  - name: infrastructure
-  # With required_aspects per type:
-  # - name: service
-  #   required_aspects: [requires-audit]
+node_types: # object, required, non-empty — keys are type names
+  module:
+    description: "Business logic unit with clear domain responsibility"
+  service:
+    description: "Component providing functionality to other nodes"
+  library:
+    description: "Shared utility code with no domain knowledge"
+  infrastructure:
+    description: "Guards, middleware, interceptors — invisible in call graphs but affect blast radius"
+    # required_aspects: [requires-audit]  # optional — aspects every node of this type must have
 
 artifacts: # map, required, non-empty — keys are full filenames (e.g. responsibility.md, api.txt)
   responsibility.md:
@@ -82,10 +84,10 @@ quality: # map, optional (has default values) — all keys snake_case
 **Validation rules for config.yaml:**
 
 - `name` must be non-empty.
-- `node_types` must contain at least one element. Format: list of `{ name, required_aspects? }`. Legacy format (list of plain strings) is also accepted. Node `type` must match a `name` (or the string itself in legacy format).
+- `node_types` must be a non-empty object. Each entry must have a `description` string. Optional `required_aspects` list. Node `type` must match a key in `node_types`.
 - `artifacts` must contain at least one element.
 - Artifact filenames cannot be `node.yaml` (reserved in every node directory).
-- `has_aspect:<name>` conditions must refer to aspect directory names (exist under `aspects/<name>/`). Legacy `has_tag:<name>` is accepted for backward compatibility.
+- `has_aspect:<name>` conditions must refer to aspect directory names (exist under `aspects/<name>/`).
 - `quality.context_budget.error` must be ≥ `quality.context_budget.warning`.
 
 ### node.yaml
@@ -135,7 +137,7 @@ are hashed directly, directories are scanned recursively (respecting `.gitignore
 **Validation rules for node.yaml:**
 
 - `name` must be non-empty.
-- `type` must be from the `config.node_types` list.
+- `type` must be a key in `config.node_types`.
 - Each aspect identifier must correspond to a directory under `aspects/`.
 - Each `aspect_exceptions[].aspect` must reference an aspect in this node's `aspects` list (E018).
 - Each `relations[].target` must resolve to an existing node.
@@ -407,10 +409,14 @@ stack:
 standards: ""
 
 node_types:
-  - name: module
-  - name: service
-  - name: library
-  - name: infrastructure
+  module:
+    description: "Business logic unit with clear domain responsibility"
+  service:
+    description: "Component providing functionality to other nodes"
+  library:
+    description: "Shared utility code with no domain knowledge"
+  infrastructure:
+    description: "Guards, middleware, interceptors — invisible in call graphs but affect blast radius"
 
 artifacts:
   responsibility.md:

@@ -86,24 +86,24 @@ Both are attached to every context package as **global context**.
 
 ```yaml
 node_types:
-  - name: module
-  - name: service
+  module:
+    description: "Business logic unit with clear domain responsibility"
+  service:
+    description: "Component providing functionality to other nodes"
     required_aspects: [requires-audit]
-  - name: repository
-  - name: controller
-  - name: gateway
-  - name: library
-  - name: infrastructure
-  - name: external
+  library:
+    description: "Shared utility code with no domain knowledge"
+  infrastructure:
+    description: "Guards, middleware, interceptors — invisible in call graphs but affect blast radius"
 ```
 
-Node types classify the architectural _role_ of each node. Each entry has `name` (the type
-identifier) and optional `required_aspects` — aspects that nodes of this type must have coverage for
-(directly or via aspect `implies`). Legacy format `node_types: [module, service, ...]` — a list
-of strings — is supported and maps to `{ name: module }`, etc.
+Node types classify the architectural _role_ of each node. Each entry is keyed by type name
+and must have a `description` (agent guidance for when to use this type) and optional
+`required_aspects` — aspects that nodes of this type must have coverage for (directly or via
+aspect `implies`).
 
 Templates (see below) can be bound to node types, providing structural hints for scaffolding.
-Tools validate that every node declares a type from this list.
+Tools validate that every node declares a type that is a key in this object.
 
 ### Artifact types
 

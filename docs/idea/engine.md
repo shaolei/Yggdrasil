@@ -245,7 +245,7 @@ Errors represent broken references or invalid structure. They block context asse
 a graph with errors cannot produce reliable context packages.
 
 **Node structure**: every directory in `model/` with `node.yaml` must have required fields
-(`name`, `type`). Type must be from the configured `node_types` list.
+(`name`, `type`). Type must be a key in the configured `node_types` object.
 
 **Referential integrity**:
 

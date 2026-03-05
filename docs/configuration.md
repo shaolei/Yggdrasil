@@ -14,7 +14,7 @@ Config file: `.yggdrasil/config.yaml`
 ### Required fields
 
 - **name** — Project identity (non-empty string)
-- **node_types** — Non-empty array of node types. Each element is a string (e.g. `module`, `service`) or an object `{ name, required_aspects? }`. `required_aspects` lists aspects that nodes of this type must have coverage for (directly or via aspect `implies`).
+- **node_types** — Non-empty object of node type definitions. Each key is a type name, value is `{ description, required_aspects? }`. `description` is required agent guidance. `required_aspects` lists aspects that nodes of this type must have coverage for (directly or via aspect `implies`).
 - **artifacts** — Non-empty object defining artifact types and their requirements
 
 ### Optional fields
@@ -27,7 +27,7 @@ Config file: `.yggdrasil/config.yaml`
 
 ## What you can customize
 
-- **Node types** — The vocabulary of parts your repo uses (e.g. `module`, `service`, `library`). Optionally, each type can declare `required_aspects` — aspects that nodes of that type must have coverage for (directly or via aspect composition).
+- **Node types** — The vocabulary of parts your repo uses (e.g. `module`, `service`, `library`). Each type has a `description` (agent guidance) and optionally `required_aspects` — aspects that nodes of that type must have coverage for (directly or via aspect composition).
 - **Artifacts** — The kinds of meaning you want to capture per node. Each artifact has:
   - `required`: `always` | `never` | `{ when: "<condition>" }`
     - Supported `when` conditions: `has_incoming_relations`, `has_outgoing_relations`, `has_aspect:<name>` (legacy `has_tag:<name>` also accepted)
@@ -61,9 +61,12 @@ standards: |
   Strict TypeScript. ESM modules. Vitest for tests.
 
 node_types:
-  - module
-  - service
-  - library
+  module:
+    description: "Business logic unit with clear domain responsibility"
+  service:
+    description: "Component providing functionality to other nodes"
+  library:
+    description: "Shared utility code with no domain knowledge"
 
 artifacts:
   responsibility.md:
