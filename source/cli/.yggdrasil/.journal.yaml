@@ -1,0 +1,8 @@
+entries:
+  - at: 2026-03-05T09:37:56.187Z
+    note: "BRAINSTORM NEEDED: Yggdrasil is not used during planning/brainstorming
+      phases. Agent follows skill workflow (explore files, read code) instead of
+      running yg build-context. Rules say 'BEFORE planning' but in practice
+      skills override. Need to design integration so agents naturally reach for
+      the graph during design work. Discuss with user after current
+      implementation."
