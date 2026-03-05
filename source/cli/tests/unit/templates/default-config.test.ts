@@ -19,9 +19,9 @@ describe('default-config', () => {
 
   it('DEFAULT_CONFIG node_types includes module, service, library', () => {
     const parsed = parseYaml(DEFAULT_CONFIG) as {
-      node_types: Array<{ name: string } | string>;
+      node_types: Record<string, { description: string }>;
     };
-    const names = parsed.node_types.map((t) => (typeof t === 'string' ? t : t.name));
+    const names = Object.keys(parsed.node_types);
     expect(names).toContain('module');
     expect(names).toContain('service');
     expect(names).toContain('library');
@@ -38,9 +38,9 @@ describe('default-config', () => {
 
   it('DEFAULT_CONFIG node_types includes infrastructure', () => {
     const parsed = parseYaml(DEFAULT_CONFIG) as {
-      node_types: Array<{ name: string } | string>;
+      node_types: Record<string, { description: string }>;
     };
-    const names = parsed.node_types.map((t) => (typeof t === 'string' ? t : t.name));
+    const names = Object.keys(parsed.node_types);
     expect(names).toContain('infrastructure');
   });
 

@@ -7,10 +7,14 @@ stack:
 standards: ""
 
 node_types:
-  - name: module
-  - name: service
-  - name: library
-  - name: infrastructure
+  module:
+    description: "Business logic unit with clear domain responsibility"
+  service:
+    description: "Component providing functionality to other nodes"
+  library:
+    description: "Shared utility code with no domain knowledge"
+  infrastructure:
+    description: "Guards, middleware, interceptors — invisible in call graphs but affect blast radius"
 
 artifacts:
   responsibility.md:

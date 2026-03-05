@@ -13,11 +13,14 @@ stack:                            # required — technology stack (freeform keys
 
 standards: ""                     # optional — global coding conventions (free text)
 
-node_types:                       # required — allowed node type names
-  - name: module                  #   each type needs at least a 'name'
+node_types:                       # required — non-empty object of node type definitions
+  module:                         #   key = type name used in node.yaml
+    description: "Business logic unit with clear domain responsibility"
     # required_aspects: []        #   optional — aspects every node of this type must have
-  - name: service
-  - name: library
+  service:
+    description: "Component providing functionality to other nodes"
+  library:
+    description: "Shared utility code with no domain knowledge"
 
 artifacts:                        # required — artifact type definitions
   responsibility.md:              #   key = filename in node directories
