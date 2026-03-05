@@ -35,23 +35,19 @@ export interface QualityConfig {
 
 export type RelationType = 'uses' | 'calls' | 'extends' | 'implements' | 'emits' | 'listens';
 
-export interface AspectException {
+export interface NodeAspectEntry {
   aspect: string;
-  note: string;
+  exceptions?: string[];
+  anchors?: string[];
 }
 
 export interface NodeMeta {
   name: string;
   type: string;
-  aspects?: string[];
-  aspect_exceptions?: AspectException[];
+  aspects?: NodeAspectEntry[];
   blackbox?: boolean;
   relations?: Relation[];
   mapping?: NodeMapping;
-  /** Code anchors per aspect — maps aspect id to list of code patterns
-   *  (function names, constants, SQL fragments) that evidence the aspect's
-   *  implementation in this node's source files. */
-  anchors?: Record<string, string[]>;
 }
 
 export interface Relation {
