@@ -4,19 +4,22 @@
 
 ## Mode selection
 
-1. Parse options: --node, --aspect, --flow, --simulate. Exactly one mode required.
+1. Parse options: --node, --aspect, --flow, --method, --simulate. Exactly one mode required (node/aspect/flow). --method requires --node.
 2. If 0 or >1 modes: exit 1 with usage error.
 
 ## --node mode
 
 1. `loadGraph(process.cwd())`. Trim node path, strip trailing slash.
 2. Find node; if not found exit 1.
-3. `collectReverseDependents(graph, node)` — scan all structural relations for target match.
-4. `buildTransitiveChains(node, direct, allDependents, reverse)` — BFS from target, build chains.
-5. `collectDescendants(graph, nodePath)` — recursive children.
-6. `collectEffectiveAspectIds(graph, node)` — own + hierarchy + flow + implies.
-7. Co-aspect nodes: other nodes sharing any effective aspect (exclude self and descendants).
-8. If --simulate: `runSimulation(graph, affectedPaths, projectRoot)`.
+3. `collectReverseDependents(graph, node)` — scan all structural relations for target match. Returns `relationFrom` map for consumes metadata.
+4. If --method: filter direct dependents to those consuming the named method (or with no consumes constraint). Rebuild transitive set from filtered direct.
+5. `buildTransitiveChains(node, direct, allDependents, reverse)` — BFS from target, build chains.
+6. Collect event-dependent nodes: scan all nodes for `emits`/`listens` relations targeting the node. Also find listeners for events the target emits (cross-referencing emitted event targets).
+7. `collectDescendants(graph, nodePath)` — recursive children.
+8. `collectEffectiveAspectIds(graph, node)` — own + hierarchy + flow + implies.
+9. Co-aspect nodes: other nodes sharing any effective aspect (exclude self and descendants).
+10. Total scope: union of structural dependents, descendants, and event dependents.
+11. If --simulate: `runSimulation(graph, affectedPaths, projectRoot)`.
 
 ## --aspect mode
 

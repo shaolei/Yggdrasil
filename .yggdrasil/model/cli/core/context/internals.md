@@ -33,6 +33,8 @@ Structural relations get interface/errors from target (structural_context). Even
 
 When building aspect layers, the builder checks `node.meta.aspect_exceptions` for each resolved aspect. If an exception entry matches the aspect id, the exception's `note` is passed to `buildAspectLayer`, which appends it to the aspect content as a warning block. This prevents aspect generalizations from masking node-specific deviations (e.g., a node that awaits a call where the aspect says fire-and-forget).
 
+`buildAspectLayer` also includes aspect metadata in the output when present: stability tier (from `aspect.stability`) as a "Stability tier" line. This appears after the artifact content and before the exception note. Code anchors are no longer part of `AspectDef` — they live in `node.yaml` under `anchors` and are validated by `cli/core/validator` (E019, W014) rather than included in context output.
+
 ## Constraints
 
 # Context Builder Constraints

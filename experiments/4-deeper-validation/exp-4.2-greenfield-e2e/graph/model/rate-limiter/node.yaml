@@ -1,0 +1,7 @@
+name: RateLimiter
+type: module
+aspects: [graceful-degradation, sliding-window]
+
+mapping:
+  paths:
+    - src/rate-limiter/

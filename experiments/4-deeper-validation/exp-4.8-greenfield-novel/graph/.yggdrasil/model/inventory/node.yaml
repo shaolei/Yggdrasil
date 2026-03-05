@@ -1,0 +1,8 @@
+name: Inventory
+type: module
+aspects: [reagent-atomicity]
+blackbox: false
+relations: []
+mapping:
+  paths:
+    - src/inventory/

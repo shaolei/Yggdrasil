@@ -48,6 +48,10 @@ export interface NodeMeta {
   blackbox?: boolean;
   relations?: Relation[];
   mapping?: NodeMapping;
+  /** Code anchors per aspect — maps aspect id to list of code patterns
+   *  (function names, constants, SQL fragments) that evidence the aspect's
+   *  implementation in this node's source files. */
+  anchors?: Record<string, string[]>;
 }
 
 export interface Relation {
@@ -90,12 +94,19 @@ export interface Artifact {
 // Aspect
 // ============================================================
 
+export type AspectStability = 'schema' | 'protocol' | 'implementation';
+
 export interface AspectDef {
   name: string;
   id: string;
   description?: string;
   /** Ids of aspects to include automatically (composition) */
   implies?: string[];
+  /** How stable this aspect's claims are expected to be.
+   *  schema = enforced by data model, changes require migration (most stable).
+   *  protocol = contractual pattern, breaking causes visible failures.
+   *  implementation = specific mechanism, subject to optimization (least stable). */
+  stability?: AspectStability;
   artifacts: Artifact[];
 }
 

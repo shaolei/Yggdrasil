@@ -7,3 +7,7 @@
 name: CrossCuttingRequirementName  # required — display name
 description: "Short description for discovery via yg aspects"  # optional
 # implies: [other-aspect, another-aspect] # optional — other aspect identifiers included automatically (recursive, must be acyclic)
+# stability: protocol  # optional — schema | protocol | implementation
+#   schema: enforced by data model, changes require migration (most stable)
+#   protocol: contractual pattern, breaking causes visible failures
+#   implementation: specific mechanism, subject to optimization (least stable)

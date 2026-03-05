@@ -1,0 +1,10 @@
+name: ReagentManager
+type: service
+aspects: [reagent-atomicity]
+blackbox: false
+
+relations: []
+
+mapping:
+  paths:
+    - src/inventory/reagent-manager.ts

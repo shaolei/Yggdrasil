@@ -260,6 +260,82 @@ describe('collectTrackedFiles', () => {
     expect(otherModelPaths).toHaveLength(0);
   });
 
+  it('skips event relation types (emits/listens)', () => {
+    const target: GraphNode = {
+      path: 'events/bus',
+      meta: { name: 'EventBus', type: 'service' },
+      artifacts: [{ filename: 'responsibility.md', content: 'events' }],
+      children: [],
+      parent: null,
+    };
+    const node: GraphNode = {
+      path: 'my/svc',
+      meta: {
+        name: 'MySvc',
+        type: 'service',
+        relations: [{ target: 'events/bus', type: 'emits' }],
+      },
+      artifacts: [{ filename: 'responsibility.md', content: 'x' }],
+      children: [],
+      parent: null,
+    };
+    const graph: Graph = {
+      config: {
+        name: 'T',
+        stack: {},
+        standards: '',
+        node_types: [{ name: 'service' }],
+        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
+      },
+      nodes: new Map([
+        ['my/svc', node],
+        ['events/bus', target],
+      ]),
+      aspects: [],
+      flows: [],
+      schemas: [],
+      rootPath: '/project/.yggdrasil',
+    };
+
+    const files = collectTrackedFiles(node, graph);
+    const paths = files.map((f) => f.path);
+
+    // Event relations should NOT include target artifacts
+    expect(paths).not.toContain('.yggdrasil/model/events/bus/responsibility.md');
+  });
+
+  it('skips relations with missing targets', () => {
+    const node: GraphNode = {
+      path: 'my/svc',
+      meta: {
+        name: 'MySvc',
+        type: 'service',
+        relations: [{ target: 'nonexistent/svc', type: 'calls' }],
+      },
+      artifacts: [{ filename: 'responsibility.md', content: 'x' }],
+      children: [],
+      parent: null,
+    };
+    const graph: Graph = {
+      config: {
+        name: 'T',
+        stack: {},
+        standards: '',
+        node_types: [{ name: 'service' }],
+        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
+      },
+      nodes: new Map([['my/svc', node]]),
+      aspects: [],
+      flows: [],
+      schemas: [],
+      rootPath: '/project/.yggdrasil',
+    };
+
+    // Should not throw, just skip the broken relation
+    const files = collectTrackedFiles(node, graph);
+    expect(files.length).toBeGreaterThan(0);
+  });
+
   it('deduplicates aspect files inherited from both own and ancestor', () => {
     const parent: GraphNode = {
       path: 'orders',

@@ -1,0 +1,7 @@
+name: Recipe Execution
+nodes:
+  - orchestrator/scheduler
+  - orchestrator/phase-engine
+  - inventory/reagent-manager
+  - environment/condition-monitor
+aspects: [contamination-propagation, temporal-monotonicity, reagent-atomicity]

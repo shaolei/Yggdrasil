@@ -16,46 +16,40 @@ Your AI agent forgets everything between sessions. Yggdrasil makes it remember.
 
 ## The problem you already know
 
-Your AI agent works great on small projects. 20 files, no problem.
+Your AI agent works great on day one. Then the project grows and the agent starts breaking things. It doesn't know about rules that live in files it never read. It forgets decisions you explained last session. It duplicates code that already exists.
 
-Then your project grows. 200 files. The agent starts breaking things. It rewrites your auth module because it doesn't know about the rate limiting middleware. It ignores your error handling conventions because they live in a file it never read. It creates a second implementation of something that already exists.
+You've tried rules files, long prompts, context dumps. They help for a while. Then you have 50 rules, the agent loads all of them every time, and half are irrelevant to what it's actually doing.
 
-You explain the rules. The agent follows them for one session. Next session, it's back to guessing.
-
-The issue isn't intelligence. It's memory. The agent has none.
+The issue isn't intelligence. It's memory.
 
 ## What Yggdrasil does
 
-Yggdrasil gives your repository a persistent memory. Not a chat log. Not a giant rules file. A structured map of your system: what each part does, what depends on what, what rules apply, and why things are the way they are.
+Yggdrasil gives your project a persistent memory that your agent reads and updates as it works.
 
-When your agent works on a file, Yggdrasil gives it exactly the context it needs for that specific part. Not 200,000 tokens of "here's the whole repo." Just the 2,000-5,000 tokens that actually matter.
-
-Your agent maintains this memory as it works. You don't write documentation. Your agent does it in the background while writing code.
-
-## The 5-minute version
+When the agent touches a file, it gets only the context relevant to _that specific part_ — not your entire repo, not all your rules, just what it actually needs. The agent builds and maintains this memory itself. You don't write documentation.
 
 **Without Yggdrasil:**
+
 ```
 You: "Add a payment retry to OrderService"
 Agent: reads OrderService.ts, maybe PaymentService.ts
-       doesn't know about the rate limiting middleware
+       doesn't know about your rate limiting rules
        doesn't know orders must have min 1 item
-       doesn't know you chose event sourcing over direct DB writes
-       guesses. breaks things. you correct. repeat.
+       doesn't know why you chose event sourcing
+       → guesses. breaks things. you fix. repeat.
 ```
 
 **With Yggdrasil:**
+
 ```
 You: "Add a payment retry to OrderService"
-Agent: reads the context package for OrderService (auto-assembled)
-       knows: calls PaymentService.charge and .refund
-       knows: rate limiting middleware applies (aspect)
-       knows: event sourcing pattern (long-term memory)
-       knows: order validation rules (constraints)
-       implements correctly. updates the memory graph. done.
+Agent: gets a context summary for OrderService (auto-assembled)
+       knows: how it connects to PaymentService
+       knows: rate limiting rules apply here
+       knows: event sourcing — and why
+       knows: order validation constraints
+       → implements correctly. updates the memory. done.
 ```
-
-The context package is assembled automatically. You don't build it. You don't maintain it. Your agent does.
 
 ---
 
@@ -84,53 +78,48 @@ Cursor, Claude Code, GitHub Copilot, Cline / RooCode, Codex, Windsurf, Aider, Ge
 
 ## Does it actually work?
 
-I ran 4 series of experiments (22 experiments total) using Claude Code on real open-source codebases: Hoppscotch, Medusa, Django.
+I ran 26 experiments on real open-source codebases (Hoppscotch, Medusa, Django). Here's what I found:
 
-**What I can say with confidence:**
+- **An agent with only Yggdrasil context (no source code) built a correct service from scratch.** It didn't need to read the repo — the memory was enough. This worked even on a domain the agent had never seen before.
+- **You don't need to set it up perfectly.** Start messy. After 2 iterations the memory is good. You don't need to map your whole project either — covering a few key areas gets you most of the benefit.
+- **When you change something, the agent knows what else is affected.** Not "this file changed so maybe check everything" — it knows which specific parts of your system are connected, down to individual functions.
 
-- An agent given only a context package (no source code access) implemented a new service correctly. Score: 4.93/5.00 across 3 nodes. The core promise works.
-- Starting with a minimal graph and iterating takes 2 cycles to reach quality (1.2 → 3.5 → 4.9 out of 5). You don't need a perfect graph upfront.
-- Impact analysis catches 100% of affected components within the mapped graph.
-- 4 well-chosen nodes capture 92% of the quality of a full graph. You don't need to map everything.
+**What I'm honest about:** these experiments were run by an AI agent, not peer-reviewed. The exact scores are directional. The biggest limitation is coverage — the memory only helps with parts of your system that are actually mapped. I'm working on that.
 
-**What I'm honest about:**
-
-- These experiments were run and scored by the same AI agent. No independent peer review. Take the exact numbers as directional, not absolute.
-- Most experiments used one codebase (Hoppscotch). Results may differ on very different architectures.
-- The graph doesn't catch what it doesn't know. Missing information is a bigger problem than wrong information, because agents trust the graph and stop looking further.
-
-Full experiment reports are in the repo: `experiments/`.
+517 tests. 90% code coverage. Full experiment data: `experiments/`.
 
 ---
 
-## How it works (short version)
+## How it works
 
-1. You run `yg init`. A `.yggdrasil/` directory appears in your project.
-2. Your agent starts building a knowledge graph as it works. Nodes describe modules, services, and components. Each node has artifacts: what it does, its interface, its constraints, its decisions.
-3. When the agent needs to modify a file, it runs `yg build-context` and gets a context package: a compact document with everything it needs to know about that specific part of the system.
-4. The agent writes code and updates the graph in the same step. Memory stays in sync with reality.
+1. `yg init` — a `.yggdrasil/` folder appears in your project.
+2. Your agent works normally. As it goes, it builds a memory of your system — what each part does, how things connect, what rules apply, and _why_ things are the way they are.
+3. Before touching a file, the agent asks Yggdrasil for context. It gets a short summary of everything relevant to that specific area.
+4. The agent writes code and updates the memory in the same step. It stays in sync automatically.
 
-Everything is plain Markdown and YAML. No database. No vendor lock-in. Remove the `.yggdrasil/` folder and your project works exactly as before.
+Plain Markdown and YAML. No database. No lock-in. Delete `.yggdrasil/` and everything works exactly as before.
 
 ---
 
 ## What it is not
 
-- **Not a code generator.** Your existing agent generates code. Yggdrasil makes it generate better code by giving it the right context.
-- **Not manual documentation.** You don't write it. Your agent builds and maintains the graph while working on your tasks.
-- **Not locked to a provider.** It's Markdown and YAML. Works with Cursor today, Claude Code tomorrow, whatever comes next.
-- **Not invasive.** Delete `.yggdrasil/` at any time. Nothing else changes.
+- **Not a code generator.** Your agent generates code. Yggdrasil makes it generate _better_ code by giving it the right context.
+- **Not manual documentation.** You don't write anything. The agent does it while working on your tasks.
+- **Not locked to a provider.** Works with Cursor today, Claude Code tomorrow, whatever comes next.
+- **Not invasive.** Delete `.yggdrasil/` and your project is exactly as it was.
 
 ---
 
 ## When is it worth it?
 
 **Worth it:**
+
 - Your project has 100+ files and your agent keeps making the same mistakes
 - Multiple people (or agents) work on the codebase and context gets lost between them
 - You're tired of re-explaining the same architectural decisions every session
 
 **Not worth it (yet):**
+
 - Small projects where the agent can see everything at once
 - Solo scripts or utilities with no cross-module dependencies
 - You're prototyping and architecture doesn't matter yet

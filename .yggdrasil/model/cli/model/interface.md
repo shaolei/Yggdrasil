@@ -6,7 +6,7 @@ Type library — exports TypeScript interfaces and types only. No runtime functi
 
 **Node:** Graph, GraphNode, NodeMeta, Relation, RelationType, NodeMapping, Artifact, AspectException
 
-**Graph elements:** AspectDef, FlowDef (includes `path` — directory name under flows/), SchemaDef
+**Graph elements:** AspectDef, AspectStability, FlowDef (includes `path` — directory name under flows/), SchemaDef
 
 **SchemaDef:** `{ schemaType: string }` — inferred from filename stem (node, aspect, flow). Populated by loadSchemas from .yggdrasil/schemas/.
 
@@ -48,7 +48,7 @@ Model is a TypeScript type library — it contains no executable code and does n
 - **Graph** — Root container: config, nodes (Map by path), aspects, flows, schemas, rootPath. Optional configError and nodeParseErrors.
 - **GraphNode** — A node in the model tree: path, meta (NodeMeta), nodeYamlRaw, artifacts, children, parent.
 - **AspectException** — Exception to an aspect for a specific node: `{ aspect: string; note: string }`. Referenced by `NodeMeta.aspect_exceptions`.
-- **NodeMeta** — Parsed node.yaml: name, type, optional aspects, aspect_exceptions, blackbox, relations, mapping.
+- **NodeMeta** — Parsed node.yaml: name, type, optional aspects, aspect_exceptions, blackbox, relations, mapping, optional anchors (Record mapping aspect id to list of code pattern strings).
 - **Relation** — Typed edge: target path, RelationType, optional consumes, failure, event_name.
 - **RelationType** — Union: uses | calls | extends | implements | emits | listens.
 
@@ -73,7 +73,8 @@ Model is a TypeScript type library — it contains no executable code and does n
 
 ## Cross-cutting definitions
 
-- **AspectDef** — Loaded aspect: name, id, optional description, optional implies, artifacts.
+- **AspectStability** — Type union: `'schema' | 'protocol' | 'implementation'`. Indicates how stable an aspect's claims are expected to be. Schema = enforced by data model (most stable). Protocol = contractual pattern. Implementation = specific mechanism (least stable).
+- **AspectDef** — Loaded aspect: name, id, optional description, optional implies, optional stability (AspectStability), artifacts.
 - **FlowDef** — Loaded flow: path, name, nodes (participant paths), optional aspects, artifacts.
 - **SchemaDef** — Schema reference: schemaType (node/aspect/flow).
 

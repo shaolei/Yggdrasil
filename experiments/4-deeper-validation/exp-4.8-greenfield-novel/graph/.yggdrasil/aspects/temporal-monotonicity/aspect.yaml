@@ -1,0 +1,4 @@
+name: Temporal Monotonicity
+description: "Phases within a recipe execute in strict sequential order; no reordering, skipping, or overlapping within one recipe"
+stability: protocol
+anchors: [PhaseTransition, validatePhaseOrder, currentPhaseIndex]
