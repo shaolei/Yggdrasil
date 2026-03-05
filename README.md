@@ -5,7 +5,7 @@
 # Yggdrasil
 
 **Make your repository self-aware.**
-Persistent semantic memory and deterministic context assembly for AI agents.
+Your AI agent forgets everything between sessions. Yggdrasil makes it remember.
 
 [![CI](https://github.com/krzysztofdudek/Yggdrasil/actions/workflows/ci.yml/badge.svg)](https://github.com/krzysztofdudek/Yggdrasil/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@chrisdudek/yg.svg)](https://www.npmjs.com/package/@chrisdudek/yg)
@@ -16,25 +16,40 @@ Persistent semantic memory and deterministic context assembly for AI agents.
 
 ## The problem
 
-Conversation is ephemeral memory. Code is just the execution of decisions. Neither remembers _why_ things are the way they are, what constraints apply, or how components fit together.
+Your AI agent works great on day one. Then the project grows and the agent starts breaking things. It doesn't know about rules that live in files it never read. It forgets decisions you explained last session. It duplicates code that already exists.
 
-When AI agents work on your codebase, they are forced to guess these rules — and guessing leads to bad outputs, broken architecture, and endless correction loops. Constraints that took you months to define vanish the moment the chat context window fills up.
+You've tried rules files, long prompts, context dumps. They help for a while. Then you have 50 rules, the agent loads all of them every time, and half are irrelevant to what it's actually doing.
+
+The issue isn't intelligence. It's memory.
 
 ## What Yggdrasil does
 
-Yggdrasil gives your repository a **persistent semantic memory graph**.
+Yggdrasil gives your project a persistent memory that your agent reads and updates as it works.
 
-It maintains the system's intent, rules, and boundaries in structured Markdown and YAML inside a `.yggdrasil/` directory. When an AI agent works on your code, Yggdrasil deterministically assembles a precise "context package" for the exact component the agent is modifying.
+When the agent touches a file, it gets only the context relevant to _that specific part_ — not your entire repo, not all your rules, just what it actually needs. The agent builds and maintains this memory itself. You don't write documentation.
 
-The agent stops guessing. It knows exactly what it is looking at, what constraints it must follow, and what the surrounding dependencies require.
+**Without Yggdrasil:**
 
-**Primary goals:** Build semantic memory for new projects from day one. Reverse-engineer existing codebases and capture their intent. Keep semantic memory alive autonomously — your agent maintains the graph as it works, so you never re-explain, re-discover, or lose context.
+```
+You: "Add a payment retry to OrderService"
+Agent: reads OrderService.ts, maybe PaymentService.ts
+       doesn't know about your rate limiting rules
+       doesn't know orders must have min 1 item
+       doesn't know why you chose event sourcing
+       → guesses. breaks things. you fix. repeat.
+```
 
-### You change nothing about how you work
+**With Yggdrasil:**
 
-You use your AI agent exactly as you did before. Yggdrasil acts as an ambient, invisible infrastructure. Your agent reads the graph to understand the architecture, writes the code, and autonomously updates the graph in the background to reflect new decisions.
-
-From the moment you install Yggdrasil, your repository becomes self-aware.
+```
+You: "Add a payment retry to OrderService"
+Agent: gets a context summary for OrderService (auto-assembled)
+       knows: how it connects to PaymentService
+       knows: rate limiting rules apply here
+       knows: event sourcing — and why
+       knows: order validation constraints
+       → implements correctly. updates the memory. done.
+```
 
 ---
 
@@ -51,53 +66,69 @@ cd your-project
 yg init --platform <platform>
 ```
 
-Done. Your repository is now self-aware.
-
----
-
-## Upgrade
-
-```bash
-# 1. Update the CLI globally
-npm install -g @chrisdudek/yg
-
-# 2. In your project directory, refresh rules (config and graph stay unchanged)
-cd your-project
-yg init --platform <platform> --upgrade
-```
-
-`--upgrade` overwrites only the rules file. Your `.yggdrasil/` config and graph are not modified.
+That's it. Your agent now has persistent memory.
 
 ---
 
 ## Supported platforms
 
-Yggdrasil natively configures behavioral rules for:
+Cursor, Claude Code, GitHub Copilot, Cline / RooCode, Codex, Windsurf, Aider, Gemini CLI, Amp.
 
-- Cursor
-- Claude Code
-- GitHub Copilot
-- Cline / RooCode
-- Codex
-- Windsurf
-- Aider
-- Gemini CLI
-- Amp
+---
+
+## Does it actually work?
+
+I ran 26 experiments on real open-source codebases (Hoppscotch, Medusa, Django). Here's what I found:
+
+- **An agent with only Yggdrasil context (no source code) built a correct service from scratch.** It didn't need to read the repo — the memory was enough. This worked even on a domain the agent had never seen before.
+- **You don't need to set it up perfectly.** Start messy. After 2 iterations the memory is good. You don't need to map your whole project either — covering a few key areas gets you most of the benefit.
+- **When you change something, the agent knows what else is affected.** Not "this file changed so maybe check everything" — it knows which specific parts of your system are connected, down to individual functions.
+
+**What I'm honest about:** these experiments were run by an AI agent, not peer-reviewed. The exact scores are directional. The biggest limitation is coverage — the memory only helps with parts of your system that are actually mapped. I'm working on that.
+
+517 tests. 90% code coverage. Full experiment data: `experiments/`.
+
+---
+
+## How it works
+
+1. `yg init` — a `.yggdrasil/` folder appears in your project.
+2. Your agent works normally. As it goes, it builds a memory of your system — what each part does, how things connect, what rules apply, and _why_ things are the way they are.
+3. Before touching a file, the agent asks Yggdrasil for context. It gets a short summary of everything relevant to that specific area.
+4. The agent writes code and updates the memory in the same step. It stays in sync automatically.
+
+Plain Markdown and YAML. No database. No lock-in. Delete `.yggdrasil/` and everything works exactly as before.
 
 ---
 
 ## What it is not
 
-- ❌ **Not a code generator.** It is a semantic specification engine that makes your _existing_ agent generate perfect code.
-- ❌ **Not manual documentation.** You don't have to write it. Your agent builds and maintains the graph naturally while working on your tasks.
-- ❌ **Not locked to an AI provider.** The memory graph is just Markdown and YAML. It works with Cursor today, Claude Code tomorrow, and whatever comes next.
-- ❌ **Not invasive.** Remove the `.yggdrasil/` folder at any time. Your project will work exactly as it did before.
+- **Not a code generator.** Your agent generates code. Yggdrasil makes it generate _better_ code by giving it the right context.
+- **Not manual documentation.** You don't write anything. The agent does it while working on your tasks.
+- **Not locked to a provider.** Works with Cursor today, Claude Code tomorrow, whatever comes next.
+- **Not invasive.** Delete `.yggdrasil/` and your project is exactly as it was.
+
+---
+
+## When is it worth it?
+
+**Worth it:**
+
+- Your project has 100+ files and your agent keeps making the same mistakes
+- Multiple people (or agents) work on the codebase and context gets lost between them
+- You're tired of re-explaining the same architectural decisions every session
+
+**Not worth it (yet):**
+
+- Small projects where the agent can see everything at once
+- Solo scripts or utilities with no cross-module dependencies
+- You're prototyping and architecture doesn't matter yet
 
 ---
 
 ## Documentation
 
-Read the full specification and architectural concepts here:
+Full specification and architecture:
 [https://krzysztofdudek.github.io/Yggdrasil/](https://krzysztofdudek.github.io/Yggdrasil/)
 
 ---

@@ -5,8 +5,8 @@
 ## validate(scope)
 
 1. **Early errors**: configError → E012; nodeParseErrors → E001
-2. **Config-dependent checks** (if !configError): checkNodeTypes, checkTagsDefined, checkAspectTags, checkAspectTagUniqueness, checkImpliedAspectsExist, checkImpliesNoCycles, checkRequiredAspectsCoverage, checkAspectExceptions, checkRequiredArtifacts, checkInvalidArtifactConditions, checkContextBudget, checkHighFanOut, checkSchemas
-3. **Graph-structure checks**: checkRelationTargets, checkNoCycles, checkMappingOverlap, checkBrokenFlowRefs, checkDirectoriesHaveNodeYaml, checkShallowArtifacts, checkUnpairedEvents
+2. **Config-dependent checks** (if !configError): checkNodeTypes, checkTagsDefined, checkAspectTags, checkAspectTagUniqueness, checkImpliedAspectsExist, checkImpliesNoCycles, checkRequiredAspectsCoverage, checkAspectExceptions, checkAnchorPresence, checkRequiredArtifacts, checkInvalidArtifactConditions, checkContextBudget, checkHighFanOut, checkSchemas
+3. **Graph-structure checks**: checkRelationTargets, checkNoCycles, checkMappingOverlap, checkMappingPathsExist, checkBrokenFlowRefs, checkFlowAspectIds, checkDirectoriesHaveNodeYaml, checkShallowArtifacts, checkUnpairedEvents
 4. **Scope filter**: if scope !== 'all', filter issues by nodePath; validate scope exists
 
 ## Key rules
@@ -19,6 +19,7 @@
 - **checkAspectExceptions**: for each node, iterates `aspect_exceptions`; if an exception's `aspect` id is not in the node's `aspects` list → E018 `invalid-aspect-exception`
 - **checkRequiredArtifacts**: artifactRequiredReason evaluates required (always | never | when conditions)
 - **checkContextBudget**: buildContext per node; compare tokenCount to warning/error thresholds
+- **checkAnchorPresence**: For each node with `anchors`, validates: (1) E019 — each anchor key (aspect id) must be in the node's `aspects` list; (2) W014 — each anchor string must appear in at least one mapped source file. Uses `expandMappingToFiles` helper to recursively collect files from mapping paths (skips dotfiles and `node_modules`). All source files for a node are read once and searched for each anchor string via simple `content.includes(anchor)`.
 
 ## Order of checks
 
@@ -28,6 +29,6 @@ Config-dependent first (need valid config). Structure checks can run with partia
 
 # Validator Decisions
 
-**Stable error codes E001-E018, W001-W011:** Each validation rule has a fixed code (E for errors, W for warnings). These codes are machine-readable identifiers stable across versions, enabling CI pipelines and automation to match on specific codes rather than fragile message text. New rules receive the next available code.
+**Stable error codes E001-E019, W001-W014:** Each validation rule has a fixed code (E for errors, W for warnings). These codes are machine-readable identifiers stable across versions, enabling CI pipelines and automation to match on specific codes rather than fragile message text. New rules receive the next available code.
 
 **Warnings do not block build-context:** Warnings (W-codes) indicate quality suggestions such as shallow artifacts, high fan-out, or missing optional coverage. Errors (E-codes) indicate structural integrity failures such as broken relations, missing node.yaml, or cycles. Only errors represent states where the graph is structurally invalid. build-context operates on the loaded graph and does not consult validation results, so warnings never prevent context assembly.

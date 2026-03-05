@@ -585,4 +585,94 @@ relations:
 
     await rm(tmpDir, { recursive: true, force: true });
   });
+
+  it('parses anchors map correctly', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-node-anchors');
+    await mkdir(tmpDir, { recursive: true });
+    const nodePath = path.join(tmpDir, 'node.yaml');
+    await writeFile(
+      nodePath,
+      `name: AnchoredNode
+type: service
+aspects:
+  - pessimistic-locking
+  - retry-on-deadlock
+anchors:
+  pessimistic-locking:
+    - lockTeamCollection
+    - FOR UPDATE
+  retry-on-deadlock:
+    - MAX_RETRIES
+    - TRANSACTION_DEADLOCK
+`,
+      'utf-8',
+    );
+
+    const meta = await parseNodeYaml(nodePath);
+    expect(meta.anchors).toEqual({
+      'pessimistic-locking': ['lockTeamCollection', 'FOR UPDATE'],
+      'retry-on-deadlock': ['MAX_RETRIES', 'TRANSACTION_DEADLOCK'],
+    });
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('returns undefined anchors when not present', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-node-no-anchors');
+    await mkdir(tmpDir, { recursive: true });
+    const nodePath = path.join(tmpDir, 'node.yaml');
+    await writeFile(nodePath, `name: NoAnchors\ntype: service\n`, 'utf-8');
+
+    const meta = await parseNodeYaml(nodePath);
+    expect(meta.anchors).toBeUndefined();
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when anchors is not an object', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-node-bad-anchors');
+    await mkdir(tmpDir, { recursive: true });
+    const nodePath = path.join(tmpDir, 'node.yaml');
+    await writeFile(nodePath, `name: Bad\ntype: service\nanchors: "string"\n`, 'utf-8');
+
+    await expect(parseNodeYaml(nodePath)).rejects.toThrow(
+      "'anchors' must be an object mapping aspect ids to arrays of strings",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when anchors value is not an array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-node-bad-anchor-val');
+    await mkdir(tmpDir, { recursive: true });
+    const nodePath = path.join(tmpDir, 'node.yaml');
+    await writeFile(
+      nodePath,
+      `name: Bad\ntype: service\naspects:\n  - my-aspect\nanchors:\n  my-aspect: "not-array"\n`,
+      'utf-8',
+    );
+
+    await expect(parseNodeYaml(nodePath)).rejects.toThrow(
+      "'anchors.my-aspect' must be a non-empty array of strings",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when anchors value is empty array', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-node-empty-anchor');
+    await mkdir(tmpDir, { recursive: true });
+    const nodePath = path.join(tmpDir, 'node.yaml');
+    await writeFile(
+      nodePath,
+      `name: Bad\ntype: service\naspects:\n  - my-aspect\nanchors:\n  my-aspect: []\n`,
+      'utf-8',
+    );
+
+    await expect(parseNodeYaml(nodePath)).rejects.toThrow(
+      "'anchors.my-aspect' must be a non-empty array of strings",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
 });

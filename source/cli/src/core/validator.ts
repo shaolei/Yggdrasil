@@ -1,4 +1,4 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import type { Graph, ValidationResult, ValidationIssue, ArtifactConfig } from '../model/types.js';
 import { buildContext, resolveAspects } from './context-builder.js';
@@ -38,6 +38,7 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
     issues.push(...checkImpliesNoCycles(graph));
     issues.push(...checkRequiredAspectsCoverage(graph));
     issues.push(...checkAspectExceptions(graph));
+    issues.push(...(await checkAnchorPresence(graph)));
     issues.push(...checkRequiredArtifacts(graph));
     issues.push(...checkInvalidArtifactConditions(graph));
     issues.push(...(await checkContextBudget(graph)));
@@ -812,6 +813,100 @@ async function checkDirectoriesHaveNodeYaml(graph: Graph): Promise<ValidationIss
     }
   } catch {
     // model/ may not exist
+  }
+
+  return issues;
+}
+
+// --- Anchor validation (E019, W014) ---
+
+async function expandMappingToFiles(projectRoot: string, mappingPaths: string[]): Promise<string[]> {
+  const files: string[] = [];
+
+  async function collectFiles(absPath: string): Promise<void> {
+    try {
+      const s = await stat(absPath);
+      if (s.isFile()) {
+        files.push(absPath);
+      } else if (s.isDirectory()) {
+        const entries = await readdir(absPath, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+          const entryPath = path.join(absPath, entry.name);
+          if (entry.isFile()) {
+            files.push(entryPath);
+          } else if (entry.isDirectory()) {
+            await collectFiles(entryPath);
+          }
+        }
+      }
+    } catch {
+      // Skip inaccessible paths
+    }
+  }
+
+  for (const mp of mappingPaths) {
+    await collectFiles(path.join(projectRoot, mp));
+  }
+  return files;
+}
+
+async function checkAnchorPresence(graph: Graph): Promise<ValidationIssue[]> {
+  const issues: ValidationIssue[] = [];
+  const projectRoot = path.dirname(graph.rootPath);
+
+  for (const [nodePath, node] of graph.nodes) {
+    const anchors = node.meta.anchors;
+    if (!anchors) continue;
+
+    const nodeAspects = new Set(node.meta.aspects ?? []);
+
+    // E019: anchor keys must reference aspects in this node's aspects list
+    for (const aspectId of Object.keys(anchors)) {
+      if (!nodeAspects.has(aspectId)) {
+        issues.push({
+          severity: 'error',
+          code: 'E019',
+          rule: 'invalid-anchor-ref',
+          message: `anchors references aspect '${aspectId}' which is not in this node's aspects list (${[...nodeAspects].join(', ') || 'none'})`,
+          nodePath,
+        });
+      }
+    }
+
+    // W014: check anchor strings exist in source files
+    const mappingPaths = normalizeMappingPaths(node.meta.mapping);
+    if (mappingPaths.length === 0) continue;
+
+    const sourceFiles = await expandMappingToFiles(projectRoot, mappingPaths);
+    if (sourceFiles.length === 0) continue;
+
+    // Read all source files once per node
+    const fileContents: string[] = [];
+    for (const filePath of sourceFiles) {
+      try {
+        const content = await readFile(filePath, 'utf-8');
+        fileContents.push(content);
+      } catch {
+        // Skip unreadable files (binary, encoding, permissions)
+      }
+    }
+
+    for (const [aspectId, anchorList] of Object.entries(anchors)) {
+      if (!nodeAspects.has(aspectId)) continue; // Already reported as E019
+      for (const anchor of anchorList) {
+        const found = fileContents.some((content) => content.includes(anchor));
+        if (!found) {
+          issues.push({
+            severity: 'warning',
+            code: 'W014',
+            rule: 'anchor-not-found',
+            message: `Anchor '${anchor}' for aspect '${aspectId}' not found in mapped source files`,
+            nodePath,
+          });
+        }
+      }
+    }
   }
 
   return issues;

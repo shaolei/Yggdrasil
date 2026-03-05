@@ -34,6 +34,7 @@ export async function parseNodeYaml(filePath: string): Promise<NodeMeta> {
   const mapping = parseMapping(raw.mapping, filePath);
   const aspects = parseStringArray(raw.aspects) ?? parseStringArray(raw.tags);
   const aspectExceptions = parseAspectExceptions(raw.aspect_exceptions, aspects, filePath);
+  const anchors = parseAnchors(raw.anchors, filePath);
 
   return {
     name: (raw.name as string).trim(),
@@ -43,7 +44,38 @@ export async function parseNodeYaml(filePath: string): Promise<NodeMeta> {
     blackbox: (raw.blackbox as boolean) ?? false,
     relations: relations.length > 0 ? relations : undefined,
     mapping,
+    anchors,
   };
+}
+
+function parseAnchors(raw: unknown, filePath: string): Record<string, string[]> | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(
+      `node.yaml at ${filePath}: 'anchors' must be an object mapping aspect ids to arrays of strings`,
+    );
+  }
+
+  const obj = raw as Record<string, unknown>;
+  const entries = Object.entries(obj);
+  if (entries.length === 0) return undefined;
+
+  const result: Record<string, string[]> = {};
+  for (const [key, value] of entries) {
+    if (!Array.isArray(value) || value.length === 0) {
+      throw new Error(
+        `node.yaml at ${filePath}: 'anchors.${key}' must be a non-empty array of strings`,
+      );
+    }
+    const strings = value.filter((v): v is string => typeof v === 'string');
+    if (strings.length === 0) {
+      throw new Error(
+        `node.yaml at ${filePath}: 'anchors.${key}' must be a non-empty array of strings`,
+      );
+    }
+    result[key] = strings;
+  }
+  return result;
 }
 
 function parseAspectExceptions(

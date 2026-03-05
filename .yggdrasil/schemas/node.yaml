@@ -8,6 +8,13 @@ aspects: []
 aspect_exceptions:
   - aspect: aspect-id
     note: "Description of how this node deviates from the aspect pattern"
+
+anchors:
+  aspect-id:
+    - functionName
+    - CONSTANT_NAME
+    - "SQL pattern"
+
 blackbox: false
 
 relations:

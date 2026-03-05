@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`stability` field in `aspect.yaml`:** Optional stability tier classification (`schema`,
+  `protocol`, `implementation`) predicting aspect decay rate. Appears in context packages
+  and `yg aspects` output. Guides review urgency: `implementation` aspects need review after
+  any significant code change, `schema` aspects only when data models change.
+- **W014 `anchor-not-found`** — `yg validate` warns when a code anchor is not found in a node's mapped source files
+- **E019 `invalid-anchor-ref`** — `yg validate` errors when `anchors` key references an aspect not in the node's `aspects` list
+- **`yg impact --method <name>` flag:** Filters node-mode impact to dependents whose
+  `consumes` list includes the specified method (or have no `consumes`, meaning they consume
+  everything). Enables method-level blast radius analysis.
+- **Event relation tracking in `yg impact --node`:** Impact output now includes an
+  "Event-dependent" section showing nodes connected via `emits`/`listens` relations,
+  with event names. Total scope includes event dependents.
+- **Agent rules: enrichment priority.** When adding artifacts incrementally, prioritize
+  `interface.md` first (highest cross-module ROI), then `responsibility.md`, then
+  `internals.md`. Based on experiment finding: 1.88 pts/1000 chars for interface vs lower
+  for other artifacts.
+- **Agent rules: aspect stability tiers in review cadence.** Agents use `stability` field
+  to calibrate review urgency. Anchor-based staleness check during drift resolution.
+- **Agent rules: action recognition rule.** New "Recognizing Graph-Required Actions"
+  section ensures agents apply the graph protocol based on the ACTION being performed
+  (understanding mapped code), not the SOURCE of the instruction (skill, plan, user,
+  workflow). Prevents external workflows from overriding the graph-first protocol.
+
+### Changed
+
+- **BREAKING:** `anchors` field moved from `aspect.yaml` to `node.yaml` — anchors are now per-node, per-aspect maps (`anchors: { aspect-id: [pattern1, pattern2] }`) for more precise staleness detection
+
 ## [1.3.0] - 2026-03-04
 
 ### Added

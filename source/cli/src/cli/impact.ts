@@ -300,9 +300,10 @@ export function registerImpactCommand(program: Command): void {
     .option('--node <path>', 'Node path relative to .yggdrasil/model/')
     .option('--aspect <id>', 'Aspect id (directory path under aspects/)')
     .option('--flow <name>', 'Flow name (directory name under flows/)')
+    .option('--method <name>', 'Filter impact to dependents consuming a specific method (requires --node)')
     .option('--simulate', 'Simulate context package impact (compare HEAD vs current)')
     .action(
-      async (options: { node?: string; aspect?: string; flow?: string; simulate?: boolean }) => {
+      async (options: { node?: string; aspect?: string; flow?: string; method?: string; simulate?: boolean }) => {
         try {
           const modeCount = [options.node, options.aspect, options.flow].filter(Boolean).length;
           if (modeCount === 0) {
@@ -336,11 +337,65 @@ export function registerImpactCommand(program: Command): void {
             process.exit(1);
           }
 
+          if (options.method && !options.node) {
+            process.stderr.write('Error: --method requires --node\n');
+            process.exit(1);
+          }
+
           const { direct, allDependents, reverse, relationFrom } = collectReverseDependents(
             graph,
             nodePath,
           );
-          const chains = buildTransitiveChains(nodePath, direct, allDependents, reverse);
+
+          // When --method is specified, filter to only dependents consuming that method
+          const methodFilter = options.method?.trim();
+          let filteredDirect = direct;
+          let filteredAllDependents = allDependents;
+          if (methodFilter) {
+            filteredDirect = direct.filter((dep) => {
+              const rel = relationFrom.get(`${dep}->${nodePath}`);
+              return rel?.consumes?.includes(methodFilter) || !rel?.consumes?.length;
+            });
+            // Rebuild transitive from filtered direct
+            const filteredSet = new Set(filteredDirect);
+            filteredAllDependents = allDependents.filter((dep) => filteredSet.has(dep));
+          }
+
+          const chains = buildTransitiveChains(nodePath, filteredDirect, filteredAllDependents, reverse);
+
+          // Collect event-based dependents (emits/listens)
+          const eventDependents: Array<{ path: string; type: string; eventName: string }> = [];
+          for (const [np, n] of graph.nodes) {
+            for (const rel of n.meta.relations ?? []) {
+              if (rel.target === nodePath && (rel.type === 'emits' || rel.type === 'listens')) {
+                eventDependents.push({
+                  path: np,
+                  type: rel.type,
+                  eventName: rel.event_name ?? n.meta.name,
+                });
+              }
+            }
+          }
+          // Also check if the target node emits events and find listeners
+          const targetNode = graph.nodes.get(nodePath)!;
+          for (const rel of targetNode.meta.relations ?? []) {
+            if (rel.type === 'emits') {
+              const eventName = rel.event_name ?? rel.target;
+              // Find listeners for this event target
+              for (const [np, n] of graph.nodes) {
+                if (np === nodePath) continue;
+                for (const r of n.meta.relations ?? []) {
+                  if (r.type === 'listens' && r.target === rel.target) {
+                    eventDependents.push({
+                      path: np,
+                      type: 'listens',
+                      eventName: r.event_name ?? eventName,
+                    });
+                  }
+                }
+              }
+            }
+          }
 
           const flows: string[] = [];
           for (const flow of graph.flows) {
@@ -357,19 +412,27 @@ export function registerImpactCommand(program: Command): void {
             }
           }
 
-          process.stdout.write(`Impact of changes in ${nodePath}:\n\n`);
+          const methodLabel = methodFilter ? ` (method: ${methodFilter})` : '';
+          process.stdout.write(`Impact of changes in ${nodePath}${methodLabel}:\n\n`);
           process.stdout.write('Directly dependent:\n');
-          if (direct.length === 0) {
+          if (filteredDirect.length === 0) {
             process.stdout.write('  (none)\n');
           } else {
-            for (const dep of direct) {
+            for (const dep of filteredDirect) {
               const rel = relationFrom.get(`${dep}->${nodePath}`);
               const annot = rel?.consumes?.length
-                ? ` (${rel.type}, you consume: ${rel.consumes.join(', ')})`
+                ? ` (${rel.type}, consumes: ${rel.consumes.join(', ')})`
                 : rel
                   ? ` (${rel.type})`
                   : '';
               process.stdout.write(`  <- ${dep}${annot}\n`);
+            }
+          }
+
+          if (eventDependents.length > 0 && !methodFilter) {
+            process.stdout.write('\nEvent-connected:\n');
+            for (const { path: p, type, eventName } of eventDependents.sort((a, b) => a.path.localeCompare(b.path))) {
+              process.stdout.write(`  ${p} (${type}: ${eventName})\n`);
             }
           }
           process.stdout.write('\nTransitively dependent:\n');
@@ -416,7 +479,7 @@ export function registerImpactCommand(program: Command): void {
             }
           }
 
-          const allAffected = new Set([...allDependents, ...descendants]);
+          const allAffected = new Set([...filteredAllDependents, ...descendants, ...eventDependents.map((e) => e.path)]);
           process.stdout.write(
             `\nTotal scope: ${allAffected.size} nodes, ${flows.length} flows, ${aspectsInScope.length} aspects\n`,
           );

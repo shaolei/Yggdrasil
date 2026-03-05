@@ -295,6 +295,9 @@ export function buildEventRelationLayer(target: GraphNode, relation: Relation): 
 
 export function buildAspectLayer(aspect: AspectDef, exceptionNote?: string): ContextLayer {
   let content = aspect.artifacts.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
+  if (aspect.stability) {
+    content += `\n**Stability tier:** ${aspect.stability}`;
+  }
   if (exceptionNote) {
     content += `\n\n⚠ **Exception for this node:** ${exceptionNote}`;
   }

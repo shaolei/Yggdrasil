@@ -51,11 +51,29 @@ WHEN UNSURE: ask the user. Never guess. Never assume.
 4. **Always capture why — especially why NOT.** When the user explains a reason, record it in the graph immediately. When a design choice is made, also record rejected alternatives: "Chose X over Y because Z." Rejected alternatives are the highest-value information — invisible in code and irrecoverable once forgotten. Conversation evaporates; graph persists.
 5. **Ask before resolving ambiguity.** When multiple valid interpretations exist, stop, list options, ask the user. Never silently choose.
 
+### Recognizing Graph-Required Actions
+
+What matters is the ACTION you are performing, not what instructed it. If the action involves understanding mapped code, the graph protocol applies — whether the instruction came from a skill, a plan, a user message, a workflow step, or your own initiative.
+
+**Actions that require \`yg owner\` + \`yg build-context\` first:**
+
+- Reading or exploring source files to understand a component
+- Proposing approaches, designs, or plans for changing code
+- Reviewing or debugging code
+- Any form of reasoning about how mapped code works or should change
+
+**Actions that do NOT require yg:**
+
+- Git operations (log, diff, status, blame)
+- Reading documentation, READMEs, or config files outside \`.yggdrasil/\`
+- Running tests, builds, or linters
+- Working with files that \`yg owner\` reports as unmapped
+
 ### Failure States
 
 You have broken Yggdrasil if you do any of the following:
 
-- ❌ Worked on a mapped file without running \`yg owner\` + \`yg build-context\` first — whether reading to understand, planning, or modifying.
+- ❌ Worked on a mapped file without running \`yg owner\` + \`yg build-context\` first — regardless of what instructed the action (skill, plan, user request, workflow step).
 - ❌ Modified source code without updating graph artifacts in the same response, or vice versa.
 - ❌ Resolved a code-graph inconsistency or ambiguity without asking the user first.
 - ❌ Created or edited a graph element without reading its schema in \`schemas/\` first.
@@ -167,6 +185,7 @@ Per area checklist:
 - [ ] 4. Analyze source — for each artifact type in \`config.artifacts\`: extract content, do not invent
 - [ ] 5. Identify relations — add to \`node.yaml\`
 - [ ] 6. Identify cross-cutting requirements — add matching aspects, create if needed
+- [ ] 6b. For each aspect on the node: identify 2-5 code anchors (function names, constants) that evidence the pattern → add to \`node.yaml\` \`anchors\` field
 - [ ] 7. Identify business process participation — add to flow, ask user if process unclear
 - [ ] 8. \`yg validate\` — fix errors
 - [ ] 9. \`yg drift-sync --node <path>\`
@@ -271,6 +290,8 @@ Three artifacts capture node knowledge at three levels:
 - **interface.md** (required when node has consumers) — HOW TO USE: public methods, parameters, return types, contracts, failure modes, exposed data structures. Everything another node needs to interact with this one.
 - **internals.md** (optional, highest value for cross-module nodes) — HOW IT WORKS + WHY: algorithms, control flow, business rules, invariants, state machines, lifecycle, and design decisions with rejected alternatives. Use sections within the file: ## Logic, ## Constraints, ## State, ## Decisions (with "Chose X over Y because Z" format).
 
+**Enrichment priority (when adding incrementally):** \`interface.md\` first (highest cross-module ROI — contracts enable other nodes to reason about interactions), then \`responsibility.md\` (identity and boundaries), then \`internals.md\` (depth for complex nodes). A node with only \`interface.md\` provides more cross-module value than one with only \`internals.md\`.
+
 ### Context Assembly
 
 Run \`yg build-context --node <path>\` to get the deterministic context package for a node. The package assembles global config, hierarchy, own artifacts, aspects, and relational context. It is your architectural map. For implementation-level claims (exact call patterns, error handling, await vs fire-and-forget) — verify against source code. If the package is insufficient, enrich the graph.
@@ -305,6 +326,14 @@ Test: "Does this requirement apply to more than one node?" Yes → aspect. No �
 When a node follows an aspect's pattern with exceptions, record exceptions in \`node.yaml\` under \`aspect_exceptions\`. Example: aspect says "fire-and-forget" but this node awaits the publish call. The exception appears in the context package next to the aspect content, preventing abstractions from masking implementation details.
 
 **Aspect lifecycle warning.** Aspects decay CATASTROPHICALLY — a pattern either exists or it doesn't. When a pattern changes, ALL aspect claims become wrong at once. This differs from other artifacts: \`interface.md\` and \`responsibility.md\` are most stable (~9-year half-life); \`internals.md\` has moderate stability (~2.5-year half-life); aspects are least stable (~2.4-year half-life, binary decay). After any significant feature addition, review ALL aspects touching the affected area. Don't wait for drift — aspects can be 100% wrong without any mapped file changing.
+
+**Aspect stability tiers.** If an aspect has a \`stability\` field in \`aspect.yaml\`, use it to calibrate review urgency:
+
+- \`schema\` — enforced by data model; review only when data model changes (most stable)
+- \`protocol\` — contractual pattern; review when contracts or interfaces change
+- \`implementation\` — specific mechanism; review after ANY significant code change (least stable)
+
+When code anchors (\`anchors\` field in \`node.yaml\`) are present for an aspect, they list code patterns (function names, constants, SQL fragments) evidencing the aspect's implementation in this node. \`yg validate\` checks that each anchor exists in the node's mapped source files — a missing anchor (W014) signals the aspect may be stale for this node.
 
 ### Creating Flows
 
@@ -342,6 +371,7 @@ yg flows                            List flows with metadata (YAML output).
 yg deps --node <path> [--depth N] [--type structural|event|all]
                                     Show dependencies.
 yg impact --node <path> --simulate  Simulate blast radius of a planned change.
+yg impact --node <path> --method <name>  Filter impact to dependents consuming a specific method.
 yg impact --aspect <id>             Show all nodes where aspect is effective.
 yg impact --flow <name>             Show flow participants and descendants.
 yg status                           Graph health: nodes, coverage, drift summary.
@@ -369,4 +399,4 @@ yg journal-archive                  Archive consolidated journal entries.
 | Technology stack | \`config.yaml stack\` (+ \`rationale\` field) |
 | Global coding standards | \`config.yaml standards\` |`;
 
-export const AGENT_RULES_CONTENT = [CORE_PROTOCOL, OPERATIONS, KNOWLEDGE_BASE].join('\n\n---\n\n');
+export const AGENT_RULES_CONTENT = [CORE_PROTOCOL, OPERATIONS, KNOWLEDGE_BASE].join('\n\n---\n\n') + '\n';

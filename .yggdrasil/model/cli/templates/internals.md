@@ -29,7 +29,13 @@
 
 **Hand-tuned content:** Agent rules content is explicitly maintained by humans. The rules.ts comment states: "Canonical agent rules content — hand-tuned, do not generate programmatically." This ensures the operating manual reflects deliberate design decisions.
 
-**Intent capture mandate:** The rules enforce "CAPTURE INTENT, BUT NEVER INVENT IT" — agents must permanently record the user's "why" (business reason, rationale) in graph artifacts when provided, but never infer or hallucinate it. This makes the graph the semantic meaning layer (Intent → Graph → Outputs) and protects against chat context evaporation.
+**Intent capture mandate:** The rules enforce "CAPTURE INTENT, BUT NEVER INVENT IT" — agents must permanently record the user's "why" (business reason, rationale) in graph artifacts when provided, but never infer or hallucinate it. This makes the graph the semantic meaning layer (Intent -> Graph -> Outputs) and protects against chat context evaporation.
+
+**Enrichment priority guidance:** Rules now include explicit guidance on artifact enrichment order: interface.md first (highest cross-module ROI), then responsibility.md, then internals.md. This is based on experiment findings about cross-module value.
+
+**Aspect stability tiers:** Rules include guidance on the `stability` field in aspect.yaml (schema/protocol/implementation) with calibrated review urgency for each tier, and guidance on using code anchors (declared per-node in `node.yaml` `anchors` field, validated by `yg validate` W014/E019) for staleness detection during drift resolution.
+
+**Action recognition rule:** Rules include an explicit "Recognizing Graph-Required Actions" section that tells agents: what matters is the ACTION (understanding mapped code), not the SOURCE of the instruction (skill, plan, user, workflow). This prevents external workflows from overriding the graph protocol — agents must run `yg owner` + `yg build-context` before any action that involves understanding mapped code, regardless of what instructed it. The Failure States section reinforces this with source-agnostic language.
 
 **Platform-specific installation:** Each agent platform has its own conventions for rules location. The platform.ts module centralizes this mapping so `yg init --platform <name>` works consistently across IDEs.
 

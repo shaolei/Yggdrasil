@@ -2,7 +2,7 @@
 
 | Function | Signature | Command | Options |
 | -------- | --------- | ------- | ------- |
-| registerImpactCommand | (program: Command) => void | impact | --node, --aspect, --flow (mutually exclusive, one required), --simulate |
+| registerImpactCommand | (program: Command) => void | impact | --node, --aspect, --flow (mutually exclusive, one required), --method (requires --node), --simulate |
 
 **Also exported:**
 
@@ -11,6 +11,10 @@
 - `collectDescendants(graph: Graph, nodePath: string): string[]` — hierarchy children recursively.
 
 **Return:** void for registerImpactCommand. Contract: errors to stderr, process.exit(1) on failure.
+
+**--method filter:** When `--method <name>` is provided with `--node`, filters direct dependents to only those whose relation consumes the specified method (or has no consumes constraint). Transitive dependents are rebuilt from the filtered direct set.
+
+**Event-dependent tracking:** In `--node` mode, output includes an "Event-connected" section showing nodes linked via `emits`/`listens` relations to the target node, including event listeners for events the target emits. Event dependents are included in the total scope count.
 
 ## Failure Modes
 
@@ -24,5 +28,6 @@
 - Aspect not found: `Aspect not found: ${aspectId}` — when --aspect id does not exist.
 - Flow not found: `Flow not found: ${flowName}` — when --flow name does not exist.
 - Mode validation: `Specify exactly one of: --node, --aspect, --flow` — when 0 or >1 modes given.
+- Method without node: `--method requires --node` — when --method is used without --node.
 
 **Generic:** I/O errors — standard Node.js Error, caught and reported to stderr.

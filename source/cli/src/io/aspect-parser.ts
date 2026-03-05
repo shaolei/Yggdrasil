@@ -1,7 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { parse as parseYaml } from 'yaml';
-import type { AspectDef } from '../model/types.js';
+import type { AspectDef, AspectStability } from '../model/types.js';
 import { readArtifacts } from './artifact-reader.js';
+
+const VALID_STABILITY_VALUES: AspectStability[] = ['schema', 'protocol', 'implementation'];
 
 export async function parseAspect(
   aspectDir: string,
@@ -35,11 +37,22 @@ export async function parseAspect(
     implies = (raw.implies as unknown[]).filter((t): t is string => typeof t === 'string');
   }
 
+  let stability: AspectStability | undefined;
+  if (raw.stability !== undefined) {
+    if (typeof raw.stability !== 'string' || !VALID_STABILITY_VALUES.includes(raw.stability as AspectStability)) {
+      throw new Error(
+        `Aspect file ${aspectYamlPath}: 'stability' must be one of: ${VALID_STABILITY_VALUES.join(', ')}`,
+      );
+    }
+    stability = raw.stability as AspectStability;
+  }
+
   return {
     name: (raw.name as string).trim(),
     id: idTrimmed,
     description,
     implies,
+    stability,
     artifacts,
   };
 }

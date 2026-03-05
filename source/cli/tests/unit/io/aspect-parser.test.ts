@@ -123,4 +123,53 @@ implies:
 
     await rm(tmpDir, { recursive: true, force: true });
   });
+
+  it('parses stability when present', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-aspect-stability');
+    await mkdir(tmpDir, { recursive: true });
+    const aspectPath = path.join(tmpDir, 'aspect.yaml');
+    await writeFile(aspectPath, `name: Stable Aspect\nstability: protocol\n`, 'utf-8');
+
+    const aspect = await parseAspect(tmpDir, aspectPath, 'stable');
+    expect(aspect.stability).toBe('protocol');
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('throws when stability is invalid', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-aspect-bad-stability');
+    await mkdir(tmpDir, { recursive: true });
+    const aspectPath = path.join(tmpDir, 'aspect.yaml');
+    await writeFile(aspectPath, `name: Test\nstability: bogus\n`, 'utf-8');
+
+    await expect(parseAspect(tmpDir, aspectPath, 'bad-stability')).rejects.toThrow(
+      "'stability' must be one of: schema, protocol, implementation",
+    );
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('parses all optional fields together', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-aspect-full');
+    await mkdir(tmpDir, { recursive: true });
+    const aspectPath = path.join(tmpDir, 'aspect.yaml');
+    await writeFile(
+      aspectPath,
+      `name: Full Aspect
+description: A fully specified aspect
+implies:
+  - other-aspect
+stability: schema
+`,
+      'utf-8',
+    );
+
+    const aspect = await parseAspect(tmpDir, aspectPath, 'full-aspect');
+    expect(aspect.name).toBe('Full Aspect');
+    expect(aspect.description).toBe('A fully specified aspect');
+    expect(aspect.implies).toEqual(['other-aspect']);
+    expect(aspect.stability).toBe('schema');
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
 });

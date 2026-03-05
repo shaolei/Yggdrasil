@@ -99,6 +99,10 @@ aspects: [requires-audit, requires-auth] # list of strings, optional — aspect 
 aspect_exceptions: # list, optional — per-node deviations from aspect patterns
   - aspect: requires-audit # string, required — must be in this node's aspects list
     note: "Batch import skips per-record audit" # string, required — describes the deviation
+anchors: # map, optional — aspect id -> list of code patterns for staleness detection
+  requires-audit:
+    - auditLog
+    - createAuditEntry
 blackbox: false # bool, optional, default false
 
 relations: # list, optional
@@ -139,6 +143,9 @@ are hashed directly, directories are scanned recursively (respecting `.gitignore
 - Paths in `mapping.paths` must be relative to the repository root.
 - `mapping.paths` must be non-empty when `mapping` is present.
 - Mappings cannot overlap with mappings of other nodes.
+- `anchors`, if present, must be an object mapping aspect IDs (from this node's `aspects` list) to non-empty arrays of strings.
+- Each key in `anchors` must be present in the node's `aspects` list (E019).
+- Anchor strings are validated against mapped source files: if an anchor is not found, a warning (W014) is emitted.
 
 ### aspect.yaml
 
@@ -150,6 +157,7 @@ path under `aspects/` (e.g. `aspects/requires-audit/` has identifier `requires-a
 name: Audit logging # string, required
 description: "Short description for discovery" # string, optional
 implies: [requires-logging] # list of strings, optional — ids of other aspects
+stability: protocol # string, optional — schema | protocol | implementation
 ```
 
 Nested directories under `aspects/` are organizational groupings. There is no automatic
@@ -159,11 +167,20 @@ All files in the aspect directory except `aspect.yaml` are content attached to t
 packages of nodes carrying the specified aspect. When `implies` is present, the aspect's content
 plus all implied aspects' content is attached. Tools resolve implications recursively and detect cycles.
 
+**Stability tiers:**
+
+| `stability` value | Meaning                                                         |
+| ----------------- | --------------------------------------------------------------- |
+| `schema`          | Enforced by data model; changes require migration (most stable) |
+| `protocol`        | Contractual pattern; breaking causes visible failures           |
+| `implementation`  | Specific mechanism; subject to optimization (least stable)      |
+
 **Validation rules:**
 
 - `name` must be non-empty.
 - Every identifier in `implies` must have a corresponding aspect directory under `aspects/`.
 - The aspect implies graph must be acyclic (no A implies B implies A).
+- `stability`, if present, must be one of: `schema`, `protocol`, `implementation`.
 
 ### flow.yaml
 
@@ -518,18 +535,20 @@ Lists aspects with metadata in YAML format. Use to discover valid aspect identif
 1. Resolve `.yggdrasil/` root (repository root or nearest parent).
 2. Load the graph — find all aspect directories under `.yggdrasil/aspects/` (including nested).
 3. Sort by aspect identifier.
-4. Output YAML with `id`, `name`, `description` (if present), `implies` (if present).
+4. Output YAML with `id`, `name`, `description` (if present), `implies` (if present), `stability` (if present).
 
 **Result:**
 
 ```yaml
 - id: deterministic
   name: Determinism
+  stability: schema
 - id: observability/logging
   name: Audit Logging
   description: Every state-changing operation must produce an audit log entry
   implies:
     - observability/tracing
+  stability: protocol
 ```
 
 **Errors:**
@@ -758,6 +777,7 @@ mutually exclusive modes and an optional simulation pass.
 | `node`     | string | One of three required | Node path relative to `model/`                                    |
 | `aspect`   | string | One of three required | Aspect id (directory path under `aspects/`)                       |
 | `flow`     | string | One of three required | Flow name (directory name under `flows/`)                         |
+| `method`   | string | No                    | Filter dependents to those consuming this method (node mode only) |
 | `simulate` | bool   | No                    | Whether to simulate impact on context packages. Default: `false`. |
 
 Exactly one of `node`, `aspect`, or `flow` must be provided.
@@ -765,11 +785,13 @@ Exactly one of `node`, `aspect`, or `flow` must be provided.
 #### Node mode (`--node`)
 
 1. Find all nodes whose structural relations point to the target (reverse graph edge).
-2. Recursively follow reverse edges (transitive reverse dependencies).
-3. Collect descendants of the target node (hierarchy impact).
-4. Find flows listing the target node.
-5. Compute effective aspects (own + hierarchy + flow + implies).
-6. Find co-aspect nodes sharing any aspect with the target.
+2. If `--method` is specified, filter direct dependents to those whose `consumes` list includes the method (or have no `consumes` specified, meaning they consume everything).
+3. Recursively follow reverse edges (transitive reverse dependencies).
+4. Collect descendants of the target node (hierarchy impact).
+5. Find flows listing the target node.
+6. Compute effective aspects (own + hierarchy + flow + implies).
+7. Find co-aspect nodes sharing any aspect with the target.
+8. Find event-related nodes: nodes with `emits`/`listens` relations targeting the node, and listeners of events the target node emits.
 
 ```text
 Impact of changes in payments/payment-service:
@@ -781,6 +803,9 @@ Directly dependent:
 Transitively dependent:
   <- orders/order-service <- checkout/checkout-controller
 
+Event-dependent:
+  <- notifications/email-service (listens: PaymentCompleted)
+
 Descendants (hierarchy impact):
   payments/payment-service/stripe-adapter
 
@@ -789,7 +814,7 @@ Aspects (scope covers node): requires-saga, requires-idempotency
 Nodes sharing aspects:
   orders/order-service (requires-saga, requires-idempotency)
 
-Total scope: 4 nodes, 1 flows, 2 aspects
+Total scope: 5 nodes, 1 flows, 2 aspects
 ```
 
 #### Aspect mode (`--aspect`)
@@ -898,6 +923,7 @@ Two levels of severity defined in the [Engine](engine) document.
 | `E015` | `missing-node-yaml`          | Directory in `model/` has files but no `node.yaml`     |
 | `E016` | `implied-aspect-missing`     | Identifier in aspect's `implies` has no corresponding aspect in `aspects/`           |
 | `E017` | `aspect-implies-cycle`       | Cycle in aspect implies graph (A implies B implies A)                                |
+| `E019` | `invalid-anchor-ref`         | Anchors key references aspect not in node's aspects list                             |
 
 **Warnings (completeness signals):**
 
@@ -913,6 +939,7 @@ Two levels of severity defined in the [Engine](engine) document.
 | `W011` | `missing-required-aspect-coverage` | Node of type with `required_aspects` lacks coverage (direct aspect or via implies) for one or more |
 | `W012` | `mapping-path-missing`             | Mapping path in `node.yaml` does not exist on disk — catches typos and stale mappings             |
 | `W013` | `directory-without-node`           | Directory in `model/` has only subdirectories but no `node.yaml` — bare intermediate directory    |
+| `W014` | `anchor-not-found`                 | Anchor string for aspect not found in node's mapped source files                                  |
 
 **Message format:**
 
