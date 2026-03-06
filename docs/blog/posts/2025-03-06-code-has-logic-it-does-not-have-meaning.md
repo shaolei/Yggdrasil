@@ -36,7 +36,7 @@ The usual explanation is model quality. I do not think that is the real problem.
 **The real problem is context shape.**
 Give the agent one file and it misses the system around it. Give it the whole repository and it drowns in irrelevant detail.
 Too little context breaks neighboring contracts. Too much context turns into noise.
-A bigger context window does not fix that. Two hundred thousand tokens of noise is still noise.
+A bigger context window does not fix that. Fifty thousand tokens of noise is still noise.
 
 That is why I have become skeptical of the current bag of tricks.
 Rules files help for a while. Long prompts help for a while. Context dumps help for a while.
@@ -70,7 +70,7 @@ That slice should be small.
 This is the part I think people still underestimate.
 Good context is not a giant dump. Good context is a bounded package with the exact information needed for one unit of work.
 In Yggdrasil, that package can include the unit's responsibility, its interface, the constraints that apply to it, the interfaces of its dependencies, and the business flow it participates in.
-**The whole point is to give the agent 2,000 useful tokens instead of 200,000 random ones.**
+**The whole point is to give the agent 5,000 useful tokens instead of 50,000 random ones.**
 
 This changes the question from "how do we show the model more of the repo?" to "how do we make the repo legible?"
 Those are not the same thing.
