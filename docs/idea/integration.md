@@ -36,6 +36,11 @@ This is achieved through behavioral directives that the agent follows as part of
 
 - **Before modifying a file**, the agent identifies which graph node owns that file,
   loads the node’s context package, and uses it to understand the semantic intent behind the code.
+- **When starting from a high-level goal** and a semantic search tool is available, the agent
+  searches by intent. The graph’s responsibility, flow, and aspect files contain rich
+  natural-language descriptions designed to match goal-oriented queries. The agent uses
+  the search results to identify relevant nodes, then loads their context packages with
+  `yg build-context`.
 - **After semantic decisions** (new components, changed interfaces, new dependencies),
   the agent updates the graph to reflect the new state.
 - **When it notices files without graph coverage**, the agent stops. If greenfield (new code to be

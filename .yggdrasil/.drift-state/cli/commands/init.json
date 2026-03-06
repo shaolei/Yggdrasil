@@ -1,5 +1,5 @@
 {
-  "hash": "35c65cad018e3c34543a1cb936a074954fc482acf61d52a18c98af857307d2d0",
+  "hash": "e79fc305240f22ee61c80536cc67bd7305ac93ba88dabf6e42cb6be39ecd78a4",
   "files": {
     ".yggdrasil/model/cli/commands/init/yg-node.yaml": "fcc1d4fd933c8ddfdfc0bd1eedb80f704e63b2b800537f23a0f6e2682d9f8f85",
     ".yggdrasil/model/cli/commands/init/interface.md": "f5e497e2442107db1407b081a5e23066c442a21f1b34b0c525775ebdd4c72d99",
@@ -15,10 +15,10 @@
     ".yggdrasil/aspects/deterministic/content.md": "1f1b33f34741a7dbe90f15783e2a11eaa874529b297702423ae503e470a70089",
     ".yggdrasil/aspects/cli-command-contract/yg-aspect.yaml": "81ba5d9318ec49940495487c056356f9bd462d67ca4bb06d3fd954cf26945d01",
     ".yggdrasil/aspects/cli-command-contract/content.md": "b1509ccd44cc91f1cff43926b69f16845407f518ecf4d448d24a0b4a4e2894c3",
-    ".yggdrasil/model/cli/templates/responsibility.md": "b93985ef25abeae3a5f6359245dc60b82354a90e87b661c6d55faaf72a068a4f",
     ".yggdrasil/model/cli/templates/interface.md": "6878d32b7ad3c171de4b2c14b5aca814ac6797d713195b59e80b996d5844da43",
     ".yggdrasil/flows/init/yg-flow.yaml": "6fccd893a4fb886b75e244e35b1bf2f2dc98600c500d2615370e7f668bd7578a",
     ".yggdrasil/flows/init/description.md": "7ab06dca456fe57c748e343faba4dff4db88ef73792ab2eaf28298ff595adba0",
+    ".yggdrasil/model/cli/templates/responsibility.md": "21df33b72b0d7ab10a94bb1194a259213bb639f987388eb790b5294c0dcbff57",
     "source/cli/src/cli/init.ts": "9b9546daca99db23318d860500ba447141f13ec7ccb70e444079f07325a29afd"
   },
   "mtimes": {
@@ -36,10 +36,10 @@
     ".yggdrasil/aspects/deterministic/content.md": 1772778780694.5889,
     ".yggdrasil/aspects/cli-command-contract/yg-aspect.yaml": 1772776392187.1204,
     ".yggdrasil/aspects/cli-command-contract/content.md": 1772778786204.255,
-    ".yggdrasil/model/cli/templates/responsibility.md": 1772777200868.8728,
+    ".yggdrasil/model/cli/templates/responsibility.md": 1772792891581.0784,
     ".yggdrasil/model/cli/templates/interface.md": 1772776392199.1143,
     ".yggdrasil/flows/init/yg-flow.yaml": 1772776392189.0217,
     ".yggdrasil/flows/init/description.md": 1772743197468.9497,
-    "source/cli/src/cli/init.ts": 1772781335722.0752
+    "source/cli/src/cli/init.ts": 1772781876844.4856
   }
 }

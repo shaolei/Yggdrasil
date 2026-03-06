@@ -14,6 +14,11 @@ Yggdrasil is persistent semantic memory stored in `.yggdrasil/`. It maps the rep
 
 ```
 BEFORE reading, researching, planning, OR modifying ANY mapped file:
+  0. Don't know which file or node to start from? If a semantic search
+     tool is available, search for your intent — the graph contains
+     responsibility, flow, and aspect files with rich natural-language
+     descriptions that match goal-oriented queries. Use the results
+     to identify relevant nodes, then proceed to step 1.
   1. yg owner --file <path>
   2. Choose the right graph tool for your task:
      - Understanding how/why it works → yg build-context --node <owner>
@@ -88,6 +93,7 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 | "I'm brainstorming, not implementing" | Brainstorming about mapped code needs graph context |
 | "I'm only grepping for references" | Grep finds text; yg impact finds structural dependencies. Use both. |
 | "I'll use the graph later when I modify" | Graph-first means BEFORE reading, not before modifying |
+| "I'll grep the codebase to find where to start" | If semantic search is available, search by intent first — graph files are designed to match natural-language goals. Then `yg owner` on results. |
 
 ### Failure States
 

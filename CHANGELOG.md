@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Agent rules: semantic search navigation.** Added step 0 to Quick Start Protocol teaching
+  agents to use semantic search tools (when available) for top-down navigation — going from
+  a high-level intent to the right graph nodes before falling back to grep. Added corresponding
+  evasion pattern for "I'll grep the codebase to find where to start."
+
 ## [2.1.0] - 2026-03-06
 
 ### Added
