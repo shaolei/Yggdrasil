@@ -15,7 +15,7 @@ date: 2025-03-06
   </div>
   <div class="vp-essay-title-block">
     <h1 class="vp-essay-title">Code has logic. It does not have meaning.</h1>
-    <p class="vp-essay-subtitle">Why repositories need semantic memory, not bigger context windows</p>
+    <p class="vp-essay-subtitle">Why repositories need semantic memory,<br>not bigger context windows</p>
   </div>
 </header>
 <div class="vp-essay-body">
