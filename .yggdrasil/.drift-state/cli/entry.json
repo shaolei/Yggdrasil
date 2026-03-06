@@ -1,5 +1,5 @@
 {
-  "hash": "b85bcfebb907e72eed4efd4d2a31467882ce3face29d0b79ada3a687ead160e1",
+  "hash": "1387e0103546d2ef9d883bafe309d0d7ad5e4f1213d5cf07f46016da67d055b7",
   "files": {
     ".yggdrasil/model/cli/entry/yg-node.yaml": "a8d198a78874300c1f71ddff65653c9d175eade9f78e39f5f1d30872838d26f7",
     ".yggdrasil/model/cli/entry/internals.md": "2580f3d98ff9b9a2349a5e92e0e3abc2e390ca9e2eab90a47ec7bca76efd091f",
@@ -36,7 +36,7 @@
     ".yggdrasil/model/cli/commands/preflight/responsibility.md": "3b73d9dc1c4aee154a0c252b735d77f79fccab743d841687d699f098d5f6ec96",
     ".yggdrasil/model/cli/commands/preflight/interface.md": "309f84caa4c531728e13a040e5dcdb5d777f8ea99641ae4064c50815c4f9e8dc",
     "source/cli/src/bin.ts": "3d16c6705c842bd00cf2726269cdd49bed41a474577964eaf8b0f008c92528e0",
-    "source/cli/package.json": "8c3258eafa8ce7cf2c259d5870e02517e633447e88908be473181fac2ba314ae"
+    "source/cli/package.json": "b6f1f1d5da9b16dd2b6a365eb27bb221b91700e241cdc3030371148b0779c4dd"
   },
   "mtimes": {
     ".yggdrasil/model/cli/entry/yg-node.yaml": 1772778687731.0198,
@@ -74,6 +74,6 @@
     ".yggdrasil/model/cli/commands/preflight/responsibility.md": 1772778709729.8987,
     ".yggdrasil/model/cli/commands/preflight/interface.md": 1772778718400.372,
     "source/cli/src/bin.ts": 1772778510928.334,
-    "source/cli/package.json": 1772782726476.5686
+    "source/cli/package.json": 1772793182528.8535
   }
 }
