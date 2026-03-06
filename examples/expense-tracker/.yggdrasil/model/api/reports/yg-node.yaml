@@ -1,9 +1,9 @@
 name: Reports
 type: service
-aspects: [requires-auth, error-format]
-
+aspects:
+  - aspect: requires-auth
+  - aspect: error-format
 relations: []
-
 mapping:
   paths:
     - apps/api/src/services/reports.ts

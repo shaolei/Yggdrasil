@@ -1,9 +1,10 @@
 name: Subscriptions
 type: service
-aspects: [requires-auth, subscription-limits, error-format]
-
+aspects:
+  - aspect: requires-auth
+  - aspect: subscription-limits
+  - aspect: error-format
 relations: []
-
 mapping:
   paths:
     - apps/api/src/services/subscriptions.ts

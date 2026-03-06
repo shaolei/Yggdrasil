@@ -1,9 +1,8 @@
 name: Dashboard
 type: module
-aspects: [requires-auth]
-
+aspects:
+  - aspect: requires-auth
 relations: []
-
 mapping:
   paths:
     - apps/web/src/pages/Dashboard.tsx

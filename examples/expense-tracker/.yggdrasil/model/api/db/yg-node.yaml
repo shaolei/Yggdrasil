@@ -1,9 +1,6 @@
 name: DB
 type: library
-aspects: []
-
 relations: []
-
 mapping:
   paths:
     - apps/api/src/db

@@ -1,9 +1,9 @@
 name: Users
 type: service
-aspects: [validation, error-format]
-
+aspects:
+  - aspect: validation
+  - aspect: error-format
 relations: []
-
 mapping:
   paths:
     - apps/api/src/services/users.ts

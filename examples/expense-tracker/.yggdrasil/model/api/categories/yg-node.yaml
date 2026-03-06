@@ -1,9 +1,11 @@
 name: Categories
 type: service
-aspects: [requires-auth, validation, subscription-limits, error-format]
-
+aspects:
+  - aspect: requires-auth
+  - aspect: validation
+  - aspect: subscription-limits
+  - aspect: error-format
 relations: []
-
 mapping:
   paths:
     - apps/api/src/services/categories.ts

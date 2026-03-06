@@ -1,9 +1,6 @@
 name: Auth
 type: module
-aspects: []
-
 relations: []
-
 mapping:
   paths:
     - apps/web/src/pages/Landing.tsx
