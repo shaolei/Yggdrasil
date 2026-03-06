@@ -4,7 +4,8 @@
 
 # Yggdrasil
 
-**Make your repository self-aware.**
+**🧠 Make your repository self-aware.**
+
 Your AI agent forgets everything between sessions. Yggdrasil makes it remember.
 
 [![CI](https://github.com/krzysztofdudek/Yggdrasil/actions/workflows/ci.yml/badge.svg)](https://github.com/krzysztofdudek/Yggdrasil/actions/workflows/ci.yml)
@@ -14,7 +15,7 @@ Your AI agent forgets everything between sessions. Yggdrasil makes it remember.
 
 ---
 
-## The problem you already know
+## 💀 The problem you already know
 
 Your AI agent works great on day one. Then the project grows and the agent starts breaking things. It doesn't know about rules that live in files it never read. It forgets decisions you explained last session. It duplicates code that already exists.
 
@@ -22,13 +23,13 @@ You've tried rules files, long prompts, context dumps. They help for a while. Th
 
 The issue isn't intelligence. It's memory.
 
-## What Yggdrasil does
+## 🌳 What Yggdrasil does
 
 Yggdrasil gives your project a persistent memory that your agent reads and updates as it works.
 
 When the agent touches a file, it gets only the context relevant to _that specific part_ — not your entire repo, not all your rules, just what it actually needs. The agent builds and maintains this memory itself. You don't write documentation.
 
-**Without Yggdrasil:**
+**Without Yggdrasil:** 😵
 
 ```
 You: "Add a payment retry to OrderService"
@@ -39,7 +40,7 @@ Agent: reads OrderService.ts, maybe PaymentService.ts
        → guesses. breaks things. you fix. repeat.
 ```
 
-**With Yggdrasil:**
+**With Yggdrasil:** 🎯
 
 ```
 You: "Add a payment retry to OrderService"
@@ -53,13 +54,13 @@ Agent: gets a context summary for OrderService (auto-assembled)
 
 ---
 
-## Install
+## 📦 Install
 
 ```bash
 npm install -g @chrisdudek/yg
 ```
 
-## Initialize
+## 🚀 Initialize
 
 ```bash
 cd your-project
@@ -70,13 +71,13 @@ That's it. Your agent now has persistent memory.
 
 ---
 
-## Supported platforms
+## 🔌 Supported platforms
 
 Cursor, Claude Code, GitHub Copilot, Cline / RooCode, Codex, Windsurf, Aider, Gemini CLI, Amp.
 
 ---
 
-## Does it actually work?
+## 🔬 Does it actually work?
 
 I ran 26 experiments on real open-source codebases (Hoppscotch, Medusa, Django). Here's what I found:
 
@@ -84,13 +85,13 @@ I ran 26 experiments on real open-source codebases (Hoppscotch, Medusa, Django).
 - **You don't need to set it up perfectly.** Start messy. After 2 iterations the memory is good. You don't need to map your whole project either — covering a few key areas gets you most of the benefit.
 - **When you change something, the agent knows what else is affected.** Not "this file changed so maybe check everything" — it knows which specific parts of your system are connected, down to individual functions.
 
-**What I'm honest about:** these experiments were run by an AI agent, not peer-reviewed. The exact scores are directional. The biggest limitation is coverage — the memory only helps with parts of your system that are actually mapped. I'm working on that.
+⚠️ **What I'm honest about:** these experiments were run by an AI agent, not peer-reviewed. The exact scores are directional. The biggest limitation is coverage — the memory only helps with parts of your system that are actually mapped. I'm working on that.
 
-517 tests. 90% code coverage. Full experiment data: `experiments/`.
+Full experiment data: `experiments/`.
 
 ---
 
-## How it works
+## ⚙️ How it works
 
 1. `yg init` — a `.yggdrasil/` folder appears in your project.
 2. Your agent works normally. As it goes, it builds a memory of your system — what each part does, how things connect, what rules apply, and _why_ things are the way they are.
@@ -101,7 +102,7 @@ Plain Markdown and YAML. No database. No lock-in. Delete `.yggdrasil/` and every
 
 ---
 
-## What it is not
+## 🚫 What it is not
 
 - **Not a code generator.** Your agent generates code. Yggdrasil makes it generate _better_ code by giving it the right context.
 - **Not manual documentation.** You don't write anything. The agent does it while working on your tasks.
@@ -110,15 +111,15 @@ Plain Markdown and YAML. No database. No lock-in. Delete `.yggdrasil/` and every
 
 ---
 
-## When is it worth it?
+## 🤔 When is it worth it?
 
-**Worth it:**
+**Worth it:** ✅
 
 - Your project has 100+ files and your agent keeps making the same mistakes
 - Multiple people (or agents) work on the codebase and context gets lost between them
 - You're tired of re-explaining the same architectural decisions every session
 
-**Not worth it (yet):**
+**Not worth it (yet):** ❌
 
 - Small projects where the agent can see everything at once
 - Solo scripts or utilities with no cross-module dependencies
@@ -126,13 +127,13 @@ Plain Markdown and YAML. No database. No lock-in. Delete `.yggdrasil/` and every
 
 ---
 
-## Documentation
+## 📖 Documentation
 
 Full specification and architecture:
 [https://krzysztofdudek.github.io/Yggdrasil/](https://krzysztofdudek.github.io/Yggdrasil/)
 
 ---
 
-## License
+## 📄 License
 
-MIT — see [LICENSE](LICENSE)
+MIT — see [LICENSE](LICENSE).
