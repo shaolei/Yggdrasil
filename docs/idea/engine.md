@@ -318,11 +318,12 @@ is drift; a change on both sides is full drift.
 For each node with a mapping, tools collect all **tracked files** — both source files from
 the mapping and graph artifact files that contribute to the node's context package. Tools
 compute a SHA-256 hash of the tracked file set and compare it against the stored state.
-State is stored in `.yggdrasil/.drift-state` (YAML).
+State is stored in `.yggdrasil/.drift-state/` as per-node JSON files (one file per node,
+e.g. `.drift-state/orders/order-service.json`).
 
-`.drift-state` contains the hash of each tracked file at the time of last synchronization.
-The file is committed to the repository — drift state is shared across the team, not local
-per-developer.
+Each drift state file contains the hash of each tracked file at the time of last
+synchronization. These files are committed to the repository — drift state is shared across
+the team, not local per-developer.
 
 #### Tracked file collection (`collectTrackedFiles`)
 
@@ -370,7 +371,7 @@ Every mapped node has one of six states:
 | `graph-drift`    | Graph artifact(s) changed but source files unchanged                                 |
 | `full-drift`     | Both source and graph files changed                                                  |
 | `missing`        | Mapped source files do not exist on disk                                             |
-| `unmaterialized` | Node has a mapping but files have never been created (no entry in `.drift-state`)    |
+| `unmaterialized` | Node has a mapping but files have never been created (no entry in `.drift-state/`)   |
 
 ### Drift Resolution
 
@@ -399,7 +400,7 @@ Tools record the new state via `drift-sync`.
 Tools are the deterministic engine through which agents and humans query and validate the graph.
 
 Read and validation operations are stateless — they read files from disk, process, and produce
-output. Drift operations modify operational metadata (`.drift-state`) but not semantic
+output. Drift operations modify operational metadata (`.drift-state/`) but not semantic
 knowledge in the graph.
 
 ### Read Operations
@@ -428,7 +429,7 @@ dependency artifacts, budget shifts. The assembly algorithm is the same; only th
 | Drift detection | Detect divergence between graph expectations and mapped files           |
 
 Validation operations do not modify semantic knowledge. Drift detection updates synchronization
-metadata (`.drift-state`) in absorption mode — after an explicit human decision. This is
+metadata (`.drift-state/`) in absorption mode — after an explicit human decision. This is
 tracking state, not semantic knowledge.
 
 ### Initialization
@@ -448,7 +449,7 @@ write artifacts, or manage aspects and flows. That is creative work belonging to
 
 Tools maintain only operational metadata:
 
-- Drift state (`.drift-state`) — for tracking synchronization.
+- Drift state (`.drift-state/`) — for tracking synchronization.
 
 The agent creates directories, writes `yg-node.yaml`, writes Markdown artifacts. Tools validate
 the result and give feedback.

@@ -5,25 +5,29 @@
 - **Paths:** All parser functions accept absolute file paths. Callers (core, commands) resolve from project root or yggRoot.
 - **YAML:** Uses `yaml` package. Throws on parse errors. No schema validation beyond required fields.
 - **Artifact reader:** Skips binary extensions (.png, .jpg, .pdf, .zip, etc.). Excludes yg-node.yaml by default. Sorts output by filename for determinism.
-- **Drift state:** Format is node-path → hash (string) or DriftNodeState { hash, files? }. Stored in .yggdrasil/.drift-state. Commit to repo.
+- **Drift state:** Per-node storage under `.yggdrasil/.drift-state/` directory. Each node's state is stored in `.drift-state/<node-path>.json` as a JSON file containing `{ hash, files, mtimes? }`. Legacy single-file format (`.drift-state` as a file) is auto-migrated on read. Commit to repo.
 - **Knowledge scope:** scope must be 'global' | { tags: string[] } | { nodes: string[] }. Tags and nodes must resolve.
 
 ## State
 
 # IO State Files
 
-## .drift-state
+## .drift-state/
 
-YAML file at `.yggdrasil/.drift-state`. Maps node paths to `DriftNodeState` objects:
+Per-node directory at `.yggdrasil/.drift-state/`. Each node's state is stored as `<node-path>.json`:
 
 ```
-<node-path>:
-  hash: <sha256-hex>       # canonical hash of all tracked files (source + graph)
-  files:                    # per-file hashes for granular change detection
-    <relative-path>: <sha256-hex>
+.drift-state/
+  cli/
+    commands/
+      aspects.json    # { "hash": "<sha256>", "files": {...}, "mtimes": {...} }
+    core/
+      loader.json
 ```
 
-Written by `drift-sync` command via `writeDriftState`. Read by `detectDrift` via `readDriftState`. Legacy format (node-path mapped to a plain string hash) is silently skipped during reads. This file should be committed to the repository so drift baselines persist across sessions.
+Each JSON file contains a `DriftNodeState`: canonical hash, per-file hashes, and optional mtimes. Written by `drift-sync` command via `writeNodeDriftState`. Read by `detectDrift` via `readNodeDriftState` or `readDriftState`.
+
+**Legacy migration:** If `.drift-state` exists as a single file (old format, JSON or YAML), `readDriftState` transparently migrates it: parses the old file, writes per-node files, deletes the old file, and returns the state. Legacy string-hash entries are silently skipped during migration. This directory should be committed to the repository so drift baselines persist across sessions.
 
 ## Decisions
 

@@ -41,8 +41,7 @@ async function refreshSchemas(yggRoot: string): Promise<void> {
   }
 }
 
-const GITIGNORE_CONTENT = `.drift-state
-`;
+const GITIGNORE_CONTENT = ``;
 
 export function registerInitCommand(program: Command): void {
   program

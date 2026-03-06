@@ -223,32 +223,36 @@ creating or editing that element (see the [Graph](graph) document, Schemas secti
 | `yg-aspect.yaml` | Aspects      | `yg-aspect.yaml` in aspects directories    |
 | `yg-flow.yaml`   | Flows        | `yg-flow.yaml` in flows directories        |
 
-### .drift-state
+### .drift-state/
 
 Synchronization state between the graph and all tracked files (source and graph artifacts).
-Managed exclusively by tools — agents and humans do not edit it. Stored at
-`.yggdrasil/.drift-state`.
+Managed exclusively by tools — agents and humans do not edit it. Stored as a directory of
+per-node JSON files at `.yggdrasil/.drift-state/`.
 
-Committed to the repository (shared in the team).
+Committed to the repository (shared in the team, usable in CI pipelines).
 
-```yaml
-orders/order-service:
-  hash: "a1b2c3d4e5f6..."
-  files:
-    "src/modules/orders/order.service.ts": "1111..."
-    "src/modules/orders/order.repository.ts": "2222..."
-    ".yggdrasil/model/orders/order-service/yg-node.yaml": "3333..."
-    ".yggdrasil/model/orders/order-service/responsibility.md": "4444..."
+Each node gets its own file at `.drift-state/<node-path>.json`. For example, a node at
+`model/cli/commands/aspects/` stores its drift state at
+`.drift-state/cli/commands/aspects.json`.
+
+```json
+{
+  "hash": "a1b2c3d4e5f6...",
+  "files": {
+    "src/modules/orders/order.service.ts": "1111...",
+    "src/modules/orders/order.repository.ts": "2222...",
+    ".yggdrasil/model/orders/order-service/yg-node.yaml": "3333...",
+    ".yggdrasil/model/orders/order-service/responsibility.md": "4444...",
     ".yggdrasil/aspects/requires-audit/yg-aspect.yaml": "5555..."
-payments/payment-service:
-  hash: "deadbeef..."
-  files:
-    "src/modules/payments/payment.service.ts": "6666..."
-    ".yggdrasil/model/payments/payment-service/yg-node.yaml": "7777..."
+  },
+  "mtimes": {
+    "src/modules/orders/order.service.ts": 1709731200000,
+    "src/modules/orders/order.repository.ts": 1709731200000
+  }
+}
 ```
 
-**Format:** map `node-path -> entry`. The key is a path relative to `model/`. Each entry is
-always an object:
+**Format per file:** a JSON object with:
 
 - `hash` (required) — canonical SHA-256 hash of all tracked files (source + graph).
 - `files` (required) — map `file_path -> file_hash` for all tracked files. Includes both
@@ -256,6 +260,8 @@ always an object:
   ancestor artifacts, aspect files, flow files, relation target artifacts — mirroring the
   context assembly traversal). Enables drift detection to report exactly which files changed
   and whether they are source or graph files.
+- `mtimes` (optional) — map `file_path -> timestamp` for mtime-based optimization. When
+  present, drift detection can skip re-hashing files whose mtime has not changed.
 
 The `files` map always contains every tracked file for the node. Source files come from the
 node's mapping. Graph files come from the `collectTrackedFiles` algorithm, which mirrors
@@ -268,13 +274,20 @@ Each path in `mapping.paths` is checked at runtime — if it is a file, it is ha
 pairs. The overall canonical `hash` combines all tracked file hashes (source + graph) into a
 single value.
 
+**Legacy migration:** If a single `.drift-state` file (the previous format) is found instead
+of the `.drift-state/` directory, it is migrated automatically on first read — each node
+entry is written to its own JSON file under `.drift-state/`.
+
+**Garbage collection:** When `drift-sync --all` runs, orphaned drift state files (files
+under `.drift-state/` that no longer correspond to a mapped node) are removed.
+
 ---
 
 ## Operations
 
 Each operation is described by its purpose, parameters, step-by-step behavior, result, and
 error conditions. Operations do not modify semantic content in the graph — they only create, read,
-or modify operational metadata (`.yggdrasil/.drift-state`). The only exception is
+or modify operational metadata (`.yggdrasil/.drift-state/`). The only exception is
 initialization, which creates the starting structure.
 
 ### Naming convention
@@ -956,7 +969,7 @@ and the graph side (`.yggdrasil/` artifacts that contribute to the node's contex
    b. Collect all tracked files for the node (source files from mapping + graph artifact
       files from context assembly traversal) via `collectTrackedFiles`.
    c. Compute hashes for all tracked files and compare with the baseline in
-      `.yggdrasil/.drift-state`.
+      `.yggdrasil/.drift-state/`.
    d. Classify each changed file as `source` or `graph` based on whether its path is under
       `.yggdrasil/`.
    e. Assign state: `ok`, `source-drift`, `graph-drift`, `full-drift`, `missing`,
@@ -970,8 +983,8 @@ and the graph side (`.yggdrasil/` artifacts that contribute to the node's contex
 | `source-drift`   | Source file(s) changed but graph artifacts unchanged                                        |
 | `graph-drift`    | Graph artifact(s) changed but source files unchanged                                        |
 | `full-drift`     | Both source and graph files changed                                                         |
-| `missing`        | Mapped source files do not exist on disk, but a hash exists in `.drift-state`               |
-| `unmaterialized` | Node has a mapping, but files have never been created (no entry in `.drift-state`)           |
+| `missing`        | Mapped source files do not exist on disk, but a hash exists in `.drift-state/`              |
+| `unmaterialized` | Node has a mapping, but files have never been created (no entry in `.drift-state/`)          |
 
 If a node has no drift-state entry but its files exist on disk, it reports `source-drift`
 with a note to run `drift-sync`.
@@ -1031,7 +1044,7 @@ Called after the agent resolves drift (absorption or rejection + re-materializat
    source files (from `mapping.paths`) and graph artifact files (from the context assembly
    traversal: own node, ancestors, aspects, relational dependencies, flows).
 2. Compute hashes for all tracked files.
-3. Write the canonical hash and per-file hashes to `.yggdrasil/.drift-state`.
+3. Write the canonical hash and per-file hashes to `.yggdrasil/.drift-state/<node-path>.json`.
 
 The operation captures the complete set of tracked files (source + graph), not just mapping
 files. This enables subsequent drift detection to identify changes on either side.

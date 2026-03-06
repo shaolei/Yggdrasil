@@ -7,12 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-03-06
+
 ### Added
 
 - **`version` field in `yg-config.yaml`:** Tracks the CLI version that created/last migrated this config. Used by the migration system to determine which migrations to run.
 - **Migration system:** `yg init --upgrade` now detects project version and automatically
   migrates from 1.x to 2.0.0 — file renames to `yg-*` prefix, config transforms, aspects
   restructuring (`[id]` → `[{aspect: id}]`), and stack/standards content migration to root node
+
+### Removed
+
+- **Journal functionality:** Removed `journal-add`, `journal-read`, and `journal-archive` commands,
+  `JournalEntry` type, journal store, and all journal references from preflight, agent rules,
+  documentation, and graph. Journal was an unused feature that added complexity without value.
+
+### Changed
+
+- **Agent rules: graph-first enforcement.** Added `EXTREMELY-IMPORTANT` block at top of rules,
+  evasion patterns table, and enhanced self-audit to prevent agents from skipping graph tools
+  when working under skills (brainstorming, debugging, etc.). Split graph tool guidance into
+  `build-context` (understanding) vs `impact` (blast radius assessment).
+- **Per-node drift state storage:** Changed from single `.drift-state` JSON file to per-node files
+  under `.drift-state/` directory. Each node's drift state is stored in its own JSON file
+  (e.g., `.drift-state/cli/commands/aspects.json`). Enables readable git diffs and atomic writes.
+  Old format migrated automatically on first read. `drift-sync --all` now garbage collects
+  orphaned drift state files.
+- **Drift state committed to git:** Removed `.drift-state` from `.gitignore` so drift state files
+  are tracked in version control. CI pipelines can now run `yg drift` to verify graph-code consistency.
 
 ## [2.0.0] - 2026-03-05
 

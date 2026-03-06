@@ -33,7 +33,7 @@ To add a new platform (e.g. a new IDE or agent): add it to `source/cli/src/templ
 
 ## Quality Gate
 
-Run `scripts/repo-check.sh` from repo root before finishing. It is the canonical fail-fast entrypoint.
+**ALWAYS run `scripts/repo-check.sh` from repo root before ANY commit and ensure it passes cleanly.** Do not commit with failing checks. This is non-negotiable — every commit must leave the repo in a green state.
 
 ## When Evaluating `yg validate` or `scripts/repo-check.sh`
 

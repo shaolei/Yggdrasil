@@ -8,7 +8,8 @@ import type {
 } from '../model/types.js';
 import {
   readDriftState,
-  writeDriftState,
+  readNodeDriftState,
+  writeNodeDriftState,
 } from '../io/drift-state-store.js';
 import { hashTrackedFiles } from '../utils/hash.js';
 import { collectTrackedFiles } from './context-files.js';
@@ -194,11 +195,9 @@ export async function syncDriftState(
   if (!node.meta.mapping) throw new Error(`Node has no mapping: ${nodePath}`);
 
   const trackedFiles = collectTrackedFiles(node, graph);
-  // Exclude files owned by descendant nodes (child-wins model)
   const excludePrefixes = getChildMappingExclusions(graph, nodePath);
   // For sync, pass stored data so unchanged files can reuse cached hashes.
-  const existingState = await readDriftState(graph.rootPath);
-  const existingEntry = existingState[nodePath];
+  const existingEntry = await readNodeDriftState(graph.rootPath, nodePath);
   const storedFileData = existingEntry?.files
     ? { hashes: existingEntry.files, mtimes: existingEntry.mtimes ?? {} }
     : undefined;
@@ -206,16 +205,11 @@ export async function syncDriftState(
 
   const previousHash = existingEntry?.hash;
 
-  existingState[nodePath] = { hash: canonicalHash, files: fileHashes, mtimes: fileMtimes };
-
-  // Garbage collection: remove orphaned entries for nodes that no longer exist
-  for (const key of Object.keys(existingState)) {
-    if (!graph.nodes.has(key)) {
-      delete existingState[key];
-    }
-  }
-
-  await writeDriftState(graph.rootPath, existingState);
+  await writeNodeDriftState(graph.rootPath, nodePath, {
+    hash: canonicalHash,
+    files: fileHashes,
+    mtimes: fileMtimes,
+  });
 
   return { previousHash, currentHash: canonicalHash };
 }

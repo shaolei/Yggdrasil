@@ -83,7 +83,7 @@ async function createTmpProject(
     opts.configYaml ??
       'name: Test\nnode_types:\n  service:\n    description: x\nartifacts:\n  responsibility.md:\n    required: always\n    description: x\n',
   );
-  await writeFile(path.join(yggRoot, '.drift-state'), '{}');
+  await mkdir(path.join(yggRoot, '.drift-state'), { recursive: true });
 
   // Parent nodes
   if (opts.parentNodes) {
@@ -634,7 +634,7 @@ mapping:
         path.join(yggRoot, 'yg-config.yaml'),
         'name: Test\nnode_types:\n  module:\n    description: x\nartifacts:\n  responsibility.md:\n    required: always\n    description: x\n',
       );
-      await writeFile(path.join(yggRoot, '.drift-state'), '{}');
+      await mkdir(path.join(yggRoot, '.drift-state'), { recursive: true });
       await writeFile(
         path.join(parentNodeDir, 'yg-node.yaml'),
         'name: Platform\ntype: module\nmapping:\n  paths:\n    - src/platform\n',

@@ -77,7 +77,7 @@ A user who never uses an explicit trigger still benefits from ambient integratio
 
 The agent creates and edits graph files — both YAML metadata (`yg-node.yaml`, `yg-flow.yaml`,
 `yg-aspect.yaml`) and Markdown artifacts (`responsibility.md`, `interface.md`, `internals.md`,
-`content.md`, etc.). Tools have no write operations to the graph — they are readers and validators of semantic content. Tools do write operational metadata (`.drift-state`) for drift tracking; see the [Engine](engine) document.
+`content.md`, etc.). Tools have no write operations to the graph — they are readers and validators of semantic content. Tools do write operational metadata (`.drift-state/`) for drift tracking; see the [Engine](engine) document.
 
 ### Condition: the agent knows how
 

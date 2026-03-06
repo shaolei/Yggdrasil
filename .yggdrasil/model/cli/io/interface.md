@@ -35,10 +35,11 @@ Library used by cli/core (loader, drift-detector). All paths are absolute; calle
 
 ## drift-state-store.ts
 
-- `readDriftState(yggRoot: string): Promise<DriftState>` — returns `{}` on missing file or parse error
-- `writeDriftState(yggRoot: string, state: DriftState): Promise<void>`
-- `getCanonicalHash(entry: string | DriftNodeState): string` — returns string hash or entry.hash
-- `getFileHashes(entry: string | DriftNodeState): Record<string, string> | undefined` — returns entry.files or undefined
+- `readNodeDriftState(yggRoot: string, nodePath: string): Promise<DriftNodeState | undefined>` — reads single node's drift state from `.drift-state/<nodePath>.json`. Returns undefined if file doesn't exist.
+- `writeNodeDriftState(yggRoot: string, nodePath: string, nodeState: DriftNodeState): Promise<void>` — writes single node's drift state to `.drift-state/<nodePath>.json`. Creates directories with `mkdir -p`. Pretty-prints JSON (2-space indent + trailing newline).
+- `garbageCollectDriftState(yggRoot: string, validNodePaths: Set<string>): Promise<string[]>` — scans `.drift-state/` for all `.json` files, removes those whose node path is NOT in validNodePaths. Cleans up empty parent directories after removal. Returns sorted list of removed node paths.
+- `readDriftState(yggRoot: string): Promise<DriftState>` — reads full drift state. If `.drift-state` is a directory, scans for per-node `.json` files. If `.drift-state` is a legacy single file, migrates it to per-node files transparently. Returns `{}` on missing or parse error.
+- `writeDriftState(yggRoot: string, state: DriftState): Promise<void>` — writes full drift state as per-node files (delegates to `writeNodeDriftState` in a loop).
 
 ## Failure Modes
 

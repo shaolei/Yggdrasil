@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { loadGraph } from '../core/graph-loader.js';
 import { syncDriftState } from '../core/drift-detector.js';
+import { garbageCollectDriftState } from '../io/drift-state-store.js';
 import { normalizeMappingPaths } from '../utils/paths.js';
 
 export function registerDriftSyncCommand(program: Command): void {
@@ -60,6 +61,15 @@ export function registerDriftSyncCommand(program: Command): void {
           process.stdout.write(
             `  Hash: ${previousHash ? previousHash.slice(0, 8) : 'none'} -> ${currentHash.slice(0, 8)}\n`,
           );
+        }
+
+        // Garbage collect orphaned drift state files after --all sync
+        if (options.all) {
+          const validPaths = new Set(nodesToSync);
+          const removed = await garbageCollectDriftState(graph.rootPath, validPaths);
+          for (const r of removed) {
+            process.stdout.write(chalk.dim(`Removed orphaned drift state: ${r}\n`));
+          }
         }
       } catch (error) {
         process.stderr.write(`Error: ${(error as Error).message}\n`);
