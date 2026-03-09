@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { writeFile, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { detectVersion, runMigrations, type Migration, type MigrationResult } from '../../../src/core/migrator.js';
+import { readFile } from 'node:fs/promises';
+import { parse as parseYaml } from 'yaml';
+import { detectVersion, runMigrations, updateConfigVersion, type Migration, type MigrationResult } from '../../../src/core/migrator.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -107,6 +109,55 @@ describe('migrator', () => {
       ];
       const results = await runMigrations('not-a-version', migrations, '');
       expect(results).toHaveLength(0);
+    });
+  });
+
+  describe('updateConfigVersion', () => {
+    let tmpDir: string;
+
+    beforeEach(async () => {
+      tmpDir = path.join(__dirname, '../../fixtures/tmp-migrator-version');
+      await mkdir(tmpDir, { recursive: true });
+    });
+
+    afterEach(async () => {
+      await rm(tmpDir, { recursive: true, force: true });
+    });
+
+    it('updates version field in yg-config.yaml', async () => {
+      await writeFile(
+        path.join(tmpDir, 'yg-config.yaml'),
+        'version: "2.0.0"\nname: Test\nnode_types:\n  m:\n    description: x\n',
+      );
+      await updateConfigVersion(tmpDir, '2.2.0');
+      const content = await readFile(path.join(tmpDir, 'yg-config.yaml'), 'utf-8');
+      const config = parseYaml(content) as Record<string, unknown>;
+      expect(config.version).toBe('2.2.0');
+    });
+
+    it('prepends version when field is missing', async () => {
+      await writeFile(
+        path.join(tmpDir, 'yg-config.yaml'),
+        'name: Test\nnode_types:\n  m:\n    description: x\n',
+      );
+      await updateConfigVersion(tmpDir, '2.2.0');
+      const content = await readFile(path.join(tmpDir, 'yg-config.yaml'), 'utf-8');
+      const config = parseYaml(content) as Record<string, unknown>;
+      expect(config.version).toBe('2.2.0');
+      expect(config.name).toBe('Test');
+    });
+
+    it('preserves other config fields', async () => {
+      await writeFile(
+        path.join(tmpDir, 'yg-config.yaml'),
+        'version: "2.0.0"\nname: MyProject\nnode_types:\n  module:\n    description: biz logic\n',
+      );
+      await updateConfigVersion(tmpDir, '3.0.0');
+      const content = await readFile(path.join(tmpDir, 'yg-config.yaml'), 'utf-8');
+      const config = parseYaml(content) as Record<string, unknown>;
+      expect(config.version).toBe('3.0.0');
+      expect(config.name).toBe('MyProject');
+      expect(config.node_types).toBeDefined();
     });
   });
 });

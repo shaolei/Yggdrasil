@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { gt, valid } from 'semver';
 import { DEFAULT_CONFIG } from '../templates/default-config.js';
 import { installRulesForPlatform, PLATFORMS, type Platform } from '../templates/platform.js';
-import { detectVersion, runMigrations } from '../core/migrator.js';
+import { detectVersion, runMigrations, updateConfigVersion } from '../core/migrator.js';
 import { MIGRATIONS } from '../migrations/index.js';
 
 function getGraphSchemasDir(): string {
@@ -117,6 +117,7 @@ export function registerInitCommand(program: Command): void {
           if (results.length > 0) {
             process.stdout.write('\n');
           }
+          await updateConfigVersion(yggRoot, cliVersion);
         }
 
         // Refresh schemas (copy latest schema files)

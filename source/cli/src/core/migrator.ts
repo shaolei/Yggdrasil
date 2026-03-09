@@ -1,4 +1,4 @@
-import { readFile, access } from 'node:fs/promises';
+import { readFile, writeFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { gt, valid, compare } from 'semver';
@@ -71,4 +71,17 @@ export async function runMigrations(
     results.push(result);
   }
   return results;
+}
+
+/**
+ * Update the version field in yg-config.yaml.
+ * Called after migrations to record the current CLI version.
+ */
+export async function updateConfigVersion(yggRoot: string, version: string): Promise<void> {
+  const configPath = path.join(yggRoot, 'yg-config.yaml');
+  const content = await readFile(configPath, 'utf-8');
+  const updated = content.match(/^version:\s/m)
+    ? content.replace(/^version:\s.*$/m, `version: "${version}"`)
+    : `version: "${version}"\n` + content;
+  await writeFile(configPath, updated, 'utf-8');
 }

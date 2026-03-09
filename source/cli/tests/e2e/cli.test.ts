@@ -610,7 +610,7 @@ describe.skipIf(!distExists)('CLI E2E', () => {
       const config = parseYaml(
         readFileSync(path.join(yggDir, 'yg-config.yaml'), 'utf-8'),
       ) as Record<string, unknown>;
-      expect(config.version).toBe('2.0.0');
+      expect(config.version).toBe(PKG_VERSION);
       expect(config.stack).toBeUndefined();
 
       // Verify node transform

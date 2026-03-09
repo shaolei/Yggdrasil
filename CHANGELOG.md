@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Outputs YAML list of `{ node, score, name }` sorted by relevance. Based on
   experiment 5.4 findings (89% precision, 96% recall with keyword matching).
 
+### Fixed
+
+- **`yg init --upgrade` now updates config version.** Previously, `--upgrade` ran migrations
+  but left `version` in `yg-config.yaml` unchanged, causing repeated migrations on subsequent
+  upgrades. The version field is now set to the CLI version after migrations complete.
+
 ### Changed
 
 - **Documentation:** Updated "Early results" in README and docs with Series 5 invisibility

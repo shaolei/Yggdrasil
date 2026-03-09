@@ -1,11 +1,12 @@
 {
-  "hash": "a94dfd791e45c910dfacef78a7527b568d4dfdc9ce69bf462e46e5cdeb523836",
+  "hash": "6ecd87e1a6769e059001c556c495bbd94718e69c16684f10433273e0c650936c",
   "files": {
     ".yggdrasil/model/cli/commands/init/yg-node.yaml": "fcc1d4fd933c8ddfdfc0bd1eedb80f704e63b2b800537f23a0f6e2682d9f8f85",
     ".yggdrasil/model/cli/commands/init/interface.md": "f5e497e2442107db1407b081a5e23066c442a21f1b34b0c525775ebdd4c72d99",
     ".yggdrasil/model/cli/commands/init/internals.md": "739ea81659a11a78f4b22c9b921e9b3fe1b30bd23030dbc50fe1ae3660b06cf8",
     ".yggdrasil/model/cli/commands/init/responsibility.md": "4f9276b085eaccc02a3c55a99ff05f09bf43b91f1a7a55fd06f3e462ec3dedcc",
     ".yggdrasil/model/cli/yg-node.yaml": "9a7f1a3b29f91683713e7a7d185b14830b8c9dd43ed49dda97fd546de5d39445",
+    ".yggdrasil/model/cli/internals.md": "fcd16e38b431eead0b12e14b05dd25184ad4ef23884fbde7402172b0985857f6",
     ".yggdrasil/model/cli/responsibility.md": "d88b933a6551942c862f23799206d64dcf8f619ed51308c3f0173b774d22509d",
     ".yggdrasil/model/cli/commands/yg-node.yaml": "0437a8e9e67ad06a70e5688858ea64dd4ef28c65c32dc59097138bf93f83cbcb",
     ".yggdrasil/model/cli/commands/internals.md": "8643ece78afa4a286856e9bd80e3315a5cc7b7ccbbe46e592ede55b030de528a",
@@ -18,8 +19,7 @@
     ".yggdrasil/model/cli/templates/interface.md": "6878d32b7ad3c171de4b2c14b5aca814ac6797d713195b59e80b996d5844da43",
     ".yggdrasil/flows/init/yg-flow.yaml": "6fccd893a4fb886b75e244e35b1bf2f2dc98600c500d2615370e7f668bd7578a",
     ".yggdrasil/flows/init/description.md": "7ab06dca456fe57c748e343faba4dff4db88ef73792ab2eaf28298ff595adba0",
-    "source/cli/src/cli/init.ts": "9b9546daca99db23318d860500ba447141f13ec7ccb70e444079f07325a29afd",
-    ".yggdrasil/model/cli/internals.md": "fcd16e38b431eead0b12e14b05dd25184ad4ef23884fbde7402172b0985857f6"
+    "source/cli/src/cli/init.ts": "f0a1ed0c7739ddfe8e67a876c9dee2ee9821fcc14b790e84944952def35f87eb"
   },
   "mtimes": {
     ".yggdrasil/model/cli/commands/init/yg-node.yaml": 1772776392191.6523,
@@ -40,6 +40,6 @@
     ".yggdrasil/model/cli/templates/interface.md": 1772776392199.1143,
     ".yggdrasil/flows/init/yg-flow.yaml": 1772776392189.0217,
     ".yggdrasil/flows/init/description.md": 1772743197468.9497,
-    "source/cli/src/cli/init.ts": 1772781876844.4856
+    "source/cli/src/cli/init.ts": 1773082917614.538
   }
 }
