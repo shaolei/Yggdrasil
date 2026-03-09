@@ -52,6 +52,24 @@ mapping:
 Order service handles order lifecycle.
 
 
+### interface.md
+# Order Service Interface
+
+## Methods
+
+### createOrder(items, customer)
+
+Creates a new order from cart items. Validates inventory and applies pricing rules.
+
+### cancelOrder(orderId)
+
+Cancels an existing order. Triggers refund if payment was captured.
+
+### getOrderStatus(orderId)
+
+Returns current lifecycle status of an order.
+
+
 ### responsibility.md
 Order service handles order lifecycle.
 
@@ -114,7 +132,7 @@ Sequence: create order -> validate -> payment -> ship.
 
 ---
 
-Context size: 361 tokens
+Context size: 448 tokens
 Layers: global, hierarchy, own, relational, relational, flows, aspects, aspects
 "
 `;

@@ -1,0 +1,13 @@
+name: Authentication
+type: infrastructure
+
+aspects:
+  - aspect: class-based-policy
+    anchors:
+      - BaseAuthentication
+      - authenticate
+      - authenticate_header
+
+mapping:
+  paths:
+    - rest_framework/authentication.py

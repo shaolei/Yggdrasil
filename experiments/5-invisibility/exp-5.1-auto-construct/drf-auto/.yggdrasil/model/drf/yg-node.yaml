@@ -1,0 +1,10 @@
+name: DRF Request Pipeline
+type: module
+
+aspects:
+  - aspect: pluggable-policy
+
+relations: []
+
+mapping:
+  paths: []

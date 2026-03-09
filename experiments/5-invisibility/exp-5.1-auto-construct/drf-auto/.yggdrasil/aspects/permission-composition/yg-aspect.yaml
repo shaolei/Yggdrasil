@@ -1,0 +1,3 @@
+name: Permission Composition
+description: "Permission classes can be composed using bitwise operators (& | ~) to create complex permission logic without custom classes."
+stability: implementation

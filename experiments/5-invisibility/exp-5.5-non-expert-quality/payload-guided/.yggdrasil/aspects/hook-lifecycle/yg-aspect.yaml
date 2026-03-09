@@ -1,0 +1,3 @@
+name: Hook Lifecycle
+description: "Operations follow a consistent hook execution pattern: beforeOperation -> operation-specific hooks -> afterRead field hooks -> collection afterRead hooks -> afterOperation"
+stability: protocol

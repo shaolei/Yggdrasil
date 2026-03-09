@@ -1,0 +1,18 @@
+name: Selection Policies
+type: library
+
+aspects:
+  - aspect: caddy-module-pattern
+    anchors:
+      - caddy.RegisterModule
+      - CaddyModule
+      - Select
+
+relations:
+  - target: reverseproxy/handler
+    type: uses
+    consumes: [UpstreamPool, Upstream]
+
+mapping:
+  paths:
+    - modules/caddyhttp/reverseproxy/selectionpolicies.go

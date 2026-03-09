@@ -1,0 +1,3 @@
+name: Access Control Pattern
+description: "Access functions return boolean or Where query. Boolean grants/denies immediately. Where queries enable row-level security by filtering at database level."
+stability: protocol

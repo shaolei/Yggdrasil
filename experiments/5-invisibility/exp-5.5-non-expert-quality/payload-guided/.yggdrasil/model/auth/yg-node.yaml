@@ -1,0 +1,10 @@
+name: Auth
+type: module
+
+aspects:
+  - aspect: hook-lifecycle
+  - aspect: access-control-pattern
+
+mapping:
+  paths:
+    - packages/payload/src/auth/

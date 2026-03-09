@@ -649,6 +649,46 @@ Validation: 0 errors, 3 warnings
 
 ---
 
+### Node selection
+
+Finds graph nodes relevant to a natural-language task description.
+
+**Parameters:**
+
+| Parameter     | Type   | Required | Description                                     |
+| ------------- | ------ | -------- | ----------------------------------------------- |
+| `task`        | string | Yes      | Natural-language task description               |
+| `limit`       | number | No       | Maximum nodes to return. Default: `5`.          |
+
+**Behavior:**
+
+1. Tokenize the task description: lowercase, split on non-alphanumeric, remove stop words.
+2. **S1 (keyword matching):** For each node, score keyword hits against artifact content with
+   weights: `responsibility.md` x3, `interface.md` x2, aspect content x2, other artifacts x1.
+3. If any node scores above 0: sort by score descending, return top-K.
+4. **S2 (flow-based fallback):** If no node matched via S1, match tokens against flow
+   descriptions and names. Return participants of matching flows.
+
+**Result:**
+
+YAML list of `{ node, score, name }` sorted by relevance. Empty list when nothing matches.
+
+```yaml
+- node: orders/order-service
+  score: 12
+  name: OrderService
+- node: orders
+  score: 6
+  name: Orders
+```
+
+**Errors:**
+
+- No `.yggdrasil/` — repository is not initialized.
+- Empty `--task` — missing required option.
+
+---
+
 ### Ownership resolution
 
 Finds the owner node for a given file path.

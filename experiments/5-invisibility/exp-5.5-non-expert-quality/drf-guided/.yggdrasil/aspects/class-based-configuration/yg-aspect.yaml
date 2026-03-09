@@ -1,0 +1,3 @@
+name: Class-Based Configuration
+description: "Policy classes configurable via global settings defaults, overridable per-view via class attributes"
+stability: protocol

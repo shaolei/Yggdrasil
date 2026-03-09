@@ -16,5 +16,8 @@
     "**/tests/**",
     ".plans/**",
     "experiments/**",
+    "django-rest-framework/**",
+    "caddy/**",
+    "payload/**",
   ],
 }

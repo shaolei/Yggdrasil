@@ -1,0 +1,16 @@
+name: NodeSelector
+type: library
+aspects:
+  - aspect: deterministic
+
+relations:
+  - target: cli/model
+    type: uses
+    consumes: [Graph, GraphNode, FlowDef]
+  - target: cli/utils
+    type: uses
+    consumes: [tokenize]
+
+mapping:
+  paths:
+    - source/cli/src/core/node-selector.ts

@@ -211,22 +211,21 @@ More can be added.
 
 ## Early results
 
-I ran experiments on real open-source repositories, including projects like Hoppscotch, Medusa, and Django.
+Experiments on real open-source repositories (Hoppscotch, Medusa, Django, DRF, Caddy, Payload CMS) across Python, Go, and TypeScript.
 
-Early takeaways:
+**Meaning capture** (Series 2-3): an agent using only Yggdrasil context answered 15/15 architectural questions correctly across 3 repos. Isolated agents with no code access scored 89.5%. A graph with just 4 nodes delivered 92% of the quality of a full graph.
 
-- In some cases, an agent using only Yggdrasil context could build a correct service without reading the source repo directly.
-- You do not need perfect setup from day one. Starting messy is fine.
-- You do not need to map the whole codebase upfront. A few important areas already create value.
-- The biggest limitation is still coverage. Memory only helps where the system has actually been mapped.
+**Invisibility** (Series 5, 5 experiments across 3 repos):
 
-This is still early.
+- Graph auto-constructed from git history: 100% structural coverage on repos with rich commit culture. Zero fabrication across all repos.
+- PR-based graph maintenance: 100% precision, 0% false positives. The graph can maintain itself.
+- Keyword search selects the right nodes for a task at 89% precision, 96% recall. No ML or embeddings needed.
+- Context injected into agent prompt without user action: 97.5% as effective as manual protocol. +178% over no-graph on constraint-aware tasks.
+- A guided 8-13 question session produces a graph at 82-90% of expert quality. No Yggdrasil knowledge required.
 
-But the core idea is already clear.
+The persistent gap is decision capture (32-86%). The hardest knowledge to extract is *why* something was designed a certain way and what alternatives were rejected. This is also the highest-value content.
 
-AI agents do not need bigger context windows.
-
-They need memory.
+These results validate the core thesis: AI agents do not need bigger context windows. They need memory.
 
 ***
 

@@ -1,0 +1,6 @@
+name: Reverse Proxy
+type: module
+
+mapping:
+  paths:
+    - modules/caddyhttp/reverseproxy/

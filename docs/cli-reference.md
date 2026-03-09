@@ -63,6 +63,30 @@ Shows direct and transitive node dependencies.
 
 ---
 
+### `yg select`
+
+Find graph nodes relevant to a task description using keyword matching.
+
+```bash
+yg select --task <description> [--limit <n>]
+```
+
+Uses weighted keyword matching against node artifacts (responsibility x3, interface x2,
+aspects x2, others x1). Falls back to flow-based selection when no nodes match directly.
+
+- `--task <description>` — Natural-language task description
+- `--limit <n>` — Maximum nodes to return (default: 5)
+
+Output: YAML list sorted by relevance score.
+
+```yaml
+- node: orders/order-service
+  score: 12
+  name: OrderService
+```
+
+---
+
 ### `yg preflight`
 
 Unified diagnostic report combining drift, status, and validation.

@@ -51,6 +51,7 @@ yg build-context --node orders/order-service
 - `yg owner --file <path>` — Find which graph node owns a source file
 - `yg deps --node <path>` — Forward dependency tree and materialization order
 - `yg impact --node <path> [--simulate]` — Reverse dependencies and context impact
+- `yg select --task <description> [--limit <n>]` — Find graph nodes relevant to a task
 - `yg aspects` — List aspects with metadata (YAML output)
 - `yg flows` — List flows with metadata (YAML output)
 

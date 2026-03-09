@@ -1,0 +1,3 @@
+name: Parallel Safety
+description: "Concurrent login attempt handling — DB operations bypass request transactions to ensure cross-request visibility"
+stability: implementation

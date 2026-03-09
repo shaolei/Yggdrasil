@@ -1,0 +1,7 @@
+name: Auth System
+type: module
+
+mapping:
+  paths:
+    - packages/payload/src/auth/
+    - packages/payload/src/utilities/getEntityPermissions/

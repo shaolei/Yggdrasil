@@ -7,8 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`yg select --task` command:** Finds graph nodes relevant to a natural-language task
+  description using weighted keyword matching (S1) with flow-based fallback (S2).
+  Outputs YAML list of `{ node, score, name }` sorted by relevance. Based on
+  experiment 5.4 findings (89% precision, 96% recall with keyword matching).
+
 ### Changed
 
+- **Documentation:** Updated "Early results" in README and docs with Series 5 invisibility
+  experiment findings. Added "Task-Based Node Selection" section to engine spec.
+  Added accelerated bootstrap and PR maintenance sections to integration spec.
 - **Documentation:** Renamed `docs/idea/` to `docs/concept/`; updated all references in VitePress config, AGENTS.md, and graph metadata.
 - **Documentation:** Fixed markdownlint errors in `docs/index.md` and `README.md` (MD001 heading-increment, MD026 trailing punctuation).
 

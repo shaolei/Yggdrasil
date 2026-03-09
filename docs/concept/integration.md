@@ -36,11 +36,12 @@ This is achieved through behavioral directives that the agent follows as part of
 
 - **Before modifying a file**, the agent identifies which graph node owns that file,
   loads the node’s context package, and uses it to understand the semantic intent behind the code.
-- **When starting from a high-level goal** and a semantic search tool is available, the agent
-  searches by intent. The graph’s responsibility, flow, and aspect files contain rich
-  natural-language descriptions designed to match goal-oriented queries. The agent uses
-  the search results to identify relevant nodes, then loads their context packages with
-  `yg build-context`.
+- **When starting from a high-level goal**, the agent identifies relevant nodes from the task
+  description. Graph artifacts (responsibility, interface, aspect content) are written in the
+  same vocabulary developers use in task descriptions — making simple keyword matching against
+  artifact content an effective selection mechanism. When a semantic search tool is available,
+  the agent can also search by intent. Either way, the agent identifies relevant nodes and
+  loads their context packages with `yg build-context`.
 - **After semantic decisions** (new components, changed interfaces, new dependencies),
   the agent updates the graph to reflect the new state.
 - **When it notices files without graph coverage**, the agent stops. If greenfield (new code to be
@@ -265,6 +266,17 @@ Knowing how to create nodes from existing files is universal knowledge — not i
 operation. An agent that can describe the meaning of a new component can also describe the meaning
 of an existing one. The mechanism is the same: read, understand, capture in semantic memory.
 
+### Graph maintenance through code changes
+
+When code changes land through pull requests, the graph can be maintained by analyzing the diff
+against existing graph coverage. A PR that changes a file mapped to a node implies potential
+updates to that node's artifacts. An automated analysis of the diff against the node's
+responsibility, interface, and internals can propose graph patches with high precision — changes
+that are clearly correct can be auto-applied, while uncertain changes are flagged for review.
+
+This closes the maintenance loop: the graph does not depend on developers remembering to update
+it. Code changes trigger graph updates through the same CI pipeline that runs tests and linters.
+
 ---
 
 ## Knowledge persistence strategy
@@ -373,6 +385,23 @@ the agent creates `model/orders/order-service/yg-node.yaml` + `responsibility.md
 that module, the agent loads the context package and writes better code.
 
 Value appears from the first node — not from a complete graph.
+
+### Accelerated bootstrap
+
+For repositories with rich git history (frequent commits with descriptive messages), auto-construction
+from git history can produce a structurally complete graph with zero fabrication. The quality depends
+on commit culture — repositories with hundreds of commits and commit bodies achieve near-perfect
+structural coverage, while shallow histories produce a useful scaffold of nodes and basic relations
+that can be enriched later.
+
+For repositories where git history is thin, a guided extraction session works: 8-13 questions about
+the codebase (asked by an extraction agent, answered by a developer who knows the code but does
+not need to know Yggdrasil) produce a graph at 82-90% of expert quality. The most effective
+questions are behavioral probes — “what would break if you changed X?” — rather than memory
+probes — “why was X designed this way?”
+
+Both approaches are complementary. Auto-construction provides structure; guided extraction fills
+in the decisions and rationale that git history cannot capture.
 
 ### Immediate value
 

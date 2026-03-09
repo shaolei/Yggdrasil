@@ -1,0 +1,3 @@
+name: Access Control
+description: "User-defined access functions evaluated per-operation to produce boolean or Where-query permissions"
+stability: protocol

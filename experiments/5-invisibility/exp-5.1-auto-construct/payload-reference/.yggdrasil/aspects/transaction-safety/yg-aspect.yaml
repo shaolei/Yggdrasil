@@ -1,0 +1,3 @@
+name: Transaction Safety
+description: "Auth operations that modify data use transactions with commit/rollback semantics"
+stability: protocol

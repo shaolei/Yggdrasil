@@ -1,0 +1,9 @@
+name: Sessions
+type: library
+
+aspects:
+  - aspect: session-management
+
+mapping:
+  paths:
+    - packages/payload/src/auth/sessions.ts

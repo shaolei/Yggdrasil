@@ -626,6 +626,40 @@ describe.skipIf(!distExists)('CLI E2E', () => {
     }
   });
 
+  // --- select ---
+
+  it('yg select --task returns YAML with matching nodes', () => {
+    const { stdout, status } = run(['select', '--task', 'order lifecycle']);
+    expect(status).toBe(0);
+    const parsed = parseYaml(stdout);
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed.length).toBeGreaterThan(0);
+    expect(parsed[0]).toHaveProperty('node');
+    expect(parsed[0]).toHaveProperty('score');
+    expect(parsed[0]).toHaveProperty('name');
+  });
+
+  it('yg select --task with no matches returns empty YAML', () => {
+    const { stdout, status } = run(['select', '--task', 'quantum blockchain singularity']);
+    expect(status).toBe(0);
+    const parsed = parseYaml(stdout);
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed.length).toBe(0);
+  });
+
+  it('yg select --task --limit caps results', () => {
+    const { stdout, status } = run(['select', '--task', 'order', '--limit', '1']);
+    expect(status).toBe(0);
+    const parsed = parseYaml(stdout);
+    expect(parsed.length).toBeLessThanOrEqual(1);
+  });
+
+  it('yg select requires --task', () => {
+    const { status, stderr } = run(['select']);
+    expect(status).toBe(1);
+    expect(stderr).toMatch(/required option|--task/);
+  });
+
   // --- status output details ---
 
   it('yg status includes drift summary', () => {

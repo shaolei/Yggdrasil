@@ -1,0 +1,6 @@
+name: Fields To Sign
+type: library
+
+mapping:
+  paths:
+    - packages/payload/src/auth/getFieldsToSign.ts

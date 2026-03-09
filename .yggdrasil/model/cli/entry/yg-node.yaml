@@ -40,6 +40,9 @@ relations:
   - target: cli/commands/preflight
     type: uses
     consumes: [registerPreflightCommand]
+  - target: cli/commands/select
+    type: uses
+    consumes: [registerSelectCommand]
 
 mapping:
   paths:

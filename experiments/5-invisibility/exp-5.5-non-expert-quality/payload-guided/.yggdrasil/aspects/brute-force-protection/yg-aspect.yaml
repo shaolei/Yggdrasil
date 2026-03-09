@@ -1,0 +1,3 @@
+name: Brute Force Protection
+description: "Login attempts are tracked per user with configurable max attempts and lock duration. Special handling for parallel attack scenarios."
+stability: implementation

@@ -526,6 +526,37 @@ Ordering concerns materialization of outputs. Context package assembly itself re
 
 ---
 
+## Task-Based Node Selection
+
+Context assembly requires a node path. But the agent's starting point is often a task
+description, not a node path — "fix the authentication bypass in token refresh" rather than
+"build context for `auth/token-service`."
+
+The bridge between task description and node selection is the graph's own content. Graph
+artifacts — responsibility, interface, aspect content — are written in the same natural-language
+vocabulary developers use in task descriptions. This makes simple keyword matching against
+artifact content an effective selection mechanism:
+
+1. Tokenize the task description and remove stop words
+2. Search all node artifacts with weights (responsibility highest, internals lowest)
+3. Score nodes by weighted keyword hit count
+4. Select top-K nodes above a score threshold
+
+This approach works because the graph is already optimized for intent matching — by design.
+Responsibility files describe what a node does in the same terms a developer would use to
+describe a task involving that node. No embeddings, no ML infrastructure, no semantic search
+engine required.
+
+When keyword signal is weak (ambiguous or indirect task descriptions), falling back to
+flow-based selection — matching against flow descriptions and selecting flow participants —
+provides broader coverage at the cost of precision.
+
+The selection output feeds directly into context assembly: for each selected node, build
+a context package using the standard algorithm. The agent receives pre-assembled context
+for all relevant areas without needing to know the graph structure.
+
+---
+
 ## Generator Independence
 
 A context package is a Markdown document readable by any AI agent. Switching agents (Cursor →

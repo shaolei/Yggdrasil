@@ -13,6 +13,7 @@ import { registerImpactCommand } from './cli/impact.js';
 import { registerAspectsCommand } from './cli/aspects.js';
 import { registerFlowsCommand } from './cli/flows.js';
 import { registerPreflightCommand } from './cli/preflight.js';
+import { registerSelectCommand } from './cli/select.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -41,5 +42,6 @@ registerImpactCommand(program);
 registerAspectsCommand(program);
 registerFlowsCommand(program);
 registerPreflightCommand(program);
+registerSelectCommand(program);
 
 program.parse();

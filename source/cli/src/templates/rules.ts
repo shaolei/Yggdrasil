@@ -25,10 +25,10 @@ Yggdrasil is persistent semantic memory stored in \`.yggdrasil/\`. It maps the r
 
 \`\`\`
 BEFORE reading, researching, planning, OR modifying ANY mapped file:
-  0. Don't know which file or node to start from? If a semantic search
-     tool is available, search for your intent — the graph contains
-     responsibility, flow, and aspect files with rich natural-language
-     descriptions that match goal-oriented queries. Use the results
+  0. Don't know which file or node to start from? Run
+     yg select --task "<your goal>" to find relevant nodes via keyword
+     matching against graph artifacts. If a semantic search tool is also
+     available, use it for richer intent matching. Use the results
      to identify relevant nodes, then proceed to step 1.
   1. yg owner --file <path>
   2. Choose the right graph tool for your task:
@@ -104,7 +104,7 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 | "I'm brainstorming, not implementing" | Brainstorming about mapped code needs graph context |
 | "I'm only grepping for references" | Grep finds text; yg impact finds structural dependencies. Use both. |
 | "I'll use the graph later when I modify" | Graph-first means BEFORE reading, not before modifying |
-| "I'll grep the codebase to find where to start" | If semantic search is available, search by intent first — graph files are designed to match natural-language goals. Then \`yg owner\` on results. |
+| "I'll grep the codebase to find where to start" | Run \`yg select --task\` first — it matches your intent against graph artifacts. Then \`yg owner\` on results. |
 
 ### Failure States
 
@@ -415,6 +415,8 @@ yg build-context --node <path>      Assemble context package for this node.
 yg tree [--root <path>] [--depth N] Print graph structure.
 yg aspects                          List aspects with metadata (YAML output).
 yg flows                            List flows with metadata (YAML output).
+yg select --task <description> [--limit <n>]
+                                    Find graph nodes relevant to a task description.
 yg deps --node <path> [--depth N] [--type structural|event|all]
                                     Show dependencies.
 yg impact --node <path> --simulate  Simulate blast radius of a planned change.
