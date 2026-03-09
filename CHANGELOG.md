@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Documentation:** Renamed `docs/idea/` to `docs/concept/`; updated all references in VitePress config, AGENTS.md, and graph metadata.
+- **Documentation:** Fixed markdownlint errors in `docs/index.md` and `README.md` (MD001 heading-increment, MD026 trailing punctuation).
 
 ## [2.2.0] - 2026-03-06
 

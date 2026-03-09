@@ -11,7 +11,7 @@ title: Yggdrasil
 
 # Yggdrasil
 
-### Stop re-explaining your codebase to your AI agent.
+## Stop re-explaining your codebase to your AI agent
 
 AI agents keep forgetting your architecture, constraints, and past decisions. Yggdrasil gives your repository persistent semantic memory, so each task starts with the right context instead of another giant prompt.
 
@@ -93,7 +93,7 @@ That is the difference between code generation and context-aware change.
 ## Install
 
 ```bash
-npm install -g @krzysztofdudek/yg
+npm install -g @chrisdudek/yg
 ```
 
 ***
