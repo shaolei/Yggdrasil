@@ -721,7 +721,7 @@ how to obtain it:
 
 ```text
 src/modules/orders/subdir/helper.ts -> orders/order-service
-  Plik nie ma własnego mapowania; kontekst pochodzi z nadrzędnego katalogu src/modules/orders. Użyj: yg build-context --node orders/order-service
+  File has no direct mapping; context comes from ancestor directory src/modules/orders. Use: yg build-context --node orders/order-service
 ```
 
 ```text
