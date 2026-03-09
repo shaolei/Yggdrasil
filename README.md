@@ -91,7 +91,7 @@ That is the difference between code generation and context-aware change.
 ## Install
 
 ```bash
-npm install -g @krzysztofdudek/yg
+npm install -g @chrisdudek/yg
 ```
 
 ***
