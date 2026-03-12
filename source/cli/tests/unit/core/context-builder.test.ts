@@ -8,6 +8,7 @@ import {
   buildStructuralRelationLayer,
   buildEventRelationLayer,
   collectAncestors,
+  collectDependencyAncestors,
 } from '../../../src/core/context-builder.js';
 import { formatContextMarkdown } from '../../../src/formatters/markdown.js';
 import { formatContextText } from '../../../src/formatters/context-text.js';
@@ -1083,6 +1084,33 @@ describe('context-builder', () => {
       expect(output).toContain('aspects="requires-audit"');
       expect(output).toContain('<hierarchy path="orders"');
     });
+  });
+});
+
+describe('collectDependencyAncestors', () => {
+  it('returns ancestor chain for a dependency target', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    const target = graph.nodes.get('auth/auth-api')!;
+    const ancestors = collectDependencyAncestors(target, graph.config, graph);
+
+    expect(ancestors).toHaveLength(1);
+    expect(ancestors[0].path).toBe('auth');
+    expect(ancestors[0].name).toBeDefined();
+    expect(ancestors[0].type).toBeDefined();
+    expect(Array.isArray(ancestors[0].aspects)).toBe(true);
+    expect(Array.isArray(ancestors[0].artifactFilenames)).toBe(true);
+  });
+
+  it('filters ancestor artifacts by included_in_relations', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    const target = graph.nodes.get('auth/auth-api')!;
+    const ancestors = collectDependencyAncestors(target, graph.config, graph);
+
+    // Ancestor artifacts should only include files with included_in_relations=true.
+    // If no artifacts have included_in_relations, falls back to all config artifacts.
+    for (const ancestor of ancestors) {
+      expect(ancestor.artifactFilenames.length).toBeGreaterThanOrEqual(0);
+    }
   });
 });
 

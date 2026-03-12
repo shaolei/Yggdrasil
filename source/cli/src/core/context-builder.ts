@@ -355,6 +355,44 @@ export function collectAncestors(node: GraphNode): GraphNode[] {
   return ancestors;
 }
 
+export interface DependencyAncestorInfo {
+  path: string;
+  name: string;
+  type: string;
+  aspects: string[];
+  artifactFilenames: string[];
+}
+
+export function collectDependencyAncestors(
+  target: GraphNode,
+  config: YggConfig,
+  graph: Graph,
+): DependencyAncestorInfo[] {
+  const ancestors = collectAncestors(target);
+  const structuralFilenames = Object.entries(config.artifacts ?? {})
+    .filter(([, c]) => c.included_in_relations)
+    .map(([filename]) => filename);
+
+  return ancestors.map((ancestor) => {
+    const nodeAspects = (ancestor.meta.aspects ?? []).map(a => a.aspect);
+    const expanded = expandAspects(nodeAspects, graph.aspects);
+
+    // Use included_in_relations artifacts if any exist, else fall back to all config artifacts
+    const configArtifactKeys = [...Object.keys(config.artifacts ?? {})];
+    const filterFilenames = structuralFilenames.length > 0 ? structuralFilenames : configArtifactKeys;
+    const availableFiles = filterFilenames.filter((f) =>
+      ancestor.artifacts.some((a) => a.filename === f),
+    );
+    return {
+      path: ancestor.path,
+      name: ancestor.meta.name,
+      type: ancestor.meta.type,
+      aspects: expanded,
+      artifactFilenames: availableFiles,
+    };
+  });
+}
+
 /** Compute effective aspect ids for a node: own + hierarchy + flow + implies expanded. */
 export function collectEffectiveAspectIds(graph: Graph, nodePath: string): Set<string> {
   const node = graph.nodes.get(nodePath);

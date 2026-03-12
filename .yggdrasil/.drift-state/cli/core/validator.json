@@ -1,5 +1,5 @@
 {
-  "hash": "14914c39f74dc39f3d40ee057363b9afd87dc674e455ded7fffe5f9fb6d1d0e4",
+  "hash": "3c8d7556ab2c4146638fb9bb3088653a12229eec7706171cce36c2a744e070a9",
   "files": {
     ".yggdrasil/model/cli/core/validator/yg-node.yaml": "3345b23998a88eef65a5547e08c00f32af4f3d85d7a600e999ee33f2b318e76c",
     ".yggdrasil/model/cli/core/validator/interface.md": "0f50852b00dc878bc5f6adccf3a27696c6d13f5ffdcd81526d7942eea4853f4a",
@@ -17,7 +17,6 @@
     ".yggdrasil/aspects/posix-paths/yg-aspect.yaml": "3f025d4986e5dceea0b8fec8695cf9224305ef75229632e7a21a78600b0da29b",
     ".yggdrasil/aspects/posix-paths/content.md": "38daf50dec99307443fd8951019cf534c74571a7778d43e55a4354d9d2faeefc",
     ".yggdrasil/model/cli/core/context/responsibility.md": "f4849113219b65397483ea682e3b6bb1cfba5944a9167a95aeb662f420bd689c",
-    ".yggdrasil/model/cli/core/context/interface.md": "d8f5d50bc05d42fb0de9e740ca450bc99a4e578fa5eafd17a72b93053e5334b8",
     ".yggdrasil/model/cli/model/responsibility.md": "b668c6db2090a36a54277f62fb228c266d87c6d119f89e6ed67e140392863a66",
     ".yggdrasil/model/cli/model/interface.md": "cb8983e3f04ded57e9a69afb385d3bfece89dcfa8270985260d8ce59a1cffe5a",
     ".yggdrasil/model/cli/utils/responsibility.md": "4918c48366c7b3f35bb7b97fa74252c47f14ba72417c5cc5f3e1100b503c7ddd",
@@ -28,7 +27,8 @@
     ".yggdrasil/flows/preflight/description.md": "c8680e694af2907fb56c068661cc458ea0053a21a8afe6249a33096e89da108e",
     ".yggdrasil/flows/validate/yg-flow.yaml": "a50a42b81665319ae478d268f44f5f6b1a3e159efaef4f5d0d4390356e1544be",
     ".yggdrasil/flows/validate/description.md": "d934feb76d7186c3665ff605b8ff0d771978248a8c4e8a3cda2e8f38f483577f",
-    "source/cli/src/core/validator.ts": "1c100d5d6485f8269801ceaae2fbbdc2a61f7a0db4b4cf885d3e6248a1f70bab"
+    "source/cli/src/core/validator.ts": "1c100d5d6485f8269801ceaae2fbbdc2a61f7a0db4b4cf885d3e6248a1f70bab",
+    ".yggdrasil/model/cli/core/context/interface.md": "1004f42e042481e5b0a7a1f936b7f08e733aeb7677e3632a231299b641bfae62"
   },
   "mtimes": {
     ".yggdrasil/model/cli/core/validator/yg-node.yaml": 1773348114766.2368,
@@ -47,7 +47,7 @@
     ".yggdrasil/aspects/posix-paths/yg-aspect.yaml": 1773348114754.1848,
     ".yggdrasil/aspects/posix-paths/content.md": 1773348114754.0815,
     ".yggdrasil/model/cli/core/context/responsibility.md": 1773348114763.7078,
-    ".yggdrasil/model/cli/core/context/interface.md": 1773348114763.472,
+    ".yggdrasil/model/cli/core/context/interface.md": 1773349170407.5322,
     ".yggdrasil/model/cli/model/responsibility.md": 1773348114768.178,
     ".yggdrasil/model/cli/model/interface.md": 1773348396478.7522,
     ".yggdrasil/model/cli/utils/responsibility.md": 1773348114769.523,
