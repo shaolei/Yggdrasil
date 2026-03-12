@@ -122,6 +122,47 @@ export function collectTrackedFiles(node: GraphNode, graph: Graph): TrackedFile[
         }
       }
     }
+
+    // Track dependency ancestors — always runs, independent of structuralArts check above
+    const depAncestors = collectAncestors(target);
+    for (const ancestor of depAncestors) {
+      // Use included_in_relations artifacts if available, else fall back to all config artifacts
+      const filterFilenames = structuralFilenames.length > 0 ? structuralFilenames : [...configArtifactKeys];
+      for (const filename of filterFilenames) {
+        if (ancestor.artifacts.some((a) => a.filename === filename)) {
+          addFile(graphPath('model', ancestor.path, filename), 'graph');
+        }
+      }
+    }
+  }
+
+  // 4b. EVENT RELATIONS — emits/listens targets + their ancestors
+  for (const relation of node.meta.relations ?? []) {
+    if (relation.type !== 'emits' && relation.type !== 'listens') continue;
+    const target = graph.nodes.get(relation.target);
+    if (!target) continue;
+
+    const structuralFilenames = Object.entries(graph.config.artifacts ?? {})
+      .filter(([, c]) => c.included_in_relations)
+      .map(([filename]) => filename);
+    const filterFilenames = structuralFilenames.length > 0 ? structuralFilenames : [...configArtifactKeys];
+
+    // Include target's artifacts
+    for (const filename of filterFilenames) {
+      if (target.artifacts.some((a) => a.filename === filename)) {
+        addFile(graphPath('model', target.path, filename), 'graph');
+      }
+    }
+
+    // Include target's ancestors (same filter)
+    const eventAncestors = collectAncestors(target);
+    for (const ancestor of eventAncestors) {
+      for (const filename of filterFilenames) {
+        if (ancestor.artifacts.some((a) => a.filename === filename)) {
+          addFile(graphPath('model', ancestor.path, filename), 'graph');
+        }
+      }
+    }
   }
 
   // 5. RELATIONAL-FLOWS — yg-flow.yaml + flow artifacts for participating flows

@@ -256,7 +256,7 @@ describe('collectTrackedFiles', () => {
     expect(otherModelPaths).toHaveLength(0);
   });
 
-  it('skips event relation types (emits/listens)', () => {
+  it('includes event relation target artifacts (emits/listens)', () => {
     const target: GraphNode = {
       path: 'events/bus',
       meta: { name: 'EventBus', type: 'service' },
@@ -294,8 +294,8 @@ describe('collectTrackedFiles', () => {
     const files = collectTrackedFiles(node, graph);
     const paths = files.map((f) => f.path);
 
-    // Event relations should NOT include target artifacts
-    expect(paths).not.toContain('.yggdrasil/model/events/bus/responsibility.md');
+    // Event relations should now include target artifacts
+    expect(paths).toContain('.yggdrasil/model/events/bus/responsibility.md');
   });
 
   it('skips relations with missing targets', () => {
@@ -375,5 +375,43 @@ describe('collectTrackedFiles', () => {
     const auditPaths = paths.filter((p) => p.includes('requires-audit'));
     expect(auditPaths).toHaveLength(2); // yg-aspect.yaml + content.md
     expect(new Set(paths).size).toBe(paths.length);
+  });
+
+  it('includes dependency ancestor files (included_in_relations artifacts)', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    const node = graph.nodes.get('orders/order-service')!;
+    const files = collectTrackedFiles(node, graph);
+    const paths = files.map((f) => f.path);
+
+    // order-service depends on auth/auth-api. auth-api's parent is auth/.
+    // auth/ should have its included_in_relations artifacts tracked.
+    const authParentFiles = paths.filter((p) => p.includes('model/auth/') && !p.includes('auth-api'));
+    expect(authParentFiles.length).toBeGreaterThan(0);
+  });
+
+  it('includes event relation target files and ancestors', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    const node = graph.nodes.get('orders/order-service')!;
+    const originalRelations = node.meta.relations ?? [];
+    node.meta.relations = [
+      ...originalRelations,
+      { type: 'emits', target: 'auth/auth-api', event_name: 'order.created' },
+    ];
+
+    const files = collectTrackedFiles(node, graph);
+    const paths = files.map((f) => f.path);
+
+    // auth/auth-api's artifacts should be tracked (event relation target)
+    const authApiFiles = paths.filter(p => p.includes('model/auth/auth-api/'));
+    expect(authApiFiles.length).toBeGreaterThan(0);
+
+    // auth/ ancestor should also be tracked
+    const authParentFiles = paths.filter(p =>
+      p.includes('model/auth/') && !p.includes('auth-api') && !p.includes('auth-service')
+    );
+    expect(authParentFiles.length).toBeGreaterThan(0);
+
+    // Restore original relations
+    node.meta.relations = originalRelations;
   });
 });
