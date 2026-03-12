@@ -12,7 +12,6 @@ import {
   toContextMapOutput,
 } from '../../../src/core/context-builder.js';
 import { formatContextMarkdown } from '../../../src/formatters/markdown.js';
-import { formatContextText } from '../../../src/formatters/context-text.js';
 import { loadGraph } from '../../../src/core/graph-loader.js';
 import type {
   Graph,
@@ -977,116 +976,6 @@ describe('context-builder', () => {
     });
   });
 
-  describe('formatContextText', () => {
-    it('produces XML-like tags with context-package wrapper', async () => {
-      const graph = await loadGraph(FIXTURE_PROJECT);
-      const pkg = await buildContext(graph, 'orders/order-service');
-      const output = formatContextText(pkg);
-
-      expect(output).toContain('<context-package ');
-      expect(output).toContain('node-path="orders/order-service"');
-      expect(output).toContain('node-name="OrderService"');
-      expect(output).toContain('</context-package>');
-    });
-
-    it('wraps global, hierarchy, own-artifacts, aspect, flow in tags', async () => {
-      const graph = await loadGraph(FIXTURE_PROJECT);
-      const pkg = await buildContext(graph, 'orders/order-service');
-      const output = formatContextText(pkg);
-
-      expect(output).toContain('<global>');
-      expect(output).toContain('</global>');
-      expect(output).toContain('<hierarchy');
-      expect(output).toContain('<own-artifacts');
-      expect(output).toContain('<aspect ');
-      expect(output).toContain('<flow ');
-    });
-
-    it('flow tag includes aspects when flow has aspects', async () => {
-      const node: GraphNode = {
-        path: 'orders/order-service',
-        meta: { name: 'OrderService', type: 'service' },
-        artifacts: [{ filename: 'responsibility.md', content: 'x' }],
-        children: [],
-        parent: null,
-      };
-      const graph: Graph = {
-        config: {
-          name: 'T',
-          node_types: { service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
-        nodes: new Map([['orders/order-service', node]]),
-        aspects: [
-          {
-            name: 'Saga',
-            id: 'requires-saga',
-            artifacts: [{ filename: 'content.md', content: 'Use saga' }],
-          },
-        ],
-        flows: [
-          {
-            name: 'Checkout',
-            nodes: ['orders/order-service'],
-            aspects: ['requires-saga'],
-            artifacts: [],
-          },
-        ],
-        schemas: [],
-        rootPath: '/tmp',
-      };
-      const pkg = await buildContext(graph, 'orders/order-service');
-      const output = formatContextText(pkg);
-
-      expect(output).toContain('aspects="requires-saga"');
-      expect(output).toContain('<flow name="Checkout"');
-    });
-
-    it('formatContextText includes aspects on hierarchy for ancestor aspects', async () => {
-      const parent: GraphNode = {
-        path: 'orders',
-        meta: { name: 'Orders', type: 'module', aspects: [{ aspect: 'requires-audit' }] },
-        artifacts: [],
-        children: [],
-        parent: null,
-      };
-      const child: GraphNode = {
-        path: 'orders/order-service',
-        meta: { name: 'OrderService', type: 'service' },
-        artifacts: [{ filename: 'responsibility.md', content: 'x' }],
-        children: [],
-        parent,
-      };
-      parent.children = [child];
-
-      const graph: Graph = {
-        config: {
-          name: 'T',
-          node_types: { module: { description: 'x' }, service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
-        nodes: new Map([
-          ['orders', parent],
-          ['orders/order-service', child],
-        ]),
-        aspects: [
-          {
-            name: 'Audit',
-            id: 'requires-audit',
-            artifacts: [{ filename: 'content.md', content: 'Audit rules' }],
-          },
-        ],
-        flows: [],
-        schemas: [],
-        rootPath: '/tmp',
-      };
-
-      const pkg = await buildContext(graph, 'orders/order-service');
-      const output = formatContextText(pkg);
-      expect(output).toContain('aspects="requires-audit"');
-      expect(output).toContain('<hierarchy path="orders"');
-    });
-  });
 });
 
 describe('collectDependencyAncestors', () => {

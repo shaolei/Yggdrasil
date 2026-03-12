@@ -2,9 +2,10 @@
 
 # Formatters Constraints
 
-- **Output format is plain text with XML-like section tags:** The context text formatter wraps each layer in tags (`<global>`, `<hierarchy>`, `<own-artifacts>`, `<aspect>`, `<dependency>`, `<event>`, `<flow>`, `<context-package>`). Attributes on tags encode provenance metadata.
-- **Formatter is a pure function:** `formatContextText` receives a `ContextPackage` and returns a string. It performs no I/O, no validation, and no graph modification.
-- **Deterministic output:** Sections are emitted in the fixed order defined by `ContextSection[]` (Global, Hierarchy, OwnArtifacts, Aspects, Relational). Within sections, layers appear in their array order. Attribute values are escaped for XML safety.
+- **Primary output format is YAML:** `formatContextYaml` converts a `ContextMapOutput` to YAML with structured keys (meta, project, node, hierarchy, dependencies, artifacts). Empty optional sections are omitted.
+- **Full content format uses XML-style tags:** `formatFullContent` wraps each file's content in `<path>...</path>` tags, separated from YAML by `---`.
+- **Formatters are pure functions:** They receive structured data and return strings. No I/O, no validation, no graph modification.
+- **Deterministic output:** YAML keys appear in declaration order. `lineWidth: 0` prevents line wrapping.
 
 ## Decisions
 
@@ -12,4 +13,4 @@
 
 **Pure transformation:** Formatters perform no I/O and no validation. They receive structured data and produce text. This keeps the layer deterministic and testable — callers own input validity.
 
-**Context output format:** Plain text with XML-like tags (`<context-package>`, `<global>`, `<aspect>`, etc.) is designed for agent consumption. Tags provide structure and provenance (e.g. `source="flow:Checkout"` for flow-propagated aspects). Content between tags is raw text. Token count in root attributes supports context budget awareness.
+**YAML over XML:** Chose YAML context map output over the previous XML-like tag format because YAML is more readable for agents and easier to parse programmatically. The old `formatContextText` (XML tags) was removed as dead code after the v2 format switch.

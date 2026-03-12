@@ -1,19 +1,11 @@
 # Formatters Interface
 
-Public API consumed by cli/commands/validation (build-context).
+Public API consumed by cli/commands/build-context.
 
-## context-text.ts (primary)
-
-- `formatContextText(pkg: ContextPackage): string`
-  - Converts a context package to plain text with XML-like tags.
-  - Input: `ContextPackage` from cli/model.
-  - Output: plain text. Tags: `<context-package>`, `<global>`, `<hierarchy>`, `<own-artifacts>`, `<aspect name="..." id="..." source="node|flow:Name">`, `<dependency>`, `<flow>`. Content between tags is raw text (no CDATA, no escaping).
-  - Pure transformation — no I/O, no validation.
-
-## context-text.ts (YAML format, v2)
+## context-text.ts (YAML format)
 
 - `formatContextYaml(data: ContextMapOutput): string`
-  - Converts a `ContextMapOutput` to YAML (paths-only mode, default for v2).
+  - Converts a `ContextMapOutput` to YAML (paths-only mode, default output format).
   - Input: `ContextMapOutput` from cli/model.
   - Output: YAML string. Top-level keys: `meta`, `project`, `node`, `hierarchy` (omitted if empty), `dependencies` (omitted if empty), `artifacts`.
   - Uses `yaml` library's `stringify` with `lineWidth: 0` (no wrapping).
@@ -33,8 +25,8 @@ Public API consumed by cli/commands/validation (build-context).
 
 ## Failure Modes
 
-No thrown errors — pure transformation. Callers must ensure valid `ContextPackage` input.
+No thrown errors — pure transformation. Callers must ensure valid input.
 
-- Invalid or malformed `ContextPackage` may produce incomplete or misleading output; no validation is performed.
+- Invalid or malformed input may produce incomplete or misleading output; no validation is performed.
 - No I/O — no filesystem or network errors.
 - No recovery behavior — caller responsibility.
