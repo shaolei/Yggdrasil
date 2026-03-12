@@ -427,9 +427,10 @@ Assemble a context package for the specified node. The main operation of the sys
 
 **Parameters:**
 
-| Parameter | Type   | Required | Description                    |
-| --------- | ------ | -------- | ------------------------------ |
-| `node`    | string | Yes      | Node path relative to `model/` |
+| Parameter | Type   | Required | Description                                                        |
+| --------- | ------ | -------- | ------------------------------------------------------------------ |
+| `node`    | string | Yes      | Node path relative to `model/`                                     |
+| `--full`  | flag   | No       | Embed artifact content inline instead of listing paths only        |
 
 **Behavior:**
 
@@ -444,16 +445,18 @@ The 5-step algorithm defined in the [Engine](engine) document. Summary:
 5. **Relational** — for structural relations: artifacts with `included_in_relations: true`
    (default: responsibility, interface) of the target with consumes
    and failure annotations. If the target has no artifacts with `included_in_relations: true`,
-   all configured artifacts are included as fallback. For event relations: event name and
-   type with consumes annotation. Flow artifacts for flows listing this node or any ancestor
-   as a participant.
+   all configured artifacts are included as fallback. For each dependency, ancestors of the
+   target node are included (dependency hierarchy) to provide domain context. For event
+   relations: event name and type with consumes annotation. Flow artifacts for flows listing
+   this node or any ancestor as a participant.
 
 Token estimation: ~4 characters per token (heuristic from the [Engine](engine) document).
 
 **Result:**
 
-Plain text with XML-like tags, as defined in the [Engine](engine) document (Context package format
-section). Includes token count and budget status (`ok`, `warning`, `error`).
+YAML with structural map and artifact paths (default) or artifact content (`--full`), as
+defined in the [Engine](engine) document (Context package format section). Includes token count
+and budget status (`ok`, `warning`, `error`).
 
 **Errors:**
 

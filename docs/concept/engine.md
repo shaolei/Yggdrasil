@@ -36,6 +36,7 @@ UNIT IDENTITY            (changes on node evolution)
 
 SURROUNDINGS             (changes on neighbor evolution)
   You depend on PaymentService: charge, refund.
+  PaymentService lives in the Payments domain (dependency hierarchy).
   You participate in the Checkout Flow.
 ```
 
@@ -84,6 +85,8 @@ Each step is deterministic.
 5.  RELATIONAL
       for each structural relation of N (uses, calls, extends, implements):
         - artifacts of target with included_in_relations (e.g. responsibility, interface)
+        - dependency hierarchy: ancestors of the target (from model/ root to target's parent)
+          with their metadata and aspects, providing domain context for the dependency
         - consumes annotation from the relation field (if declared)
         - failure annotation from the relation field (if declared)
       for each event relation of N (emits, listens):
@@ -158,56 +161,89 @@ annotate it with metadata from YAML. The agent interprets.
 
 ### Context Package Format
 
-The context package is a plain text document with XML-like tags. Tags provide structure and
-metadata; content between tags is raw text (no CDATA, no escaping).
+The context package is a YAML document with two modes:
 
-```text
-<context-package node-path="orders/order-service" node-name="OrderService" token-count="3200">
+- **Default (paths-only):** outputs a structural map with artifact file paths. The agent
+  reads artifact files separately as needed. This is the primary mode — lightweight and
+  fast.
+- **Full (`--full`):** embeds artifact content inline. Useful when the agent needs
+  everything in a single payload.
 
-<global>
-**Project:** my-project
-</global>
+The structural map includes the node's metadata, its ancestor hierarchy, dependency hierarchy
+(each dependency includes its own ancestor chain for domain context), aspects, and flows.
 
-<hierarchy path="orders/">
-### responsibility.md
-<content of orders/responsibility.md>
-</hierarchy>
-
-<own-artifacts>
-### yg-node.yaml
-name: OrderService
-type: service
-aspects:
-  - aspect: requires-audit
-  - aspect: requires-auth
-relations: ...
-### responsibility.md
-<content>
-</own-artifacts>
-
-<aspect name="Audit logging" id="requires-audit">
-### content.md
-<content>
-</aspect>
-
-<dependency target="payments/payment-service" type="calls" consumes="charge, refund" failure="retry 3x">
-Consumes: charge, refund
-### responsibility.md
-<content>
-</dependency>
-
-<flow name="Checkout flow">
-### description.md
-<content>
-</flow>
-
-</context-package>
+```yaml
+meta:
+  token-count: 1234
+  budget-status: ok
+project: MyProject
+node:
+  path: orders/order-service
+  name: OrderService
+  type: service
+  mappings:
+    - src/orders/order.service.ts
+  aspects:
+    - id: requires-audit
+  flows:
+    - path: checkout
+      name: Checkout Flow
+      aspects:
+        - requires-saga
+hierarchy:
+  - path: orders
+    name: Orders
+    type: module
+    aspects:
+      - deterministic
+dependencies:
+  - path: auth/auth-api
+    name: Auth API
+    type: service
+    relation: uses
+    consumes:
+      - validateToken
+    aspects:
+      - deterministic
+    hierarchy:
+      - path: auth
+        name: Auth
+        type: module
+        aspects: []
+artifacts:
+  nodes:
+    orders/order-service:
+      files:
+        - model/orders/order-service/yg-node.yaml
+        - model/orders/order-service/responsibility.md
+        - model/orders/order-service/interface.md
+    orders:
+      files:
+        - model/orders/yg-node.yaml
+        - model/orders/responsibility.md
+    auth/auth-api:
+      files:
+        - model/auth/auth-api/interface.md
+  aspects:
+    requires-audit:
+      name: Audit
+      files:
+        - aspects/requires-audit/yg-aspect.yaml
+        - aspects/requires-audit/content.md
+  flows:
+    checkout:
+      name: Checkout Flow
+      aspects:
+        - requires-saga
+      files:
+        - flows/checkout/yg-flow.yaml
+        - flows/checkout/description.md
 ```
 
-The format is fixed — the same tag structure regardless of project. Content between tags is
-variable — depends on project config and the specific node. Agents read the structured output
-fluently; the XML-like tags provide clear boundaries and provenance (e.g. `source="node"` vs
-`source="flow:Checkout"` for aspects).
+The format is fixed — the same YAML structure regardless of project. Content within the
+structure is variable — depends on project config and the specific node. Each dependency
+entry includes its own `hierarchy` list, providing ancestor context for that dependency
+without requiring the agent to traverse the graph manually.
 
 **The context package contains only graph content, not source code.** The agent fetches
 source files separately when it needs implementation details. If a person places code
