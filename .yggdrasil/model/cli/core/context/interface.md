@@ -18,6 +18,10 @@
 - `collectAncestors(node: GraphNode): GraphNode[]` — returns ancestors from parent chain.
 - `collectDependencyAncestors(target: GraphNode, config: YggConfig, graph: Graph): DependencyAncestorInfo[]` — returns ancestor chain for a dependency target node. Each entry includes path, name, type, aspects (own aspects expanded via `implies` only — not effective aspects), and artifactFilenames (filtered by `included_in_relations`, falling back to all config artifacts). Used by context-map output to provide hierarchy context for dependency targets.
 
+**Structured output converter:**
+
+- `toContextMapOutput(pkg: ContextPackage, graph: Graph): ContextMapOutput` — converts a layers-based ContextPackage into the structured ContextMapOutput format. Extracts node aspects (with anchors/exceptions), flows, hierarchy ancestors, dependencies (with their own hierarchy and effective aspects), and builds an ArtifactRegistry mapping all referenced graph files. Budget status is computed from config thresholds.
+
 **Types:**
 
 - `DependencyAncestorInfo` — `{ path: string; name: string; type: string; aspects: string[]; artifactFilenames: string[] }`

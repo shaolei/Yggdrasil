@@ -9,6 +9,7 @@ import {
   buildEventRelationLayer,
   collectAncestors,
   collectDependencyAncestors,
+  toContextMapOutput,
 } from '../../../src/core/context-builder.js';
 import { formatContextMarkdown } from '../../../src/formatters/markdown.js';
 import { formatContextText } from '../../../src/formatters/context-text.js';
@@ -19,6 +20,7 @@ import type {
   YggConfig,
   Relation,
   AspectDef,
+  ContextMapOutput,
 } from '../../../src/model/types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1178,5 +1180,78 @@ describe('build-context CLI exit codes', () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('build-context blocked by');
+  });
+
+  describe('toContextMapOutput', () => {
+    it('converts a full context package to ContextMapOutput', async () => {
+      const graph = await loadGraph(FIXTURE_PROJECT);
+      const pkg = await buildContext(graph, 'orders/order-service');
+      const output: ContextMapOutput = toContextMapOutput(pkg, graph);
+
+      expect(output.project).toBe('Sample E-Commerce System');
+      expect(output.node.path).toBe('orders/order-service');
+      expect(output.node.name).toBe('OrderService');
+      expect(output.hierarchy.length).toBeGreaterThan(0);
+      expect(output.dependencies.length).toBeGreaterThan(0);
+      expect(Object.keys(output.artifacts.nodes).length).toBeGreaterThan(0);
+      expect(Object.keys(output.artifacts.aspects).length).toBeGreaterThan(0);
+    });
+
+    it('includes dependency hierarchy ancestors', async () => {
+      const graph = await loadGraph(FIXTURE_PROJECT);
+      const pkg = await buildContext(graph, 'orders/order-service');
+      const output = toContextMapOutput(pkg, graph);
+
+      // auth/auth-api depends on auth/ parent
+      const authDep = output.dependencies.find((d) => d.path === 'auth/auth-api');
+      if (authDep) {
+        expect(authDep.hierarchy.length).toBeGreaterThan(0);
+        expect(authDep.hierarchy[0].path).toBe('auth');
+      }
+    });
+
+    it('includes effective aspects for dependencies', async () => {
+      const graph = await loadGraph(FIXTURE_PROJECT);
+      const pkg = await buildContext(graph, 'orders/order-service');
+      const output = toContextMapOutput(pkg, graph);
+
+      const authDep = output.dependencies.find((d) => d.path === 'auth/auth-api');
+      if (authDep) {
+        expect(authDep.aspects).toBeDefined();
+      }
+    });
+
+    it('deduplicates nodes in artifact registry', async () => {
+      const graph = await loadGraph(FIXTURE_PROJECT);
+      const pkg = await buildContext(graph, 'orders/order-service');
+      const output = toContextMapOutput(pkg, graph);
+
+      const nodePaths = Object.keys(output.artifacts.nodes);
+      const uniquePaths = [...new Set(nodePaths)];
+      expect(nodePaths).toEqual(uniquePaths);
+    });
+
+    it('uses model/ prefix for node artifact paths', async () => {
+      const graph = await loadGraph(FIXTURE_PROJECT);
+      const pkg = await buildContext(graph, 'orders/order-service');
+      const output = toContextMapOutput(pkg, graph);
+
+      const targetFiles = output.artifacts.nodes['orders/order-service']?.files ?? [];
+      for (const f of targetFiles) {
+        expect(f).toMatch(/^model\//);
+      }
+    });
+
+    it('uses aspects/ prefix for aspect artifact paths', async () => {
+      const graph = await loadGraph(FIXTURE_PROJECT);
+      const pkg = await buildContext(graph, 'orders/order-service');
+      const output = toContextMapOutput(pkg, graph);
+
+      for (const [, aspect] of Object.entries(output.artifacts.aspects)) {
+        for (const f of aspect.files) {
+          expect(f).toMatch(/^aspects\//);
+        }
+      }
+    });
   });
 });

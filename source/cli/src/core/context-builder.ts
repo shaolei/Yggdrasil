@@ -10,6 +10,12 @@ import type {
   AspectDef,
   FlowDef,
   Relation,
+  ContextMapOutput,
+  ArtifactRegistry,
+  NodeAspectRef,
+  FlowRef,
+  AncestorRef,
+  DependencyRef,
 } from '../model/types.js';
 import { normalizeMappingPaths } from '../utils/paths.js';
 import { estimateTokens } from '../utils/tokens.js';
@@ -391,6 +397,195 @@ export function collectDependencyAncestors(
       artifactFilenames: availableFiles,
     };
   });
+}
+
+export function toContextMapOutput(
+  pkg: ContextPackage,
+  graph: Graph,
+): ContextMapOutput {
+  const node = graph.nodes.get(pkg.nodePath)!;
+  const config = graph.config;
+
+  // Node aspects with anchors/exceptions
+  const nodeAspects: NodeAspectRef[] = (node.meta.aspects ?? []).map((entry) => {
+    const ref: NodeAspectRef = { id: entry.aspect };
+    if (entry.anchors?.length) ref.anchors = entry.anchors;
+    if (entry.exceptions?.length) ref.exceptions = entry.exceptions;
+    return ref;
+  });
+
+  // Node flows
+  const participatingFlows = collectParticipatingFlows(graph, node);
+  const flowRefs: FlowRef[] = participatingFlows.map((f) => {
+    const ref: FlowRef = { path: f.path, name: f.name };
+    if (f.aspects?.length) ref.aspects = f.aspects;
+    return ref;
+  });
+
+  // Hierarchy ancestors
+  const ancestors = collectAncestors(node);
+  const hierarchyRefs: AncestorRef[] = ancestors.map((a) => {
+    const nodeAspectIds = (a.meta.aspects ?? []).map((e) => e.aspect);
+    const expanded = expandAspects(nodeAspectIds, graph.aspects);
+    return { path: a.path, name: a.meta.name, type: a.meta.type, aspects: expanded };
+  });
+
+  // Dependencies — structural + event
+  const ancestorPaths = new Set(ancestors.map((a) => a.path));
+  const depRefs: DependencyRef[] = [];
+  for (const relation of node.meta.relations ?? []) {
+    const target = graph.nodes.get(relation.target);
+    if (!target) continue;
+    if (ancestorPaths.has(relation.target)) continue;
+
+    const depAncestors = collectAncestors(target);
+    const depHierarchy: AncestorRef[] = depAncestors.map((a) => {
+      const ids = (a.meta.aspects ?? []).map((e) => e.aspect);
+      const expanded = expandAspects(ids, graph.aspects);
+      return { path: a.path, name: a.meta.name, type: a.meta.type, aspects: expanded };
+    });
+
+    const depEffectiveAspects = [...collectEffectiveAspectIds(graph, target.path)];
+
+    const ref: DependencyRef = {
+      path: target.path,
+      name: target.meta.name,
+      type: target.meta.type,
+      relation: relation.type,
+      aspects: depEffectiveAspects,
+      hierarchy: depHierarchy,
+    };
+    if (relation.consumes?.length) ref.consumes = relation.consumes;
+    if (relation.failure) ref.failure = relation.failure;
+    if (relation.event_name) ref['event-name'] = relation.event_name;
+    depRefs.push(ref);
+  }
+
+  // Artifact registry
+  const registry = buildArtifactRegistry(node, ancestors, depRefs, graph);
+
+  // Budget
+  const warningThreshold = config.quality?.context_budget?.warning ?? 10000;
+  const errorThreshold = config.quality?.context_budget?.error ?? 20000;
+  const budgetStatus: 'ok' | 'warning' | 'error' =
+    pkg.tokenCount >= errorThreshold ? 'error'
+      : pkg.tokenCount >= warningThreshold ? 'warning'
+        : 'ok';
+
+  return {
+    meta: { tokenCount: pkg.tokenCount, budgetStatus },
+    project: config.name,
+    node: {
+      path: pkg.nodePath,
+      name: pkg.nodeName,
+      type: node.meta.type,
+      mappings: normalizeMappingPaths(node.meta.mapping),
+      aspects: nodeAspects,
+      flows: flowRefs,
+    },
+    hierarchy: hierarchyRefs,
+    dependencies: depRefs,
+    artifacts: registry,
+  };
+}
+
+function buildArtifactRegistry(
+  node: GraphNode,
+  ancestors: GraphNode[],
+  dependencies: DependencyRef[],
+  graph: Graph,
+): ArtifactRegistry {
+  const config = graph.config;
+  const configArtifactKeys = new Set(Object.keys(config.artifacts ?? {}));
+  const structuralFilenames = Object.entries(config.artifacts ?? {})
+    .filter(([, c]) => c.included_in_relations)
+    .map(([filename]) => filename);
+
+  const nodes: Record<string, { files: string[] }> = {};
+  const aspects: Record<string, { name: string; implies?: string[]; files: string[] }> = {};
+  const flows: Record<string, { name: string; aspects?: string[]; files: string[] }> = {};
+
+  function addNodeEntry(n: GraphNode, includeYgNodeYaml: boolean, filter: string[]): void {
+    if (nodes[n.path]) return; // dedup
+    const files: string[] = [];
+    if (includeYgNodeYaml) {
+      files.push(`model/${n.path}/yg-node.yaml`);
+    }
+    for (const filename of filter) {
+      if (n.artifacts.some((a) => a.filename === filename)) {
+        files.push(`model/${n.path}/${filename}`);
+      }
+    }
+    if (files.length > 0) {
+      nodes[n.path] = { files };
+    }
+  }
+
+  // Target node — all config artifacts + yg-node.yaml
+  addNodeEntry(node, true, [...configArtifactKeys]);
+
+  // Hierarchy ancestors — all config artifacts + yg-node.yaml
+  for (const ancestor of ancestors) {
+    addNodeEntry(ancestor, true, [...configArtifactKeys]);
+  }
+
+  // Dependency targets and their ancestors — included_in_relations only, no yg-node.yaml
+  const seenDepAncestors = new Set<string>();
+  for (const dep of dependencies) {
+    const target = graph.nodes.get(dep.path);
+    if (target) {
+      addNodeEntry(target, false, structuralFilenames);
+    }
+    for (const ancestor of dep.hierarchy) {
+      if (seenDepAncestors.has(ancestor.path)) continue;
+      seenDepAncestors.add(ancestor.path);
+      const ancestorNode = graph.nodes.get(ancestor.path);
+      if (ancestorNode) {
+        addNodeEntry(ancestorNode, false, structuralFilenames);
+      }
+    }
+  }
+
+  // Aspects — collect all effective aspects
+  const allAspectIds = collectEffectiveAspectIds(graph, node.path);
+  // Also include aspects from dependencies
+  for (const dep of dependencies) {
+    for (const id of dep.aspects) {
+      allAspectIds.add(id);
+    }
+  }
+  const resolvedAspects = resolveAspects(allAspectIds, graph.aspects);
+  for (const aspect of resolvedAspects) {
+    const files: string[] = [];
+    files.push(`aspects/${aspect.id}/yg-aspect.yaml`);
+    for (const art of aspect.artifacts) {
+      files.push(`aspects/${aspect.id}/${art.filename}`);
+    }
+    const entry: { name: string; implies?: string[]; files: string[] } = {
+      name: aspect.name,
+      files,
+    };
+    if (aspect.implies?.length) entry.implies = aspect.implies;
+    aspects[aspect.id] = entry;
+  }
+
+  // Flows
+  const participatingFlows = collectParticipatingFlows(graph, node);
+  for (const flow of participatingFlows) {
+    const files: string[] = [];
+    files.push(`flows/${flow.path}/yg-flow.yaml`);
+    for (const art of flow.artifacts) {
+      files.push(`flows/${flow.path}/${art.filename}`);
+    }
+    const entry: { name: string; aspects?: string[]; files: string[] } = {
+      name: flow.name,
+      files,
+    };
+    if (flow.aspects?.length) entry.aspects = flow.aspects;
+    flows[flow.path] = entry;
+  }
+
+  return { nodes, aspects, flows };
 }
 
 /** Compute effective aspect ids for a node: own + hierarchy + flow + implies expanded. */
