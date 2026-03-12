@@ -182,6 +182,63 @@ export interface ContextSection {
 }
 
 // ============================================================
+// Context Map (v2 structured output)
+// ============================================================
+
+export interface NodeAspectRef {
+  id: string;
+  anchors?: string[];
+  exceptions?: string[];
+}
+
+export interface FlowRef {
+  path: string;
+  name: string;
+  aspects?: string[];
+}
+
+export interface AncestorRef {
+  path: string;
+  name: string;
+  type: string;
+  aspects: string[];
+}
+
+export interface DependencyRef {
+  path: string;
+  name: string;
+  type: string;
+  relation: string;
+  consumes?: string[];
+  failure?: string;
+  'event-name'?: string;
+  aspects: string[];
+  hierarchy: AncestorRef[];
+}
+
+export interface ContextMapOutput {
+  meta: { tokenCount: number; budgetStatus: 'ok' | 'warning' | 'error' };
+  project: string;
+  node: {
+    path: string;
+    name: string;
+    type: string;
+    mappings: string[];
+    aspects: NodeAspectRef[];
+    flows: FlowRef[];
+  };
+  hierarchy: AncestorRef[];
+  dependencies: DependencyRef[];
+  artifacts: ArtifactRegistry;
+}
+
+export interface ArtifactRegistry {
+  nodes: Record<string, { files: string[] }>;
+  aspects: Record<string, { name: string; implies?: string[]; files: string[] }>;
+  flows: Record<string, { name: string; aspects?: string[]; files: string[] }>;
+}
+
+// ============================================================
 // Dependency Resolution
 // ============================================================
 

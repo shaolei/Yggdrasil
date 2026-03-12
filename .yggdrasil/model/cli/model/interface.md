@@ -12,6 +12,8 @@ Type library — exports TypeScript interfaces and types only. No runtime functi
 
 **Context:** ContextPackage, ContextLayer, ContextSection, ContextSectionKey
 
+**Context Map (v2):** ContextMapOutput, ArtifactRegistry, NodeAspectRef, FlowRef, AncestorRef, DependencyRef
+
 **Dependency resolution:** Stage
 
 **Validation:** ValidationResult, ValidationIssue, IssueSeverity
@@ -55,6 +57,15 @@ Model is a TypeScript type library — it contains no executable code and does n
 - **ContextPackage** — Assembled context: nodePath, nodeName, layers, sections, mapping, tokenCount.
 - **ContextLayer** — Single layer: type (global/hierarchy/own/relational/aspects/flows), label, content, optional attrs.
 - **ContextSection** — Grouped layers by key: Global, Hierarchy, OwnArtifacts, Aspects, Relational.
+
+## Context Map types (v2 structured output)
+
+- **ContextMapOutput** — Top-level structured output for v2 format: meta (tokenCount, budgetStatus), project string, node summary, hierarchy, dependencies, and artifact registry.
+- **ArtifactRegistry** — Index of all artifact files referenced in a context package: nodes, aspects, and flows keyed by path/id with their associated file lists.
+- **NodeAspectRef** — Aspect reference on a node: id, optional anchors, optional exceptions.
+- **FlowRef** — Flow reference: path, name, optional aspects list.
+- **AncestorRef** — Ancestor node reference: path, name, type, aspects list.
+- **DependencyRef** — Dependency reference: path, name, type, relation kind, optional consumes/failure/event-name, aspects list, hierarchy chain.
 
 ## Validation types
 
