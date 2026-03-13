@@ -533,6 +533,28 @@ export function registerImpactCommand(program: Command): void {
             }
           }
 
+          // Collect indirect dependents of descendants
+          const alreadyShown = new Set([nodePath, ...filteredAllDependents, ...descendants, ...eventDependents.map((e) => e.path)]);
+          let descIndirectPaths: string[] = [];
+          if (descendants.length > 0) {
+            const { indirectPaths: rawIndirect, chains: rawChains } = collectIndirectDependents(graph, descendants);
+            const filteredIndirect: string[] = [];
+            const filteredChains: string[] = [];
+            for (let i = 0; i < rawIndirect.length; i++) {
+              if (!alreadyShown.has(rawIndirect[i])) {
+                filteredIndirect.push(rawIndirect[i]);
+                filteredChains.push(rawChains[i]);
+              }
+            }
+            descIndirectPaths = filteredIndirect;
+            if (filteredIndirect.length > 0) {
+              process.stdout.write('\nIndirectly affected (structural dependents of descendants):\n');
+              for (let i = 0; i < filteredIndirect.length; i++) {
+                process.stdout.write(`  ${filteredIndirect[i]}  ${filteredChains[i]}\n`);
+              }
+            }
+          }
+
           process.stdout.write(
             `\nFlows: ${flows.length > 0 ? flows.join(', ') : '(none)'}\n`,
           );
@@ -560,7 +582,7 @@ export function registerImpactCommand(program: Command): void {
             }
           }
 
-          const allAffected = new Set([...filteredAllDependents, ...descendants, ...eventDependents.map((e) => e.path)]);
+          const allAffected = new Set([...filteredAllDependents, ...descendants, ...eventDependents.map((e) => e.path), ...descIndirectPaths]);
           process.stdout.write(
             `\nTotal scope: ${allAffected.size} nodes, ${flows.length} flows, ${aspectsInScope.length} aspects\n`,
           );

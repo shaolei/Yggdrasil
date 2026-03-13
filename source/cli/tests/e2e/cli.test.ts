@@ -381,6 +381,13 @@ describe.skipIf(!distExists)('CLI E2E', () => {
     expect(stdout).toContain('orders');
   });
 
+  it('yg impact --node shows indirect dependents of descendants', () => {
+    const { stdout, status } = run(['impact', '--node', 'orders']);
+    expect(status).toBe(0);
+    expect(stdout).toContain('Indirectly affected');
+    expect(stdout).toContain('checkout/controller');
+  });
+
   // --- validate edge cases ---
 
   it('yg validate --scope limits to node', () => {

@@ -16,10 +16,11 @@
 5. `buildTransitiveChains(node, direct, allDependents, reverse)` — BFS from target, build chains.
 6. Collect event-dependent nodes: scan all nodes for `emits`/`listens` relations targeting the node. Also find listeners for events the target emits (cross-referencing emitted event targets).
 7. `collectDescendants(graph, nodePath)` — recursive children.
-8. `collectEffectiveAspectIds(graph, node)` — own + hierarchy + flow + implies.
-9. Co-aspect nodes: other nodes sharing any effective aspect (exclude self and descendants).
-10. Total scope: union of structural dependents, descendants, and event dependents.
-11. If --simulate: `runSimulation(graph, affectedPaths, projectRoot)`.
+8. `collectIndirectDependents(graph, descendants)` — find structural dependents of descendants not already shown (target, structural dependents, descendants, event dependents). Output as "Indirectly affected (structural dependents of descendants)" section (only if any exist).
+9. `collectEffectiveAspectIds(graph, node)` — own + hierarchy + flow + implies.
+10. Co-aspect nodes: other nodes sharing any effective aspect (exclude self and descendants).
+11. Total scope: union of structural dependents, descendants, event dependents, and indirect dependents of descendants.
+12. If --simulate: `runSimulation(graph, affectedPaths, projectRoot)`.
 
 ## --aspect mode
 
