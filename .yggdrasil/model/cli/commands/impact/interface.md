@@ -9,6 +9,7 @@
 - `collectReverseDependents(graph: Graph, targetNode: GraphNode): { direct, allDependents, reverse }` — builds reverse dependency map from structural relations.
 - `buildTransitiveChains(targetNode, direct, allDependents, reverse): string[][]` — BFS chains excluding target.
 - `collectDescendants(graph: Graph, nodePath: string): string[]` — hierarchy children recursively.
+- `collectIndirectDependents(graph: Graph, directlyAffected: string[]): { indirectPaths: string[]; chains: string[] }` — given a set of directly affected nodes, finds all structural reverse dependents not already in that set. Builds the reverse adjacency map once, then BFS per affected node. When the same node is reachable via multiple affected nodes, keeps the shortest chain. Chain format: `<- indirect <- intermediary <- affected`. Ignores event relations (emits/listens).
 
 **Return:** void for registerImpactCommand. Contract: errors to stderr, process.exit(1) on failure.
 

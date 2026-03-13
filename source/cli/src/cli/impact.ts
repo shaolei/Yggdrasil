@@ -106,6 +106,66 @@ export function collectDescendants(graph: Graph, nodePath: string): string[] {
   return result.sort();
 }
 
+export function collectIndirectDependents(
+  graph: Graph,
+  directlyAffected: string[],
+): { indirectPaths: string[]; chains: string[] } {
+  const directSet = new Set(directlyAffected);
+
+  // Build reverse adjacency map once
+  const reverse = new Map<string, Set<string>>();
+  for (const [nodePath, node] of graph.nodes) {
+    for (const rel of node.meta.relations ?? []) {
+      if (!STRUCTURAL_TYPES.has(rel.type)) continue;
+      const deps = reverse.get(rel.target) ?? new Set<string>();
+      deps.add(nodePath);
+      reverse.set(rel.target, deps);
+    }
+  }
+
+  // For each affected node, BFS to find reverse dependents and build chains
+  const bestChain = new Map<string, { chain: string; depth: number }>();
+
+  for (const affected of directlyAffected) {
+    const parent = new Map<string, string>();
+    const queue = [affected];
+    const visited = new Set([affected]);
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      for (const next of reverse.get(current) ?? []) {
+        if (visited.has(next)) continue;
+        visited.add(next);
+        parent.set(next, current);
+        queue.push(next);
+      }
+    }
+
+    for (const [node] of parent) {
+      if (directSet.has(node)) continue;
+
+      // Trace path from node back to affected
+      const path: string[] = [node];
+      let current = node;
+      while (parent.has(current)) {
+        current = parent.get(current)!;
+        path.push(current);
+      }
+
+      const chain = path.map((p) => `<- ${p}`).join(' ');
+      const depth = path.length;
+
+      const existing = bestChain.get(node);
+      if (!existing || depth < existing.depth) {
+        bestChain.set(node, { chain, depth });
+      }
+    }
+  }
+
+  const indirectPaths = [...bestChain.keys()].sort();
+  const chains = indirectPaths.map((p) => bestChain.get(p)!.chain);
+  return { indirectPaths, chains };
+}
+
 async function runSimulation(
   graph: Graph,
   nodePaths: Iterable<string>,
