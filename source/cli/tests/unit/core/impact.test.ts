@@ -486,7 +486,7 @@ describe('collectIndirectDependents', () => {
     expect(cChain.split(' <- ').length).toBe(2);
   });
 
-  it('ignores event relations (emits/listens)', () => {
+  it('follows event relations (emits/listens)', () => {
     const a = makeNode('a');
     const b = makeNode('b', {
       meta: {
@@ -497,6 +497,7 @@ describe('collectIndirectDependents', () => {
     });
     const graph = makeGraph([a, b]);
     const result = collectIndirectDependents(graph, ['a']);
-    expect(result.indirectPaths).toEqual([]);
+    expect(result.indirectPaths).toEqual(['b']);
+    expect(result.chains).toEqual(['<- b <- a']);
   });
 });

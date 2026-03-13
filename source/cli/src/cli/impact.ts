@@ -112,11 +112,11 @@ export function collectIndirectDependents(
 ): { indirectPaths: string[]; chains: string[] } {
   const directSet = new Set(directlyAffected);
 
-  // Build reverse adjacency map once
+  // Build reverse adjacency map once (structural + event relations)
   const reverse = new Map<string, Set<string>>();
   for (const [nodePath, node] of graph.nodes) {
     for (const rel of node.meta.relations ?? []) {
-      if (!STRUCTURAL_TYPES.has(rel.type)) continue;
+      if (!STRUCTURAL_TYPES.has(rel.type) && rel.type !== 'emits' && rel.type !== 'listens') continue;
       const deps = reverse.get(rel.target) ?? new Set<string>();
       deps.add(nodePath);
       reverse.set(rel.target, deps);
