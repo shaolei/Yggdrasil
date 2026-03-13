@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-03-13
+
+### Fixed
+
+- **Agent rules: knowledge preservation under budget pressure.** W005 warning message
+  reworded from "Consider splitting the node or reducing dependencies" to explicitly
+  prohibit deleting knowledge from artifacts. Error Recovery gains W005 handling with
+  concrete split procedure. New failure state: deleting artifact content to reduce
+  context size.
+
 ## [2.4.0] - 2026-03-13
 
 ### Changed

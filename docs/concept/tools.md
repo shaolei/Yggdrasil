@@ -982,7 +982,7 @@ W001 orders/order-service -> missing artifact 'interface'.
      subscriptions/billing-service. Define the public API in interface.md.
 
 W005 orders/order-service -> context package: ~11800 tokens (threshold: 10000).
-     Consider splitting the node or reducing dependencies.
+     Split the node into smaller units — do not delete knowledge from artifacts to reduce size.
 ```
 
 Messages are **contextual and actionable** — not just "error", but what is wrong,

@@ -106,6 +106,7 @@ You have broken Yggdrasil if you do any of the following:
 - ❌ Placed a cross-cutting requirement in a local artifact instead of an aspect, or used an aspect id with no `aspects/` directory.
 - ❌ Invented a rationale, business rule, or decision — or recorded a decision without documenting rejected alternatives and rationale (use "rationale: unknown" if unknown).
 - ❌ Used blackbox coverage for greenfield (new) code.
+- ❌ Deleted or shortened graph artifact content to reduce context package size instead of splitting the node.
 
 ### Escape Hatch
 
@@ -297,6 +298,7 @@ When reviewing graph quality (triggered by user or quality improvement):
 - **`yg` not found** → inform user: "yg CLI is not installed or not in PATH." Stop.
 - **Unfixable validate errors** → if not resolved after 3 attempts, stop and report to user. Do not loop.
 - **Budget exceeded** → if `yg build-context` exits with error (context package exceeds budget), warn user: "This node should be split." Do not proceed with implementation.
+- **Budget warning (W005)** → if `yg validate` shows W005 (context near budget), the node needs splitting. NEVER delete knowledge from artifacts to reduce token count — knowledge destroyed is irrecoverable. Instead: identify a cohesive subset of the node's responsibilities, propose a split to the user, create child nodes, and redistribute artifacts. The total knowledge must be preserved or increased, never reduced.
 - **Corrupted `.yggdrasil/` files** → report to user. Do not attempt repair.
 - **Incremental sync** → run `yg drift-sync` every 3-5 source files during multi-file tasks. Do not defer to end.
 

@@ -902,7 +902,7 @@ async function checkContextBudget(graph: Graph): Promise<ValidationIssue[]> {
           severity: 'warning',
           code: 'W005',
           rule: 'budget-warning',
-          message: `Context is ${pkg.tokenCount.toLocaleString()} tokens (warning threshold: ${warningThreshold.toLocaleString()}). Consider splitting the node or reducing dependencies.`,
+          message: `Context is ${pkg.tokenCount.toLocaleString()} tokens (warning threshold: ${warningThreshold.toLocaleString()}). Split the node into smaller units — do not delete knowledge from artifacts to reduce size.`,
           nodePath,
         });
       }
