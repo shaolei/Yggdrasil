@@ -435,7 +435,7 @@ export function toContextMapOutput(
   const depRefs: DependencyRef[] = [];
   for (const relation of node.meta.relations ?? []) {
     const target = graph.nodes.get(relation.target);
-    if (!target) continue;
+    if (!target) continue; // buildContext validates relations; skip if somehow missing
     if (ancestorPaths.has(relation.target)) continue;
 
     const depAncestors = collectAncestors(target);
