@@ -35,6 +35,18 @@ When building aspect layers, the builder looks up each resolved aspect in `node.
 
 `buildAspectLayer` also includes aspect metadata in the output when present: stability tier (from `aspect.stability`) as a "Stability tier" line. This appears after the artifact content and before the exception note. Code anchors live in `yg-node.yaml` embedded in aspect entries (`anchors` field) and are validated by `cli/core/validator` (W014) rather than included in context output.
 
+## Budget Breakdown Computation
+
+`computeBudgetBreakdown` categorizes tokens from `pkg.layers` by layer type:
+
+- `own` — layers with type `'own'`
+- `hierarchy` — layers with type `'hierarchy'`
+- `aspects` — layers with type `'aspects'`
+- `flows` — layers with type `'flows'`
+- `dependencies` — layers with type `'relational'` (structural + event relations)
+
+Each layer's content is measured via `estimateTokens`. Additionally, dependency ancestor artifacts are included in the `dependencies` category: for each structural relation, `collectDependencyAncestors` provides ancestor nodes with their artifact filenames, and the function reads those artifact files and adds their token cost. The `global` layer is not categorized separately — it contributes negligible tokens. The `total` field is the sum of all categories.
+
 ## Constraints
 
 # Context Builder Constraints
@@ -54,3 +66,5 @@ When building aspect layers, the builder looks up each resolved aspect in `node.
 **included_in_relations flag gates relational inclusion:** Without this flag, every dependency would include all its artifacts in the consuming node's context, causing excessive token usage. The flag allows yg-config.yaml to declare which artifacts (e.g., interface.md, errors.md) carry the integration-relevant information. Only those are included for structural relations. If no structural artifacts exist on the target, all configured artifacts are included as fallback.
 
 **toContextMapOutput bridges layers to structured data:** Converts a ContextPackage (layer-based, text-oriented) into a ContextMapOutput (structured data with an artifact registry). The registry maps all referenced files (nodes, aspects, flows) with `model/`, `aspects/`, and `flows/` path prefixes. Dependency nodes get only `included_in_relations` artifacts (no yg-node.yaml), while the target node and its ancestors get all config artifacts plus yg-node.yaml. The function also computes budget status from config thresholds. This design separates context assembly (buildContext) from output formatting (toContextMapOutput + formatters).
+
+**computeBudgetBreakdown uses raw layers, not artifact registry:** Chose to compute breakdown directly from ContextPackage layers + collectDependencyAncestors over reusing the artifact registry from toContextMapOutput. This avoids a circular dependency — the validator needs breakdown data but should not call toContextMapOutput (which is an output formatter). Operating on raw layers is also more performant since it skips the full structured conversion. Trade-off: dependency ancestor costs are computed independently from toContextMapOutput's ancestor logic, but both use the same collectDependencyAncestors function so results are consistent.

@@ -307,8 +307,8 @@ When reviewing graph quality (triggered by user or quality improvement):
 
 - **\`yg\` not found** → inform user: "yg CLI is not installed or not in PATH." Stop.
 - **Unfixable validate errors** → if not resolved after 3 attempts, stop and report to user. Do not loop.
-- **Budget exceeded** → if \`yg build-context\` exits with error (context package exceeds budget), warn user: "This node should be split." Do not proceed with implementation.
-- **Budget warning (W005)** → if \`yg validate\` shows W005 (context near budget), the node needs splitting. NEVER delete knowledge from artifacts to reduce token count — knowledge destroyed is irrecoverable. Instead: identify a cohesive subset of the node's responsibilities, propose a split to the user, create child nodes, and redistribute artifacts. The total knowledge must be preserved or increased, never reduced.
+- **Budget warning (W005/W006)** → informational. \`yg validate\` shows a breakdown (own/hierarchy/aspects/flows/dependencies). Large inherited context means the system is complex — this is not a problem to fix, it is reality to acknowledge. Do not delete knowledge from artifacts. Do not attempt to "reduce" inherited context.
+- **Own budget warning (W015)** → own artifacts are large. Consider splitting this node's responsibilities into child nodes. Redistribute knowledge across children so total knowledge is preserved or increased, never reduced.
 - **Corrupted \`.yggdrasil/\` files** → report to user. Do not attempt repair.
 - **Incremental sync** → run \`yg drift-sync\` every 3-5 source files during multi-file tasks. Do not defer to end.`;
 

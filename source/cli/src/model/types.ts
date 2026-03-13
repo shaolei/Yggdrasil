@@ -25,7 +25,7 @@ export interface ArtifactConfig {
 export interface QualityConfig {
   min_artifact_length: number;
   max_direct_relations: number;
-  context_budget: { warning: number; error: number };
+  context_budget: { warning: number; error: number; own_warning?: number };
 }
 
 // ============================================================
@@ -216,8 +216,17 @@ export interface DependencyRef {
   hierarchy: AncestorRef[];
 }
 
+export interface BudgetBreakdown {
+  own: number;
+  hierarchy: number;
+  aspects: number;
+  flows: number;
+  dependencies: number;
+  total: number;
+}
+
 export interface ContextMapOutput {
-  meta: { tokenCount: number; budgetStatus: 'ok' | 'warning' | 'error' };
+  meta: { tokenCount: number; budgetStatus: 'ok' | 'warning' | 'severe'; breakdown: BudgetBreakdown };
   project: string;
   node: {
     path: string;

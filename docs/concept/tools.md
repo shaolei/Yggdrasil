@@ -57,6 +57,7 @@ quality: # map, optional (has default values) — all keys snake_case
   context_budget:
     warning: 10000 # int, default 10000 (tokens)
     error: 20000 # int, default 20000 (tokens)
+    own_warning: 5000 # int, optional (tokens) — warn when own artifacts alone exceed this
 ```
 
 **Artifact requirement conditions:**
@@ -410,6 +411,7 @@ quality:
   context_budget:
     warning: 10000
     error: 20000
+    # own_warning: 5000  # optional — warn when own artifacts alone exceed this
 ```
 
 The agent fills in `name` after initialization.
@@ -456,7 +458,7 @@ Token estimation: ~4 characters per token (heuristic from the [Engine](engine) d
 
 YAML with structural map and artifact paths (default) or artifact content (`--full`), as
 defined in the [Engine](engine) document (Context package format section). Includes token count
-and budget status (`ok`, `warning`, `error`).
+and budget status (`ok`, `warning`, `severe`).
 
 **Errors:**
 
@@ -961,7 +963,7 @@ Two levels of severity defined in the [Engine](engine) document.
 | `W001` | `missing-artifact`      | Missing required artifact                                                           |
 | `W002` | `shallow-artifact`      | Artifact below minimum length                                                       |
 | `W005` | `budget-warning`        | Context package exceeds warning threshold                                           |
-| `W006` | `budget-error`          | Context package exceeds error threshold (blocks materialization); severity: warning |
+| `W006` | `budget-error`          | Context package exceeds error threshold; severity: warning                          |
 | `W007` | `high-fan-out`          | Node exceeds maximum number of relations                                            |
 | `W009` | `unpaired-event`        | Event relation without complement on the other side                                 |
 | `W010` | `missing-schema`        | Required schema (node, aspect, flow) missing from `.yggdrasil/schemas/`            |
@@ -969,6 +971,7 @@ Two levels of severity defined in the [Engine](engine) document.
 | `W012` | `mapping-path-missing`             | Mapping path in `yg-node.yaml` does not exist on disk — catches typos and stale mappings             |
 | `W013` | `directory-without-node`           | Directory in `model/` has only subdirectories but no `yg-node.yaml` — bare intermediate directory    |
 | `W014` | `anchor-not-found`                 | Anchor string for aspect not found in node's mapped source files                                  |
+| `W015` | `own-budget-warning`               | Own artifacts exceed threshold                                                                    |
 
 **Message format:**
 
@@ -981,8 +984,9 @@ W001 orders/order-service -> missing artifact 'interface'.
      Node has 3 incoming relations: auth/login-service, checkout/controller,
      subscriptions/billing-service. Define the public API in interface.md.
 
-W005 orders/order-service -> context package: ~11800 tokens (threshold: 10000).
-     Split the node into smaller units — do not delete knowledge from artifacts to reduce size.
+W005 orders/order-service -> context: ~15,200 tokens (warning: 10,000)
+     own: 3,100 (20%) | hierarchy: 4,800 (32%) | aspects: 4,200 (28%) |
+     flows: 1,600 (10%) | dependencies: 1,500 (10%)
 ```
 
 Messages are **contextual and actionable** — not just "error", but what is wrong,

@@ -18,12 +18,17 @@
 - `collectAncestors(node: GraphNode): GraphNode[]` — returns ancestors from parent chain.
 - `collectDependencyAncestors(target: GraphNode, config: YggConfig, graph: Graph): DependencyAncestorInfo[]` — returns ancestor chain for a dependency target node. Each entry includes path, name, type, aspects (own aspects expanded via `implies` only — not effective aspects), and artifactFilenames (filtered by `included_in_relations`, falling back to all config artifacts). Used by context-map output to provide hierarchy context for dependency targets.
 
+**Budget analysis:**
+
+- `computeBudgetBreakdown(pkg: ContextPackage, graph: Graph): BudgetBreakdown` — computes per-category token breakdown from a ContextPackage. Categories: own (own layer), hierarchy (hierarchy layers), aspects (aspect layers), flows (flow layers), dependencies (structural + event relation layers plus dependency ancestor artifacts). Returns totals for each category and a grand total.
+
 **Structured output converter:**
 
-- `toContextMapOutput(pkg: ContextPackage, graph: Graph): ContextMapOutput` — converts a layers-based ContextPackage into the structured ContextMapOutput format. Extracts node aspects (with anchors/exceptions), flows, hierarchy ancestors, dependencies (with their own hierarchy and effective aspects), and builds an ArtifactRegistry mapping all referenced graph files. Budget status is computed from config thresholds.
+- `toContextMapOutput(pkg: ContextPackage, graph: Graph): ContextMapOutput` — converts a layers-based ContextPackage into the structured ContextMapOutput format. Extracts node aspects (with anchors/exceptions), flows, hierarchy ancestors, dependencies (with their own hierarchy and effective aspects), and builds an ArtifactRegistry mapping all referenced graph files. Budget status uses `'severe'` (not `'error'`) for over-budget. Includes `breakdown: BudgetBreakdown` in meta via `computeBudgetBreakdown`.
 
 **Types:**
 
+- `BudgetBreakdown` — `{ own: number; hierarchy: number; aspects: number; flows: number; dependencies: number; total: number }` — per-category token counts for a context package.
 - `DependencyAncestorInfo` — `{ path: string; name: string; type: string; aspects: string[]; artifactFilenames: string[] }`
 
 **Constants (internal):** `STRUCTURAL_RELATION_TYPES`, `EVENT_RELATION_TYPES`.

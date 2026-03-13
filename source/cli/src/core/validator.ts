@@ -1,7 +1,7 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import type { Graph, ValidationResult, ValidationIssue, ArtifactConfig, NodeAspectEntry } from '../model/types.js';
-import { buildContext, resolveAspects } from './context-builder.js';
+import { buildContext, computeBudgetBreakdown, resolveAspects } from './context-builder.js';
 import { normalizeMappingPaths } from '../utils/paths.js';
 
 /** Extract flat aspect id list from unified aspect entries */
@@ -878,37 +878,63 @@ async function checkAnchorPresence(graph: Graph): Promise<ValidationIssue[]> {
   return issues;
 }
 
-// --- Context budget (W005 warning, W006 error) ---
+// --- Context budget (W005 warning, W006 error, W015 own-budget) ---
 
 async function checkContextBudget(graph: Graph): Promise<ValidationIssue[]> {
   const issues: ValidationIssue[] = [];
-  const warningThreshold = graph.config.quality?.context_budget.warning ?? 10000;
-  const errorThreshold = graph.config.quality?.context_budget.error ?? 20000;
+  const budget = graph.config.quality?.context_budget ?? { warning: 10000, error: 20000 };
+  const warningThreshold = budget.warning;
+  const errorThreshold = budget.error;
+  const ownWarningThreshold = budget.own_warning;
 
-  for (const [nodePath, node] of graph.nodes) {
+  for (const [nodePath] of graph.nodes) {
+    const node = graph.nodes.get(nodePath)!;
     if (node.meta.blackbox) continue;
     try {
       const pkg = await buildContext(graph, nodePath);
-      if (pkg.tokenCount >= errorThreshold) {
+      const breakdown = computeBudgetBreakdown(pkg, graph);
+      const breakdownLine =
+        `own: ${breakdown.own.toLocaleString()} (${pct(breakdown.own, breakdown.total)}) | ` +
+        `hierarchy: ${breakdown.hierarchy.toLocaleString()} (${pct(breakdown.hierarchy, breakdown.total)}) | ` +
+        `aspects: ${breakdown.aspects.toLocaleString()} (${pct(breakdown.aspects, breakdown.total)}) | ` +
+        `flows: ${breakdown.flows.toLocaleString()} (${pct(breakdown.flows, breakdown.total)}) | ` +
+        `dependencies: ${breakdown.dependencies.toLocaleString()} (${pct(breakdown.dependencies, breakdown.total)})`;
+
+      if (breakdown.total >= errorThreshold) {
         issues.push({
           severity: 'warning',
           code: 'W006',
           rule: 'budget-error',
-          message: `Context is ${pkg.tokenCount.toLocaleString()} tokens (error threshold: ${errorThreshold.toLocaleString()}) — blocks materialization, node must be split`,
+          message: `Context is ${breakdown.total.toLocaleString()} tokens (error threshold: ${errorThreshold.toLocaleString()}).\n     ${breakdownLine}`,
           nodePath,
         });
-      } else if (pkg.tokenCount >= warningThreshold) {
+      } else if (breakdown.total >= warningThreshold) {
         issues.push({
           severity: 'warning',
           code: 'W005',
           rule: 'budget-warning',
-          message: `Context is ${pkg.tokenCount.toLocaleString()} tokens (warning threshold: ${warningThreshold.toLocaleString()}). Split the node into smaller units — do not delete knowledge from artifacts to reduce size.`,
+          message: `Context is ${breakdown.total.toLocaleString()} tokens (warning threshold: ${warningThreshold.toLocaleString()}).\n     ${breakdownLine}`,
+          nodePath,
+        });
+      }
+
+      if (ownWarningThreshold !== undefined && breakdown.own >= ownWarningThreshold) {
+        issues.push({
+          severity: 'warning',
+          code: 'W015',
+          rule: 'own-budget-warning',
+          message: `Own artifacts: ${breakdown.own.toLocaleString()} tokens (threshold: ${ownWarningThreshold.toLocaleString()}). Consider splitting this node's responsibilities into child nodes.`,
           nodePath,
         });
       }
     } catch {
-      // If context building fails, other rules will catch it
+      // buildContext may fail for structurally broken nodes — other rules catch those.
     }
   }
   return issues;
+}
+
+function pct(value: number, total: number): string {
+  if (total === 0) return '0%';
+  return `${Math.round((value / total) * 100)}%`;
 }

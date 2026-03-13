@@ -260,11 +260,20 @@ Configuration defines budget thresholds:
 
 - **Warning threshold** (default 10,000 tokens) — package is growing; the node likely has too
   many responsibilities or dependencies.
-- **Error threshold** (default 20,000 tokens) — package is too large for reliable
-  materialization; the node must be split.
+- **Error threshold** (default 20,000 tokens) — package is large; the node should be split.
+  The error threshold no longer blocks — `budgetStatus` is `'severe'` instead of `'error'`,
+  and the context package is always output.
+- **Own-artifact warning** (`own_warning`, optional) — fires when the node's own artifacts
+  alone exceed this threshold (W015). This is the most actionable budget signal because own
+  artifacts are the only part the node author controls directly.
 
 Tools estimate tokens using the heuristic of 4 characters per token. This is accurate enough
-for budget monitoring, though not precise per-model.
+for budget monitoring, though not precise per-model. Token counting includes the full
+dependency hierarchy cost — each dependency's ancestor chain contributes to the total.
+
+The context package meta section includes a `budget-breakdown` with per-category token counts
+and percentages (own, hierarchy, aspects, flows, dependencies), giving agents diagnostic
+visibility into what drives package size.
 
 Context package size is a **measurable quality indicator**. A package exceeding the budget
 is the same signal as a class with 2,000 lines in traditional engineering: too many
@@ -313,9 +322,11 @@ Warnings flag quality issues that don't break the graph but reduce context packa
 **Shallow content**: artifacts that exist but are shorter than the configured minimum length.
 
 **Context budget**: a complex context package exceeding the configured warning threshold.
-Exceeding the error threshold (W006 budget-error) causes the CLI to emit a warning on stderr.
-The context package is still output — the agent should warn the user about the risk and
-recommend splitting the node.
+W005 and W006 include a diagnostic breakdown (own/hierarchy/aspects/flows/dependencies) with
+percentages. Exceeding the error threshold (W006) sets `budgetStatus` to `'severe'` and emits
+a warning on stderr. The context package is still output — the agent should warn the user
+about the risk and recommend splitting the node. W015 fires when own artifacts alone exceed the
+`own_warning` threshold — the most actionable budget signal.
 
 **High fan-out**: a node whose direct relation count exceeds the configured maximum — a signal
 of excessive coupling.

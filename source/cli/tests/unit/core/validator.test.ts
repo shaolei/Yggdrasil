@@ -441,12 +441,19 @@ describe('validator', () => {
     expect(flowRules).toHaveLength(0);
   });
 
-  it('budget-warning returns warning when over warning threshold', async () => {
+  it('budget-warning returns warning when over warning threshold with breakdown', async () => {
     const { buildContext } = await import('../../../src/core/context-builder.js');
+    // 12000 tokens = 48000 chars of content in layers
     vi.mocked(buildContext).mockResolvedValue({
       nodePath: 'a',
       nodeName: 'A',
-      layers: [],
+      layers: [
+        { type: 'own', label: 'Own', content: 'x'.repeat(20000) },
+        { type: 'hierarchy', label: 'Hierarchy', content: 'x'.repeat(12000) },
+        { type: 'aspects', label: 'Aspects', content: 'x'.repeat(8000) },
+        { type: 'flows', label: 'Flows', content: 'x'.repeat(4000) },
+        { type: 'relational', label: 'Deps', content: 'x'.repeat(4000) },
+      ],
       mapping: null,
       tokenCount: 12000,
     } as Awaited<ReturnType<typeof buildContext>>);
@@ -458,14 +465,27 @@ describe('validator', () => {
     const issues = result.issues.filter((i) => i.rule === 'budget-warning');
     expect(issues).toHaveLength(1);
     expect(issues[0].severity).toBe('warning');
+    expect(issues[0].code).toBe('W005');
+    // Verify breakdown components in message
+    expect(issues[0].message).toContain('own:');
+    expect(issues[0].message).toContain('hierarchy:');
+    expect(issues[0].message).toContain('aspects:');
+    expect(issues[0].message).toContain('flows:');
+    expect(issues[0].message).toContain('dependencies:');
   });
 
-  it('budget-error returns warning when over error threshold', async () => {
+  it('budget-error returns warning when over error threshold with breakdown', async () => {
     const { buildContext } = await import('../../../src/core/context-builder.js');
     vi.mocked(buildContext).mockResolvedValue({
       nodePath: 'a',
       nodeName: 'A',
-      layers: [],
+      layers: [
+        { type: 'own', label: 'Own', content: 'x'.repeat(80000) },
+        { type: 'hierarchy', label: 'Hierarchy', content: 'x'.repeat(12000) },
+        { type: 'aspects', label: 'Aspects', content: 'x'.repeat(4000) },
+        { type: 'flows', label: 'Flows', content: 'x'.repeat(2000) },
+        { type: 'relational', label: 'Deps', content: 'x'.repeat(2000) },
+      ],
       mapping: null,
       tokenCount: 25000,
     } as Awaited<ReturnType<typeof buildContext>>);
@@ -477,6 +497,69 @@ describe('validator', () => {
     const issues = result.issues.filter((i) => i.rule === 'budget-error');
     expect(issues).toHaveLength(1);
     expect(issues[0].code).toBe('W006');
+    expect(issues[0].severity).toBe('warning');
+    // Verify breakdown components in message
+    expect(issues[0].message).toContain('own:');
+    expect(issues[0].message).toContain('hierarchy:');
+    expect(issues[0].message).toContain('aspects:');
+    expect(issues[0].message).toContain('flows:');
+    expect(issues[0].message).toContain('dependencies:');
+    // Should NOT contain "blocks materialization"
+    expect(issues[0].message).not.toContain('blocks materialization');
+  });
+
+  it('W015 own-budget-warning fires when own artifacts exceed own_warning threshold', async () => {
+    const { buildContext } = await import('../../../src/core/context-builder.js');
+    // own layer needs >= 5000 tokens => 20000 chars
+    vi.mocked(buildContext).mockResolvedValue({
+      nodePath: 'a',
+      nodeName: 'A',
+      layers: [
+        { type: 'own', label: 'Own', content: 'x'.repeat(24000) },
+      ],
+      mapping: null,
+      tokenCount: 6000,
+    } as Awaited<ReturnType<typeof buildContext>>);
+
+    const graph = createGraph();
+    graph.config.quality = {
+      min_artifact_length: 50,
+      max_direct_relations: 10,
+      context_budget: { warning: 10000, error: 20000, own_warning: 5000 },
+    };
+    graph.nodes.set('a', createNode('a'));
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'own-budget-warning');
+    expect(issues).toHaveLength(1);
+    expect(issues[0].code).toBe('W015');
+    expect(issues[0].severity).toBe('warning');
+    expect(issues[0].nodePath).toBe('a');
+  });
+
+  it('W015 not emitted when own_warning absent from config', async () => {
+    const { buildContext } = await import('../../../src/core/context-builder.js');
+    vi.mocked(buildContext).mockResolvedValue({
+      nodePath: 'a',
+      nodeName: 'A',
+      layers: [
+        { type: 'own', label: 'Own', content: 'x'.repeat(24000) },
+      ],
+      mapping: null,
+      tokenCount: 6000,
+    } as Awaited<ReturnType<typeof buildContext>>);
+
+    const graph = createGraph();
+    graph.config.quality = {
+      min_artifact_length: 50,
+      max_direct_relations: 10,
+      context_budget: { warning: 10000, error: 20000 },
+    };
+    graph.nodes.set('a', createNode('a'));
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'own-budget-warning');
+    expect(issues).toHaveLength(0);
   });
 
   it('context-budget catches buildContext errors and continues', async () => {

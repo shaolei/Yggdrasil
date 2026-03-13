@@ -16,6 +16,7 @@ import type {
   FlowRef,
   AncestorRef,
   DependencyRef,
+  BudgetBreakdown,
 } from '../model/types.js';
 import { normalizeMappingPaths } from '../utils/paths.js';
 import { estimateTokens } from '../utils/tokens.js';
@@ -399,6 +400,66 @@ export function collectDependencyAncestors(
   });
 }
 
+export function computeBudgetBreakdown(
+  pkg: ContextPackage,
+  graph: Graph,
+): BudgetBreakdown {
+  let own = 0;
+  let hierarchy = 0;
+  let aspects = 0;
+  let flows = 0;
+  let relational = 0;
+
+  for (const layer of pkg.layers) {
+    const tokens = estimateTokens(layer.content);
+    switch (layer.type) {
+      case 'global':
+      case 'own':
+        own += tokens;
+        break;
+      case 'hierarchy':
+        hierarchy += tokens;
+        break;
+      case 'aspects':
+        aspects += tokens;
+        break;
+      case 'flows':
+        flows += tokens;
+        break;
+      case 'relational':
+        relational += tokens;
+        break;
+    }
+  }
+
+  // Add dependency ancestor artifact costs (not in raw layers)
+  let depAncestorTokens = 0;
+  const node = graph.nodes.get(pkg.nodePath);
+  if (node) {
+    const ancestorPaths = new Set(collectAncestors(node).map((a) => a.path));
+    for (const relation of node.meta.relations ?? []) {
+      const target = graph.nodes.get(relation.target);
+      if (!target || ancestorPaths.has(relation.target)) continue;
+      const depAncestors = collectDependencyAncestors(target, graph.config, graph);
+      for (const anc of depAncestors) {
+        const ancNode = graph.nodes.get(anc.path);
+        if (!ancNode) continue;
+        for (const filename of anc.artifactFilenames) {
+          const art = ancNode.artifacts.find((a) => a.filename === filename);
+          if (art) {
+            depAncestorTokens += estimateTokens(art.content);
+          }
+        }
+      }
+    }
+  }
+
+  const dependencies = relational + depAncestorTokens;
+  const total = own + hierarchy + aspects + flows + dependencies;
+
+  return { own, hierarchy, aspects, flows, dependencies, total };
+}
+
 export function toContextMapOutput(
   pkg: ContextPackage,
   graph: Graph,
@@ -465,15 +526,16 @@ export function toContextMapOutput(
   const registry = buildArtifactRegistry(node, ancestors, depRefs, graph);
 
   // Budget
+  const breakdown = computeBudgetBreakdown(pkg, graph);
   const warningThreshold = config.quality?.context_budget?.warning ?? 10000;
   const errorThreshold = config.quality?.context_budget?.error ?? 20000;
-  const budgetStatus: 'ok' | 'warning' | 'error' =
-    pkg.tokenCount >= errorThreshold ? 'error'
-      : pkg.tokenCount >= warningThreshold ? 'warning'
+  const budgetStatus: 'ok' | 'warning' | 'severe' =
+    breakdown.total >= errorThreshold ? 'severe'
+      : breakdown.total >= warningThreshold ? 'warning'
         : 'ok';
 
   return {
-    meta: { tokenCount: pkg.tokenCount, budgetStatus },
+    meta: { tokenCount: breakdown.total, budgetStatus, breakdown },
     project: config.name,
     node: {
       path: pkg.nodePath,

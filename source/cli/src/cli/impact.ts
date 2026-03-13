@@ -5,6 +5,7 @@ import {
   buildContext,
   collectAncestors,
   collectEffectiveAspectIds,
+  computeBudgetBreakdown,
 } from '../core/context-builder.js';
 import { detectDrift } from '../core/drift-detector.js';
 import type { Graph } from '../model/types.js';
@@ -180,10 +181,11 @@ async function runSimulation(
   for (const dep of nodePaths) {
     try {
       const pkg = await buildContext(graph, dep);
+      const breakdown = computeBudgetBreakdown(pkg, graph);
       const status =
-        pkg.tokenCount >= budget.error
-          ? 'error'
-          : pkg.tokenCount >= budget.warning
+        breakdown.total >= budget.error
+          ? 'severe'
+          : breakdown.total >= budget.warning
             ? 'warning'
             : 'ok';
 
@@ -210,8 +212,8 @@ async function runSimulation(
 
       const budgetLine =
         baselineTokens !== null
-          ? `  Budget: ${baselineTokens} -> ${pkg.tokenCount} tokens (${status})\n`
-          : `  Budget: ${pkg.tokenCount} tokens (${status})\n`;
+          ? `  Budget: ${baselineTokens} -> ${breakdown.total} tokens (${status})\n`
+          : `  Budget: ${breakdown.total} tokens (${status})\n`;
 
       const driftEntry = driftByNode.get(dep);
       const driftLine =

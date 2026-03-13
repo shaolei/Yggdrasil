@@ -12,6 +12,7 @@ import {
   collectAncestors,
   collectDependencyAncestors,
   collectEffectiveAspectIds,
+  computeBudgetBreakdown,
   toContextMapOutput,
 } from '../../../src/core/context-builder.js';
 import { formatContextMarkdown } from '../../../src/formatters/markdown.js';
@@ -23,6 +24,7 @@ import type {
   Relation,
   AspectDef,
   ContextMapOutput,
+  ContextPackage,
 } from '../../../src/model/types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1296,7 +1298,64 @@ describe('toContextMapOutput', () => {
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
-    expect(output.meta.budgetStatus).toBe('error');
+    expect(output.meta.budgetStatus).toBe('severe');
+  });
+
+  it('computeBudgetBreakdown categorizes layers correctly', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    const pkg: ContextPackage = {
+      nodePath: 'orders/order-service',
+      nodeName: 'OrderService',
+      layers: [
+        { type: 'global', label: 'Global', content: 'x'.repeat(400) },
+        { type: 'own', label: 'Own', content: 'x'.repeat(800) },
+        { type: 'hierarchy', label: 'Hierarchy', content: 'x'.repeat(1200) },
+        { type: 'aspects', label: 'Aspects', content: 'x'.repeat(600) },
+        { type: 'flows', label: 'Flows', content: 'x'.repeat(200) },
+        { type: 'relational', label: 'Deps', content: 'x'.repeat(1000) },
+      ],
+      sections: [],
+      mapping: null,
+      tokenCount: 0,
+    };
+
+    const breakdown = computeBudgetBreakdown(pkg, graph);
+    // global + own => own category: ceil(400/4) + ceil(800/4) = 100 + 200 = 300
+    expect(breakdown.own).toBe(300);
+    // hierarchy: ceil(1200/4) = 300
+    expect(breakdown.hierarchy).toBe(300);
+    // aspects: ceil(600/4) = 150
+    expect(breakdown.aspects).toBe(150);
+    // flows: ceil(200/4) = 50
+    expect(breakdown.flows).toBe(50);
+    // dependencies includes relational: ceil(1000/4) = 250 (+ any dep ancestor tokens)
+    expect(breakdown.dependencies).toBeGreaterThanOrEqual(250);
+    // total is sum of all
+    expect(breakdown.total).toBe(
+      breakdown.own + breakdown.hierarchy + breakdown.aspects + breakdown.flows + breakdown.dependencies,
+    );
+  });
+
+  it('toContextMapOutput returns meta.breakdown with expected structure', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    const pkg = await buildContext(graph, 'orders/order-service');
+    const output = toContextMapOutput(pkg, graph);
+
+    expect(output.meta.breakdown).toBeDefined();
+    expect(typeof output.meta.breakdown.own).toBe('number');
+    expect(typeof output.meta.breakdown.hierarchy).toBe('number');
+    expect(typeof output.meta.breakdown.aspects).toBe('number');
+    expect(typeof output.meta.breakdown.flows).toBe('number');
+    expect(typeof output.meta.breakdown.dependencies).toBe('number');
+    expect(typeof output.meta.breakdown.total).toBe('number');
+    expect(output.meta.breakdown.total).toBe(
+      output.meta.breakdown.own +
+      output.meta.breakdown.hierarchy +
+      output.meta.breakdown.aspects +
+      output.meta.breakdown.flows +
+      output.meta.breakdown.dependencies,
+    );
+    expect(output.meta.tokenCount).toBe(output.meta.breakdown.total);
   });
 
   it('includes event-name on emits relation dependencies', async () => {

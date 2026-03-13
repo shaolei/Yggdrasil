@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Context budget: diagnostic breakdown.** W005/W006 now show token breakdown
+  (own/hierarchy/aspects/flows/dependencies) instead of a single number. W006 no longer
+  blocks — budget status changes from `'error'` to `'severe'`. New W015 warning fires
+  when own artifacts exceed `own_warning` threshold — the only actionable budget warning.
+  Token counting includes full dependency hierarchy cost.
+
 ## [2.4.1] - 2026-03-13
 
 ### Fixed

@@ -12,6 +12,8 @@ Type library — exports TypeScript interfaces and types only. No runtime functi
 
 **Context:** ContextPackage, ContextLayer, ContextSection, ContextSectionKey
 
+**Budget:** BudgetBreakdown
+
 **Context Map (v2):** ContextMapOutput, ArtifactRegistry, NodeAspectRef, FlowRef, AncestorRef, DependencyRef
 
 **Dependency resolution:** Stage
@@ -60,7 +62,8 @@ Model is a TypeScript type library — it contains no executable code and does n
 
 ## Context Map types (v2 structured output)
 
-- **ContextMapOutput** — Top-level structured output for v2 format: meta (tokenCount, budgetStatus), project string, node summary, hierarchy, dependencies, and artifact registry.
+- **BudgetBreakdown** — Per-category token counts: `{ own: number; hierarchy: number; aspects: number; flows: number; dependencies: number; total: number }`. Used in ContextMapOutput.meta and by validator budget checks.
+- **ContextMapOutput** — Top-level structured output for v2 format: meta includes tokenCount, budgetStatus (`'ok' | 'warning' | 'severe'`), and breakdown (BudgetBreakdown). Also includes project string, node summary, hierarchy, dependencies, and artifact registry.
 - **ArtifactRegistry** — Index of all artifact files referenced in a context package: nodes, aspects, and flows keyed by path/id with their associated file lists.
 - **NodeAspectRef** — Aspect reference on a node: id, optional anchors, optional exceptions.
 - **FlowRef** — Flow reference: path, name, optional aspects list.

@@ -32,4 +32,5 @@ quality:
   context_budget:
     warning: 10000
     error: 20000
+    own_warning: 5000
 `;

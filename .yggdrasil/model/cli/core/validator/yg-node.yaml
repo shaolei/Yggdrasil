@@ -7,7 +7,7 @@ aspects:
 relations:
   - target: cli/core/context
     type: uses
-    consumes: [buildContext]
+    consumes: [buildContext, computeBudgetBreakdown]
   - target: cli/model
     type: uses
     consumes: [Graph, ValidationResult, ValidationIssue, ArtifactConfig, NodeAspectEntry]

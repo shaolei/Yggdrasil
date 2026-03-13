@@ -1,5 +1,5 @@
 {
-  "hash": "46ff2d03028a1e2adb2ba9f1970ab72e487eb8b33b3deeeb53def45a6791db49",
+  "hash": "38b8d2390126b6d4ca3dc4ffbb3067b978921de98c4ee805a0d8886784d895e6",
   "files": {
     ".yggdrasil/model/cli/formatters/yg-node.yaml": "fad905f4c3bc91a9770bab44fa343b20153019c0bd57063b20e085cb9301aa43",
     ".yggdrasil/model/cli/formatters/interface.md": "aba93e53f429be7dd20fc6050a32e8ad2be60fd51dc7ef7f695dda99147dff4b",
@@ -11,7 +11,7 @@
     ".yggdrasil/aspects/deterministic/yg-aspect.yaml": "6329a56d7eab89b99ad2a1ccb87ad2a767883f1c115b1027513c28c498e05364",
     ".yggdrasil/aspects/deterministic/content.md": "1f1b33f34741a7dbe90f15783e2a11eaa874529b297702423ae503e470a70089",
     ".yggdrasil/model/cli/model/responsibility.md": "b668c6db2090a36a54277f62fb228c266d87c6d119f89e6ed67e140392863a66",
-    ".yggdrasil/model/cli/model/interface.md": "cb8983e3f04ded57e9a69afb385d3bfece89dcfa8270985260d8ce59a1cffe5a",
+    ".yggdrasil/model/cli/model/interface.md": "9caff93a1efe338c93258c35f9308efafac37268109717f651247923551d08ad",
     ".yggdrasil/flows/build-context/yg-flow.yaml": "ff5cd08671ba3c432dbc3aeea962bef5862445756275f404cd5b13ad091abb87",
     ".yggdrasil/flows/build-context/description.md": "60e4619e480293f028a1c2b756ce30c8800adc613dc9c64e6bd6ef7f3d5fcf87",
     ".yggdrasil/flows/graph-analysis/yg-flow.yaml": "b76dee1120416f885ec54fbc540d653a67fcc1018066c4e3fe5840909540eb45",
@@ -21,23 +21,23 @@
     "source/cli/src/formatters/markdown.ts": "eee5241b18a95bb7a6aae4ed656d0fc43186c15b38fd888278a470e7dbff4c55"
   },
   "mtimes": {
-    ".yggdrasil/model/cli/formatters/yg-node.yaml": 1773350393675.8367,
-    ".yggdrasil/model/cli/formatters/interface.md": 1773351880147.8962,
-    ".yggdrasil/model/cli/formatters/internals.md": 1773351887756.4172,
-    ".yggdrasil/model/cli/formatters/responsibility.md": 1773351882734.5361,
-    ".yggdrasil/model/cli/yg-node.yaml": 1773348114769.7412,
-    ".yggdrasil/model/cli/internals.md": 1773348114767.1863,
-    ".yggdrasil/model/cli/responsibility.md": 1773348114768.4058,
-    ".yggdrasil/aspects/deterministic/yg-aspect.yaml": 1773348114753.8887,
-    ".yggdrasil/aspects/deterministic/content.md": 1773348114753.7883,
-    ".yggdrasil/model/cli/model/responsibility.md": 1773348114768.178,
-    ".yggdrasil/model/cli/model/interface.md": 1773348396478.7522,
-    ".yggdrasil/flows/build-context/yg-flow.yaml": 1773348114755.1821,
-    ".yggdrasil/flows/build-context/description.md": 1773351322340.0305,
-    ".yggdrasil/flows/graph-analysis/yg-flow.yaml": 1773348114755.7466,
-    ".yggdrasil/flows/graph-analysis/description.md": 1773348114755.652,
-    "source/cli/src/formatters/.gitkeep": 1773348114889.2148,
-    "source/cli/src/formatters/context-text.ts": 1773351844408.0002,
-    "source/cli/src/formatters/markdown.ts": 1773348114889.3633
+    ".yggdrasil/model/cli/formatters/yg-node.yaml": 1773398938113.7046,
+    ".yggdrasil/model/cli/formatters/interface.md": 1773398938112.7185,
+    ".yggdrasil/model/cli/formatters/internals.md": 1773398938112.9724,
+    ".yggdrasil/model/cli/formatters/responsibility.md": 1773398938113.4868,
+    ".yggdrasil/model/cli/yg-node.yaml": 1773398938116.34,
+    ".yggdrasil/model/cli/internals.md": 1773398938113.86,
+    ".yggdrasil/model/cli/responsibility.md": 1773398938114.885,
+    ".yggdrasil/aspects/deterministic/yg-aspect.yaml": 1773398938098.9814,
+    ".yggdrasil/aspects/deterministic/content.md": 1773398938098.8867,
+    ".yggdrasil/model/cli/model/responsibility.md": 1773398938114.6821,
+    ".yggdrasil/model/cli/model/interface.md": 1773399466269.6519,
+    ".yggdrasil/flows/build-context/yg-flow.yaml": 1773398938100.2527,
+    ".yggdrasil/flows/build-context/description.md": 1773398938100.1443,
+    ".yggdrasil/flows/graph-analysis/yg-flow.yaml": 1773398938100.7917,
+    ".yggdrasil/flows/graph-analysis/description.md": 1773398938100.6963,
+    "source/cli/src/formatters/.gitkeep": 1773398938243.0913,
+    "source/cli/src/formatters/context-text.ts": 1773398938243.3213,
+    "source/cli/src/formatters/markdown.ts": 1773398938243.4028
   }
 }

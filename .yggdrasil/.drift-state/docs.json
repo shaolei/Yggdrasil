@@ -12,14 +12,14 @@
     "docs/package-lock.json": "5de0744623b0f0d3ae0f73845845ae1d5c89623da74cf542447129cb159f167e"
   },
   "mtimes": {
-    ".yggdrasil/model/docs/yg-node.yaml": 1773382902666.5244,
-    ".yggdrasil/model/docs/responsibility.md": 1773382902666.426,
-    "docs/cli-reference.md": 1773384852963.4873,
-    "docs/configuration.md": 1773382902672.1196,
-    "docs/getting-started.md": 1773382902672.2048,
-    "docs/index.md": 1773382902672.309,
-    "docs/platforms.md": 1773382902673.587,
-    "docs/package.json": 1773382902673.5105,
-    "docs/package-lock.json": 1773382902673.431
+    ".yggdrasil/model/docs/yg-node.yaml": 1773398938116.9487,
+    ".yggdrasil/model/docs/responsibility.md": 1773398938116.857,
+    "docs/cli-reference.md": 1773398938121.1553,
+    "docs/configuration.md": 1773398938123.0242,
+    "docs/getting-started.md": 1773398938123.0981,
+    "docs/index.md": 1773398938123.1926,
+    "docs/platforms.md": 1773398938124.395,
+    "docs/package.json": 1773398938124.318,
+    "docs/package-lock.json": 1773400040926.5222
   }
 }
