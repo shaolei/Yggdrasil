@@ -806,10 +806,11 @@ Exactly one of `node`, `aspect`, or `flow` must be provided.
 2. If `--method` is specified, filter direct dependents to those whose `consumes` list includes the method (or have no `consumes` specified, meaning they consume everything).
 3. Recursively follow reverse edges (transitive reverse dependencies).
 4. Collect descendants of the target node (hierarchy impact).
-5. Find flows listing the target node.
-6. Compute effective aspects (own + hierarchy + flow + implies).
-7. Find co-aspect nodes sharing any aspect with the target.
-8. Find event-related nodes: nodes with `emits`/`listens` relations targeting the node, and listeners of events the target node emits.
+5. Collect indirect structural dependents of descendants — nodes that depend on descendants via structural or event relations (uses/calls/extends/implements/emits/listens) but are not already shown.
+6. Find flows listing the target node.
+7. Compute effective aspects (own + hierarchy + flow + implies).
+8. Find co-aspect nodes sharing any aspect with the target.
+9. Find event-related nodes: nodes with `emits`/`listens` relations targeting the node, and listeners of events the target node emits.
 
 ```text
 Impact of changes in payments/payment-service:
@@ -827,41 +828,49 @@ Event-dependent:
 Descendants (hierarchy impact):
   payments/payment-service/stripe-adapter
 
+Indirectly affected (structural dependents of descendants):
+  <- reports/adapter-monitor <- payments/payment-service/stripe-adapter
+
 Flows: checkout
 Aspects (scope covers node): requires-saga, requires-idempotency
 Nodes sharing aspects:
   orders/order-service (requires-saga, requires-idempotency)
 
-Total scope: 5 nodes, 1 flows, 2 aspects
+Total scope: 6 nodes, 1 flows, 2 aspects
 ```
 
 #### Aspect mode (`--aspect`)
 
 1. For every node, compute effective aspects (own + hierarchy + flow + implies).
-2. Collect all nodes where the specified aspect is effective.
+2. Collect all nodes where the specified aspect is effective (directly affected).
 3. Report source of the aspect for each node: own, hierarchy, flow, or implied.
-4. List flows propagating this aspect and implies relationships.
+4. Collect indirect structural dependents — nodes that depend on directly affected nodes via structural or event relations (uses/calls/extends/implements/emits/listens) but are not themselves directly affected.
+5. List flows propagating this aspect and implies relationships.
 
 ```text
 Impact of changes in aspect requires-audit:
 
-Affected nodes (3):
+Directly affected (3):
   orders (own)
   orders/order-service (hierarchy from orders)
   payments/payment-service (flow: checkout)
+
+Indirectly affected (structural dependents):
+  <- checkout/checkout-controller <- orders/order-service
 
 Flows propagating this aspect: (none)
 Implied by: (none)
 Implies: (none)
 
-Total scope: 3 nodes, 0 flows
+Total scope: 4 nodes, 0 flows
 ```
 
 #### Flow mode (`--flow`)
 
 1. List all declared participants.
 2. Expand each participant's descendants (hierarchy impact).
-3. Report flow-level aspects.
+3. Collect indirect structural dependents — nodes that depend on participants via structural or event relations (uses/calls/extends/implements/emits/listens) but are not themselves participants.
+4. Report flow-level aspects.
 
 ```text
 Impact of changes in flow Checkout Flow:
@@ -872,9 +881,12 @@ Participants:
   payments/payment-service
   payments/payment-service/stripe-adapter (descendant)
 
+Indirectly affected (structural dependents):
+  <- checkout/checkout-controller <- orders/order-service
+
 Flow aspects: requires-saga
 
-Total scope: 4 nodes
+Total scope: 5 nodes
 ```
 
 #### Simulation mode (`--simulate`)

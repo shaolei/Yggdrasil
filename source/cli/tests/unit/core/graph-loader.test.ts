@@ -29,7 +29,7 @@ describe('graph-loader', () => {
   it('loads graph with correct number of nodes from model/', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
 
-    expect(graph.nodes.size).toBe(7);
+    expect(graph.nodes.size).toBe(9);
 
     expect(graph.nodes.has('auth')).toBe(true);
     expect(graph.nodes.has('auth/auth-api')).toBe(true);
@@ -38,6 +38,8 @@ describe('graph-loader', () => {
     expect(graph.nodes.has('users')).toBe(true);
     expect(graph.nodes.has('users/user-repo')).toBe(true);
     expect(graph.nodes.has('users/missing-service')).toBe(true);
+    expect(graph.nodes.has('checkout')).toBe(true);
+    expect(graph.nodes.has('checkout/controller')).toBe(true);
   });
 
   it('loads flows from flows/ directory', async () => {

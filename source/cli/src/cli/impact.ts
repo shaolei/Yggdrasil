@@ -106,6 +106,66 @@ export function collectDescendants(graph: Graph, nodePath: string): string[] {
   return result.sort();
 }
 
+export function collectIndirectDependents(
+  graph: Graph,
+  directlyAffected: string[],
+): { indirectPaths: string[]; chains: string[] } {
+  const directSet = new Set(directlyAffected);
+
+  // Build reverse adjacency map once (structural + event relations)
+  const reverse = new Map<string, Set<string>>();
+  for (const [nodePath, node] of graph.nodes) {
+    for (const rel of node.meta.relations ?? []) {
+      if (!STRUCTURAL_TYPES.has(rel.type) && rel.type !== 'emits' && rel.type !== 'listens') continue;
+      const deps = reverse.get(rel.target) ?? new Set<string>();
+      deps.add(nodePath);
+      reverse.set(rel.target, deps);
+    }
+  }
+
+  // For each affected node, BFS to find reverse dependents and build chains
+  const bestChain = new Map<string, { chain: string; depth: number }>();
+
+  for (const affected of directlyAffected) {
+    const parent = new Map<string, string>();
+    const queue = [affected];
+    const visited = new Set([affected]);
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      for (const next of reverse.get(current) ?? []) {
+        if (visited.has(next)) continue;
+        visited.add(next);
+        parent.set(next, current);
+        queue.push(next);
+      }
+    }
+
+    for (const [node] of parent) {
+      if (directSet.has(node)) continue;
+
+      // Trace path from node back to affected
+      const path: string[] = [node];
+      let current = node;
+      while (parent.has(current)) {
+        current = parent.get(current)!;
+        path.push(current);
+      }
+
+      const chain = path.map((p) => `<- ${p}`).join(' ');
+      const depth = path.length;
+
+      const existing = bestChain.get(node);
+      if (!existing || depth < existing.depth) {
+        bestChain.set(node, { chain, depth });
+      }
+    }
+  }
+
+  const indirectPaths = [...bestChain.keys()].sort();
+  const chains = indirectPaths.map((p) => bestChain.get(p)!.chain);
+  return { indirectPaths, chains };
+}
+
 async function runSimulation(
   graph: Graph,
   nodePaths: Iterable<string>,
@@ -214,6 +274,11 @@ async function handleAspectImpact(
 
   affected.sort((a, b) => a.path.localeCompare(b.path));
 
+  const { indirectPaths, chains } = collectIndirectDependents(
+    graph,
+    affected.map((a) => a.path),
+  );
+
   const propagatingFlows = graph.flows
     .filter((f) => (f.aspects ?? []).includes(aspectId))
     .map((f) => f.name);
@@ -224,7 +289,7 @@ async function handleAspectImpact(
   const implies = aspect.implies ?? [];
 
   process.stdout.write(`Impact of changes in aspect ${aspectId}:\n\n`);
-  process.stdout.write(`Affected nodes (${affected.length}):\n`);
+  process.stdout.write(`Directly affected (${affected.length}):\n`);
   if (affected.length === 0) {
     process.stdout.write('  (none)\n');
   } else {
@@ -232,17 +297,24 @@ async function handleAspectImpact(
       process.stdout.write(`  ${p} (${source})\n`);
     }
   }
+  if (chains.length > 0) {
+    process.stdout.write(`\nIndirectly affected (structural dependents):\n`);
+    for (let i = 0; i < indirectPaths.length; i++) {
+      process.stdout.write(`  ${indirectPaths[i]}  ${chains[i]}\n`);
+    }
+  }
   process.stdout.write(
     `\nFlows propagating this aspect: ${propagatingFlows.length > 0 ? propagatingFlows.join(', ') : '(none)'}\n`,
   );
   process.stdout.write(`Implied by: ${impliedBy.length > 0 ? impliedBy.join(', ') : '(none)'}\n`);
   process.stdout.write(`Implies: ${implies.length > 0 ? implies.join(', ') : '(none)'}\n`);
-  process.stdout.write(`\nTotal scope: ${affected.length} nodes, ${propagatingFlows.length} flows\n`);
+  process.stdout.write(`\nTotal scope: ${affected.length + indirectPaths.length} nodes, ${propagatingFlows.length} flows\n`);
 
-  if (simulate && affected.length > 0) {
+  const combinedPaths = [...affected.map((a) => a.path), ...indirectPaths];
+  if (simulate && combinedPaths.length > 0) {
     await runSimulation(
       graph,
-      affected.map((a) => a.path),
+      combinedPaths,
       null,
     );
   }
@@ -272,6 +344,8 @@ async function handleFlowImpact(
   const sorted = [...participants].sort();
   const flowAspects = flow.aspects ?? [];
 
+  const { indirectPaths, chains } = collectIndirectDependents(graph, sorted);
+
   process.stdout.write(`Impact of changes in flow ${flow.name}:\n\n`);
   process.stdout.write('Participants:\n');
   if (sorted.length === 0) {
@@ -283,13 +357,20 @@ async function handleFlowImpact(
       process.stdout.write(`  ${p}${suffix}\n`);
     }
   }
+  if (chains.length > 0) {
+    process.stdout.write(`\nIndirectly affected (structural dependents):\n`);
+    for (let i = 0; i < indirectPaths.length; i++) {
+      process.stdout.write(`  ${indirectPaths[i]}  ${chains[i]}\n`);
+    }
+  }
   process.stdout.write(
     `\nFlow aspects: ${flowAspects.length > 0 ? flowAspects.join(', ') : '(none)'}\n`,
   );
-  process.stdout.write(`\nTotal scope: ${sorted.length} nodes\n`);
+  process.stdout.write(`\nTotal scope: ${sorted.length + indirectPaths.length} nodes\n`);
 
-  if (simulate && sorted.length > 0) {
-    await runSimulation(graph, sorted, null);
+  const combinedPaths = [...sorted, ...indirectPaths];
+  if (simulate && combinedPaths.length > 0) {
+    await runSimulation(graph, combinedPaths, null);
   }
 }
 
@@ -452,6 +533,28 @@ export function registerImpactCommand(program: Command): void {
             }
           }
 
+          // Collect indirect dependents of descendants
+          const alreadyShown = new Set([nodePath, ...filteredAllDependents, ...descendants, ...eventDependents.map((e) => e.path)]);
+          let descIndirectPaths: string[] = [];
+          if (descendants.length > 0) {
+            const { indirectPaths: rawIndirect, chains: rawChains } = collectIndirectDependents(graph, descendants);
+            const filteredIndirect: string[] = [];
+            const filteredChains: string[] = [];
+            for (let i = 0; i < rawIndirect.length; i++) {
+              if (!alreadyShown.has(rawIndirect[i])) {
+                filteredIndirect.push(rawIndirect[i]);
+                filteredChains.push(rawChains[i]);
+              }
+            }
+            descIndirectPaths = filteredIndirect;
+            if (filteredIndirect.length > 0) {
+              process.stdout.write('\nIndirectly affected (structural dependents of descendants):\n');
+              for (let i = 0; i < filteredIndirect.length; i++) {
+                process.stdout.write(`  ${filteredIndirect[i]}  ${filteredChains[i]}\n`);
+              }
+            }
+          }
+
           process.stdout.write(
             `\nFlows: ${flows.length > 0 ? flows.join(', ') : '(none)'}\n`,
           );
@@ -479,7 +582,7 @@ export function registerImpactCommand(program: Command): void {
             }
           }
 
-          const allAffected = new Set([...filteredAllDependents, ...descendants, ...eventDependents.map((e) => e.path)]);
+          const allAffected = new Set([...filteredAllDependents, ...descendants, ...eventDependents.map((e) => e.path), ...descIndirectPaths]);
           process.stdout.write(
             `\nTotal scope: ${allAffected.size} nodes, ${flows.length} flows, ${aspectsInScope.length} aspects\n`,
           );

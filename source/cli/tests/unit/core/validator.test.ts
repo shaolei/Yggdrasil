@@ -88,7 +88,7 @@ describe('validator', () => {
 
     expect(errors).toHaveLength(0);
     expect(warnings.length).toBeGreaterThanOrEqual(0);
-    expect(result.nodesScanned).toBe(7);
+    expect(result.nodesScanned).toBe(9);
   }, 10000);
 
   it('relation-targets-exist returns error for missing relation target', async () => {

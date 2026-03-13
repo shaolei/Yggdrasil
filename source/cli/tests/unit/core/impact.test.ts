@@ -3,6 +3,7 @@ import {
   collectReverseDependents,
   buildTransitiveChains,
   collectDescendants,
+  collectIndirectDependents,
 } from '../../../src/cli/impact.js';
 import { collectEffectiveAspectIds } from '../../../src/core/context-builder.js';
 import type { Graph, GraphNode } from '../../../src/model/types.js';
@@ -381,5 +382,122 @@ describe('co-aspect nodes detection', () => {
     const bEffective = collectEffectiveAspectIds(graph, 'svc-b');
     const shared = [...aEffective].filter((id) => bEffective.has(id));
     expect(shared).toContain('logging');
+  });
+});
+
+describe('collectIndirectDependents', () => {
+  it('returns empty when no reverse dependents exist', () => {
+    const a = makeNode('a');
+    const b = makeNode('b');
+    const graph = makeGraph([a, b]);
+    const result = collectIndirectDependents(graph, ['a', 'b']);
+    expect(result.indirectPaths).toEqual([]);
+    expect(result.chains).toEqual([]);
+  });
+
+  it('finds direct reverse dependents of affected nodes', () => {
+    const a = makeNode('a');
+    const b = makeNode('b', {
+      meta: {
+        name: 'b',
+        type: 'service',
+        relations: [{ target: 'a', type: 'uses' }],
+      },
+    });
+    const graph = makeGraph([a, b]);
+    const result = collectIndirectDependents(graph, ['a']);
+    expect(result.indirectPaths).toEqual(['b']);
+    expect(result.chains).toEqual(['<- b <- a']);
+  });
+
+  it('finds transitive reverse dependents with full chain', () => {
+    const a = makeNode('a');
+    const b = makeNode('b', {
+      meta: {
+        name: 'b',
+        type: 'service',
+        relations: [{ target: 'a', type: 'uses' }],
+      },
+    });
+    const c = makeNode('c', {
+      meta: {
+        name: 'c',
+        type: 'service',
+        relations: [{ target: 'b', type: 'calls' }],
+      },
+    });
+    const graph = makeGraph([a, b, c]);
+    const result = collectIndirectDependents(graph, ['a']);
+    expect(result.indirectPaths).toEqual(['b', 'c']);
+    expect(result.chains).toContain('<- b <- a');
+    expect(result.chains).toContain('<- c <- b <- a');
+  });
+
+  it('excludes nodes that are in the directly-affected set', () => {
+    const a = makeNode('a');
+    const b = makeNode('b', {
+      meta: {
+        name: 'b',
+        type: 'service',
+        relations: [{ target: 'a', type: 'uses' }],
+      },
+    });
+    const c = makeNode('c', {
+      meta: {
+        name: 'c',
+        type: 'service',
+        relations: [{ target: 'b', type: 'uses' }],
+      },
+    });
+    const graph = makeGraph([a, b, c]);
+    // b is directly affected, so only c should appear as indirect
+    const result = collectIndirectDependents(graph, ['a', 'b']);
+    expect(result.indirectPaths).toEqual(['c']);
+    expect(result.chains).toEqual(['<- c <- b']);
+  });
+
+  it('keeps shortest chain when reachable from multiple affected nodes', () => {
+    const a = makeNode('a');
+    const b = makeNode('b');
+    const c = makeNode('c', {
+      meta: {
+        name: 'c',
+        type: 'service',
+        relations: [
+          { target: 'a', type: 'uses' },
+          { target: 'b', type: 'uses' },
+        ],
+      },
+    });
+    const d = makeNode('d', {
+      meta: {
+        name: 'd',
+        type: 'service',
+        relations: [{ target: 'c', type: 'uses' }],
+      },
+    });
+    const graph = makeGraph([a, b, c, d]);
+    // Both a and b are directly affected. c uses both → shortest chain is length 2
+    // d uses c → shortest chain via either a or b is length 3
+    const result = collectIndirectDependents(graph, ['a', 'b']);
+    expect(result.indirectPaths).toEqual(['c', 'd']);
+    // c's chain should be length 2 (one hop from an affected node)
+    const cChain = result.chains[result.indirectPaths.indexOf('c')];
+    expect(cChain.split(' <- ').length).toBe(2);
+  });
+
+  it('follows event relations (emits/listens)', () => {
+    const a = makeNode('a');
+    const b = makeNode('b', {
+      meta: {
+        name: 'b',
+        type: 'service',
+        relations: [{ target: 'a', type: 'emits' }],
+      },
+    });
+    const graph = makeGraph([a, b]);
+    const result = collectIndirectDependents(graph, ['a']);
+    expect(result.indirectPaths).toEqual(['b']);
+    expect(result.chains).toEqual(['<- b <- a']);
   });
 });

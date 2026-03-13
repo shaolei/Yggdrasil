@@ -298,12 +298,20 @@ describe.skipIf(!distExists)('CLI E2E', () => {
     expect(stderr).toContain('mutually exclusive');
   });
 
-  it('yg impact --aspect requires-audit shows affected nodes', () => {
+  it('yg impact --aspect requires-audit shows directly affected nodes', () => {
     const { stdout, status } = run(['impact', '--aspect', 'requires-audit']);
     expect(status).toBe(0);
     expect(stdout).toContain('Impact of changes in aspect requires-audit');
+    expect(stdout).toContain('Directly affected');
     expect(stdout).toContain('orders');
     expect(stdout).toContain('Total scope:');
+  });
+
+  it('yg impact --aspect requires-audit shows indirectly affected structural dependents', () => {
+    const { stdout, status } = run(['impact', '--aspect', 'requires-audit']);
+    expect(status).toBe(0);
+    expect(stdout).toContain('Indirectly affected (structural dependents)');
+    expect(stdout).toContain('checkout/controller');
   });
 
   it('yg impact --aspect requires-audit shows implies chain', () => {
@@ -351,6 +359,13 @@ describe.skipIf(!distExists)('CLI E2E', () => {
     expect(stdout).toContain('Flow aspects: requires-logging');
   });
 
+  it('yg impact --flow checkout-flow shows indirectly affected structural dependents', () => {
+    const { stdout, status } = run(['impact', '--flow', 'checkout-flow']);
+    expect(status).toBe(0);
+    expect(stdout).toContain('Indirectly affected (structural dependents)');
+    expect(stdout).toContain('checkout/controller');
+  });
+
   it('yg impact --flow nonexistent returns exit 1', () => {
     const { status, stderr } = run(['impact', '--flow', 'nonexistent']);
     expect(status).toBe(1);
@@ -364,6 +379,13 @@ describe.skipIf(!distExists)('CLI E2E', () => {
     // orders module also has these (via own + implies)
     expect(stdout).toContain('Nodes sharing aspects');
     expect(stdout).toContain('orders');
+  });
+
+  it('yg impact --node shows indirect dependents of descendants', () => {
+    const { stdout, status } = run(['impact', '--node', 'orders']);
+    expect(status).toBe(0);
+    expect(stdout).toContain('Indirectly affected');
+    expect(stdout).toContain('checkout/controller');
   });
 
   // --- validate edge cases ---

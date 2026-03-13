@@ -73,11 +73,14 @@ describe('selectNodes', () => {
   describe('S2 flow-based fallback', () => {
     it('falls back to flow matching when no nodes match directly', async () => {
       const graph = await loadGraph(FIXTURE_PROJECT);
-      // "checkout" doesn't appear in any node responsibility/artifacts, but IS in the flow name/description
-      const results = selectNodes(graph, 'checkout process', 5);
+      // "sequence" appears in checkout-flow/sequence.md but not in any node artifact
+      const results = selectNodes(graph, 'sequence steps', 5);
       expect(results.length).toBeGreaterThan(0);
       const nodePaths = results.map((r) => r.node);
-      expect(nodePaths).toContain('orders/order-service');
+      // flow participants should be returned via S2 fallback
+      expect(nodePaths.some((p) => p === 'orders/order-service' || p === 'auth/auth-api')).toBe(
+        true,
+      );
     });
 
     it('returns empty when neither S1 nor S2 match', async () => {

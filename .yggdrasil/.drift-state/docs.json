@@ -1,9 +1,9 @@
 {
-  "hash": "bb9b0f891f3b65c489caa5b29b6c1ad134d586347a3916df21e1e8483b8a4120",
+  "hash": "6285d2a940b2fc575dfb4d043102fc7f7384f61d063fda100c91306866e59842",
   "files": {
     ".yggdrasil/model/docs/yg-node.yaml": "1182af1dc3aeceb24262745dc13a456dc75d280a313d4bb5b364b5d3e8e6f1e3",
     ".yggdrasil/model/docs/responsibility.md": "070a2a6c6b29116ab18d2b824068d227cc4682f30fd5ef79b3cbe307dbe632fe",
-    "docs/cli-reference.md": "21551a45ec73f3d84e345e82adcdfc8c0e2cc5f0a1d01cbf4d16e9449778e959",
+    "docs/cli-reference.md": "7b16db6631915f9da1ab5aeaa92fc30e9e17cb15b538dc1e68f742170f8c31b4",
     "docs/configuration.md": "930d07f178709dced83eb0e1d27479ae5fa2d804eecaaa349fc8ef765620c627",
     "docs/getting-started.md": "bd967ee1fb52aaca13ba218b44610b767c6bf276ab98e1d4dd637ab8955ccf3a",
     "docs/index.md": "4bfc5e57d2f214863e2aba80a2f5ba3f7dde2e057a49cb3a1ca46ba428a5eebe",
@@ -12,14 +12,14 @@
     "docs/package-lock.json": "5de0744623b0f0d3ae0f73845845ae1d5c89623da74cf542447129cb159f167e"
   },
   "mtimes": {
-    ".yggdrasil/model/docs/yg-node.yaml": 1773348114770.4653,
-    ".yggdrasil/model/docs/responsibility.md": 1773348114770.3477,
-    "docs/cli-reference.md": 1773352010044.2747,
-    "docs/configuration.md": 1773348114776.373,
-    "docs/getting-started.md": 1773348114776.449,
-    "docs/index.md": 1773348114776.556,
-    "docs/platforms.md": 1773348114777.8167,
-    "docs/package.json": 1773348114777.7324,
-    "docs/package-lock.json": 1773348114777.6494
+    ".yggdrasil/model/docs/yg-node.yaml": 1773382902666.5244,
+    ".yggdrasil/model/docs/responsibility.md": 1773382902666.426,
+    "docs/cli-reference.md": 1773384852963.4873,
+    "docs/configuration.md": 1773382902672.1196,
+    "docs/getting-started.md": 1773382902672.2048,
+    "docs/index.md": 1773382902672.309,
+    "docs/platforms.md": 1773382902673.587,
+    "docs/package.json": 1773382902673.5105,
+    "docs/package-lock.json": 1773382902673.431
   }
 }

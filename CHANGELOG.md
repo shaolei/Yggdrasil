@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Impact propagation to structural dependents.** All `yg impact` modes now show
+  indirectly affected nodes — structural and event dependents (uses/calls/extends/implements/emits/listens) of
+  affected nodes, with transitive chains. `--aspect` and `--flow` split output into
+  "Directly affected" and "Indirectly affected" sections. `--node` adds an "Indirectly
+  affected" section for reverse dependents of descendants. `--simulate` covers all sets.
 - **Dependency hierarchy in context packages.** Dependencies now include their full parent
   hierarchy with ancestors' artifacts and effective aspects, giving agents domain-level
   context for each dependency.
