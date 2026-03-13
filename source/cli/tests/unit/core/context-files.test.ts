@@ -298,6 +298,55 @@ describe('collectTrackedFiles', () => {
     expect(paths).toContain('.yggdrasil/model/events/bus/responsibility.md');
   });
 
+  it('uses included_in_relations filter for event relation targets', () => {
+    const target: GraphNode = {
+      path: 'events/bus',
+      meta: { name: 'EventBus', type: 'service' },
+      artifacts: [
+        { filename: 'responsibility.md', content: 'events' },
+        { filename: 'interface.md', content: 'api' },
+      ],
+      children: [],
+      parent: null,
+    };
+    const node: GraphNode = {
+      path: 'my/svc',
+      meta: {
+        name: 'MySvc',
+        type: 'service',
+        relations: [{ target: 'events/bus', type: 'emits' }],
+      },
+      artifacts: [{ filename: 'responsibility.md', content: 'x' }],
+      children: [],
+      parent: null,
+    };
+    const graph: Graph = {
+      config: {
+        name: 'T',
+        node_types: { service: { description: 'x' } },
+        artifacts: {
+          'responsibility.md': { required: 'always', description: 'x' },
+          'interface.md': { required: 'never', description: 'x', included_in_relations: true },
+        },
+      },
+      nodes: new Map([
+        ['my/svc', node],
+        ['events/bus', target],
+      ]),
+      aspects: [],
+      flows: [],
+      schemas: [],
+      rootPath: '/project/.yggdrasil',
+    };
+
+    const files = collectTrackedFiles(node, graph);
+    const paths = files.map((f) => f.path);
+
+    // With included_in_relations, event relation should only include interface.md
+    expect(paths).toContain('.yggdrasil/model/events/bus/interface.md');
+    expect(paths).not.toContain('.yggdrasil/model/events/bus/responsibility.md');
+  });
+
   it('skips relations with missing targets', () => {
     const node: GraphNode = {
       path: 'my/svc',

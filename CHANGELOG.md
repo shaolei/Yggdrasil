@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Agent rules: graph as specification.** Rule 2 rewritten from "Code and graph are one"
+  to "The graph is the specification; code implements it" — emphasizing knowledge
+  absorption, immediate updates, and self-sufficiency. Subagent delegation now includes
+  explicit deliverables (code + graph + validation). Failure states and self-audit
+  aligned to "before moving to the next file" timing.
 - **`yg build-context` output format.** Restructured from inline XML to a two-section YAML format:
   structural map (topology, relationships, aspects, flows) + artifact registry (file paths).
   Default mode returns paths only — agents read files individually using Read tool.

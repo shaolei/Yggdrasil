@@ -41,6 +41,18 @@ describe('schema-parser', () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
+  it('uses raw filename when no yg- prefix', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-schema-raw');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(path.join(tmpDir, 'custom-schema.yaml'), 'name: Custom\n', 'utf-8');
+
+    const s = await parseSchema(path.join(tmpDir, 'custom-schema.yaml'));
+
+    expect(s.schemaType).toBe('custom-schema');
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
   it('infers schemaType from .yml extension', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-schema-yml');
     await mkdir(tmpDir, { recursive: true });

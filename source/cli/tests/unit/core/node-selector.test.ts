@@ -70,6 +70,23 @@ describe('selectNodes', () => {
     expect(results).toEqual([]);
   });
 
+  it('handles node with missing aspect gracefully', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    // Add a reference to a non-existent aspect on a node
+    const node = graph.nodes.get('orders/order-service')!;
+    const originalAspects = node.meta.aspects;
+    node.meta.aspects = [
+      ...(originalAspects ?? []),
+      { aspect: 'nonexistent-aspect' },
+    ];
+
+    const results = selectNodes(graph, 'order lifecycle management', 5);
+    expect(results.length).toBeGreaterThan(0);
+
+    // Restore
+    node.meta.aspects = originalAspects;
+  });
+
   describe('S2 flow-based fallback', () => {
     it('falls back to flow matching when no nodes match directly', async () => {
       const graph = await loadGraph(FIXTURE_PROJECT);

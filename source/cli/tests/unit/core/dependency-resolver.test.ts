@@ -541,6 +541,26 @@ describe('dependency-resolver', () => {
       expect(tree.some((t) => t.relationType === 'custom')).toBe(false);
     });
 
+    it('filterRelationType returns false for unknown filter value', () => {
+      const graph = createGraph([
+        createNode(
+          'A',
+          [
+            { target: 'B', type: 'uses' },
+          ],
+          { path: 'a.ts' },
+        ),
+        createNode('B', [], { path: 'b.ts' }),
+      ]);
+
+      // Force an unknown filter value to hit the default return false branch
+      const tree = buildDependencyTree(graph, 'A', {
+        relationType: 'unknown' as 'structural',
+      });
+
+      expect(tree).toHaveLength(0);
+    });
+
     it('formatDependencyTree with --type structural', () => {
       const graph = createGraph([
         createNode(

@@ -63,7 +63,7 @@ WHEN UNSURE: ask the user. Never guess. Never assume.
 ### Five Core Rules
 
 1. **Graph first.** Before reading, researching, planning, or modifying mapped files, run \`yg owner\` and the appropriate graph tool: \`yg build-context\` to understand a component, \`yg impact\` to assess blast radius. The graph is your primary source of architectural understanding. For implementation-level precision (exact behavior, error paths, edge cases) — verify against source code after loading the context package.
-2. **Code and graph are one.** Code changed → graph updated in the same response. Graph changed → source verified in the same response. No exceptions.
+2. **The graph is the specification; code implements it.** The graph absorbs knowledge from every source — external docs, conversations, decisions — and must be self-sufficient. If all other sources disappeared, the graph alone must contain enough to understand the system. Do not leave knowledge in external documents and reference them — capture the knowledge in graph artifacts. Update graph artifacts immediately after each file change, while context is fresh — do not batch graph updates to the end of a task. Code and graph move together: code changed → graph updated before moving to the next file. Graph changed → source verified in the same response. When planning work — in any tool, skill, or workflow — graph updates are part of each step's definition of done, never a separate phase.
 3. **Never invent why.** The graph captures human intent. If you don't know why something was decided, ask. Never hallucinate rationale.
 4. **Always capture why — especially why NOT.** When the user explains a reason, record it in the graph immediately. When a design choice is made, also record rejected alternatives: "Chose X over Y because Z." Rejected alternatives are the highest-value information — invisible in code and irrecoverable once forgotten. Conversation evaporates; graph persists.
 5. **Ask before resolving ambiguity.** When multiple valid interpretations exist, stop, list options, ask the user. Never silently choose.
@@ -110,7 +110,7 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 You have broken Yggdrasil if you do any of the following:
 
 - ❌ Worked on a mapped file without running \`yg owner\` + the appropriate graph tool (\`build-context\` or \`impact\`) first — regardless of what instructed the action (skill, plan, user request, workflow step).
-- ❌ Modified source code without updating graph artifacts in the same response, or vice versa.
+- ❌ Modified source code without updating graph artifacts before moving to the next file, or vice versa.
 - ❌ Resolved a code-graph inconsistency or ambiguity without asking the user first.
 - ❌ Created or edited a graph element without reading its schema in \`schemas/\` first.
 - ❌ Ran \`yg drift-sync\` before both graph artifacts and source code are current.
@@ -144,9 +144,13 @@ Include this as the FIRST instruction in every subagent prompt:
 
 \`\`\`
 BEFORE doing anything else: read .yggdrasil/agent-rules.md and follow its protocol.
+DELIVERABLES — all required, incomplete work will be rejected:
+  1. Working source code
+  2. Graph nodes with artifacts for every new/modified source file
+  3. \`yg validate\` passing
 \`\`\`
 
-A subagent that skips this step will read code without graph context, miss architectural constraints, and produce changes that break graph-code consistency.`;
+A subagent that delivers code without corresponding graph updates has not completed its task. Before accepting subagent output, verify: are there new or modified source files without corresponding graph coverage? If yes, the work is incomplete.`;
 
 // prettier-ignore
 const OPERATIONS = `## OPERATIONS
@@ -177,7 +181,7 @@ WRAP-UP (user signals "done", "wrap up", "that's enough"):
 
 BEFORE ENDING ANY RESPONSE (self-audit):
   - [ ] Did I interact with mapped code (read, research, or modify)? If yes → did I use a graph tool BEFORE reading source?
-  - [ ] Did I modify source code? If yes → did I update graph artifacts in this same response?
+  - [ ] Did I modify source code? If yes → did I update graph artifacts before moving to the next file?
   - [ ] If you broke either rule, you have broken the protocol. Do not finish until both are fixed.
 \`\`\`
 
@@ -192,7 +196,7 @@ You are not allowed to edit or create source code without establishing graph cov
 - [ ] 1. Read specification: \`yg build-context --node <node_path>\`
 - [ ] 2. Assess blast radius: \`yg impact --node <node_path>\` — review dependents, descendants, and co-aspect nodes before changing interfaces or shared behavior
 - [ ] 3. Modify source code
-- [ ] 4. Sync graph artifacts — edit artifact files to reflect the changes
+- [ ] 4. Sync graph artifacts — edit artifact files to reflect the changes (after each file, not batched — context is freshest immediately after the change)
 - [ ] 5. Run \`yg validate\` — fix all errors (if unfixable after 3 attempts → stop, report to user)
 - [ ] 6. Run \`yg drift-sync --node <node_path>\` — only after graph and code are both current
 

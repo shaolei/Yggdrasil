@@ -362,10 +362,38 @@ actually uses.
 
 ### Behavioral directives apply to all agents
 
-Behavioral directives that make the parent agent graph-aware also apply to subagents.
-When a subagent is run in the same repository, it inherits the same directives and the same tool
-access. No special configuration is needed — graph awareness propagates through the repository,
-not through agent-to-agent communication.
+Behavioral directives that make the parent agent graph-aware must also apply to subagents.
+In practice, subagents do not automatically inherit directives from the repository — they
+must be explicitly instructed to read the rules file as their first action. The graph is
+a map the subagent navigates, but the subagent must first be told the map exists.
+
+### Knowledge absorption across agent boundaries
+
+The graph is a black hole for knowledge — it absorbs information from every source
+(external documents, conversations, specifications, decisions) and must be self-sufficient.
+If all external sources disappeared, the graph alone must contain enough to understand the
+system.
+
+This principle has practical consequences for subagent work:
+
+- **Deliverables include the graph.** A subagent that creates source files without
+  corresponding graph nodes has not completed its task. Code without graph coverage is
+  knowledge lost — the implementation exists but its intent, constraints, and rationale
+  are not captured in persistent memory.
+- **Graph updates are immediate, not deferred.** Subagents update graph artifacts after
+  each file, not as a final batch. Context is freshest immediately after writing code.
+  Deferred updates produce shallow, low-value artifacts.
+- **External knowledge is absorbed, not referenced.** When a subagent works from external
+  documents (specifications, reference docs, design documents), the relevant knowledge
+  must be captured in graph artifacts. The graph does not point to external sources — it
+  contains the knowledge. External documents are ephemeral; the graph persists.
+- **Plans integrate graph work into every step.** An implementation plan where "update
+  graph" is step 7 of 8 is structurally wrong. Each step that produces or modifies source
+  code includes graph updates as part of its completion criteria.
+
+The parent agent enforces this by verifying subagent output: for every new or modified
+source file, does a corresponding graph node with artifacts exist? If not, the work is
+sent back for completion.
 
 ---
 

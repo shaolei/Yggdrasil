@@ -1310,4 +1310,47 @@ describe('toContextMapOutput', () => {
     expect(emitsDep).toBeDefined();
     expect(emitsDep!['event-name']).toBe('order.created');
   });
+
+  it('filters dependency artifacts by included_in_relations in artifact registry', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    // Add included_in_relations to responsibility.md
+    graph.config.artifacts['responsibility.md'] = {
+      ...graph.config.artifacts['responsibility.md'],
+      included_in_relations: true,
+    };
+    const pkg = await buildContext(graph, 'orders/order-service');
+    const output = toContextMapOutput(pkg, graph);
+
+    // Dependency targets should have artifacts filtered by included_in_relations
+    const depNode = output.artifacts.nodes['auth/auth-api'];
+    expect(depNode).toBeDefined();
+    // With included_in_relations on responsibility.md, only that should appear for deps
+    const depFiles = depNode.files;
+    for (const f of depFiles) {
+      expect(f).toContain('responsibility.md');
+    }
+  });
+
+  it('includes flow without aspects in artifact registry', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    // Add a flow without aspects that includes order-service
+    graph.flows.push({
+      path: 'no-aspect-flow',
+      name: 'No Aspect Flow',
+      nodes: ['orders/order-service'],
+      artifacts: [{ filename: 'description.md', content: 'A flow without aspects' }],
+    });
+
+    const pkg = await buildContext(graph, 'orders/order-service');
+    const output = toContextMapOutput(pkg, graph);
+
+    const flow = output.artifacts.flows['no-aspect-flow'];
+    expect(flow).toBeDefined();
+    expect(flow.name).toBe('No Aspect Flow');
+    // Flow without aspects should not have aspects field
+    expect(flow.aspects).toBeUndefined();
+
+    // Clean up
+    graph.flows.pop();
+  });
 });
