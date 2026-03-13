@@ -184,9 +184,9 @@ yg impact --flow <name> [--simulate]
 
 Shows the blast radius of changes to a node, aspect, or flow.
 
-- `--node` — Show reverse dependencies, descendants, flows, aspects, and co-aspect nodes
-- `--aspect` — Show all nodes where this aspect is effective (own, hierarchy, flow, or implied)
-- `--flow` — Show all participants and their descendants
+- `--node` — Show reverse dependencies, descendants, structural dependents of descendants, flows, aspects, and co-aspect nodes
+- `--aspect` — Show all nodes where this aspect is effective (own, hierarchy, flow, or implied), plus structural dependents of affected nodes
+- `--flow` — Show all participants and their descendants, plus structural dependents of participants
 - `--simulate` — Simulate context package impact (compare HEAD vs current)
 
 Exactly one of `--node`, `--aspect`, or `--flow` is required.

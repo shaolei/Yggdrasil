@@ -45,6 +45,10 @@
 2. `detectDrift(graph)` — current drift state.
 3. For each affected node: `buildContext` current + baseline, compare tokens, report budget delta.
 
+## Decisions
+
+- **Impact mirrors build-context.** If changing node X alters Y's context package (via structural or event relations), Y must appear in impact output. Chose propagation to structural dependents over showing only directly affected nodes because impact analysis must reflect the true blast radius visible through context assembly. Without propagation, agents would miss nodes whose context packages change due to transitive dependencies.
+
 ## Constraints
 
 # Impact Command Constraints
