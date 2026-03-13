@@ -344,6 +344,8 @@ async function handleFlowImpact(
   const sorted = [...participants].sort();
   const flowAspects = flow.aspects ?? [];
 
+  const { indirectPaths, chains } = collectIndirectDependents(graph, sorted);
+
   process.stdout.write(`Impact of changes in flow ${flow.name}:\n\n`);
   process.stdout.write('Participants:\n');
   if (sorted.length === 0) {
@@ -355,13 +357,20 @@ async function handleFlowImpact(
       process.stdout.write(`  ${p}${suffix}\n`);
     }
   }
+  if (chains.length > 0) {
+    process.stdout.write(`\nIndirectly affected (structural dependents):\n`);
+    for (let i = 0; i < indirectPaths.length; i++) {
+      process.stdout.write(`  ${indirectPaths[i]}  ${chains[i]}\n`);
+    }
+  }
   process.stdout.write(
     `\nFlow aspects: ${flowAspects.length > 0 ? flowAspects.join(', ') : '(none)'}\n`,
   );
-  process.stdout.write(`\nTotal scope: ${sorted.length} nodes\n`);
+  process.stdout.write(`\nTotal scope: ${sorted.length + indirectPaths.length} nodes\n`);
 
-  if (simulate && sorted.length > 0) {
-    await runSimulation(graph, sorted, null);
+  const combinedPaths = [...sorted, ...indirectPaths];
+  if (simulate && combinedPaths.length > 0) {
+    await runSimulation(graph, combinedPaths, null);
   }
 }
 

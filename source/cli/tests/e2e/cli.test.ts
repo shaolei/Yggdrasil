@@ -359,6 +359,13 @@ describe.skipIf(!distExists)('CLI E2E', () => {
     expect(stdout).toContain('Flow aspects: requires-logging');
   });
 
+  it('yg impact --flow checkout-flow shows indirectly affected structural dependents', () => {
+    const { stdout, status } = run(['impact', '--flow', 'checkout-flow']);
+    expect(status).toBe(0);
+    expect(stdout).toContain('Indirectly affected (structural dependents)');
+    expect(stdout).toContain('checkout/controller');
+  });
+
   it('yg impact --flow nonexistent returns exit 1', () => {
     const { status, stderr } = run(['impact', '--flow', 'nonexistent']);
     expect(status).toBe(1);

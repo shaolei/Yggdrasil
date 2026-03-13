@@ -34,7 +34,9 @@
 
 1. Find flow by name or path in `graph.flows`.
 2. Collect declared participants + `collectDescendants` for each.
-3. If --simulate: `runSimulation`.
+3. `collectIndirectDependents(graph, sorted)` — find structural dependents of participants that are not themselves participants. Output as "Indirectly affected (structural dependents)" section (only if any exist).
+4. Total scope includes both participants and indirectly affected nodes.
+5. If --simulate: `runSimulation` with combined participant + indirect paths.
 
 ## runSimulation
 
