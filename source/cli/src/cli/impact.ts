@@ -274,6 +274,11 @@ async function handleAspectImpact(
 
   affected.sort((a, b) => a.path.localeCompare(b.path));
 
+  const { indirectPaths, chains } = collectIndirectDependents(
+    graph,
+    affected.map((a) => a.path),
+  );
+
   const propagatingFlows = graph.flows
     .filter((f) => (f.aspects ?? []).includes(aspectId))
     .map((f) => f.name);
@@ -284,7 +289,7 @@ async function handleAspectImpact(
   const implies = aspect.implies ?? [];
 
   process.stdout.write(`Impact of changes in aspect ${aspectId}:\n\n`);
-  process.stdout.write(`Affected nodes (${affected.length}):\n`);
+  process.stdout.write(`Directly affected (${affected.length}):\n`);
   if (affected.length === 0) {
     process.stdout.write('  (none)\n');
   } else {
@@ -292,17 +297,24 @@ async function handleAspectImpact(
       process.stdout.write(`  ${p} (${source})\n`);
     }
   }
+  if (chains.length > 0) {
+    process.stdout.write(`\nIndirectly affected (structural dependents):\n`);
+    for (let i = 0; i < indirectPaths.length; i++) {
+      process.stdout.write(`  ${indirectPaths[i]}  ${chains[i]}\n`);
+    }
+  }
   process.stdout.write(
     `\nFlows propagating this aspect: ${propagatingFlows.length > 0 ? propagatingFlows.join(', ') : '(none)'}\n`,
   );
   process.stdout.write(`Implied by: ${impliedBy.length > 0 ? impliedBy.join(', ') : '(none)'}\n`);
   process.stdout.write(`Implies: ${implies.length > 0 ? implies.join(', ') : '(none)'}\n`);
-  process.stdout.write(`\nTotal scope: ${affected.length} nodes, ${propagatingFlows.length} flows\n`);
+  process.stdout.write(`\nTotal scope: ${affected.length + indirectPaths.length} nodes, ${propagatingFlows.length} flows\n`);
 
-  if (simulate && affected.length > 0) {
+  const combinedPaths = [...affected.map((a) => a.path), ...indirectPaths];
+  if (simulate && combinedPaths.length > 0) {
     await runSimulation(
       graph,
-      affected.map((a) => a.path),
+      combinedPaths,
       null,
     );
   }

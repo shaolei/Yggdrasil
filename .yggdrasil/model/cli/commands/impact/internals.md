@@ -24,9 +24,11 @@
 ## --aspect mode
 
 1. Find aspect by id in `graph.aspects`.
-2. For every node: `collectEffectiveAspectIds`; if contains target aspect, add to affected.
+2. For every node: `collectEffectiveAspectIds`; if contains target aspect, add to affected (directly affected).
 3. Determine attribution: own (in node.aspects), hierarchy (ancestor), flow (via flow.aspects), implied (via implies chain).
-4. If --simulate: `runSimulation`.
+4. `collectIndirectDependents(graph, affected.map(a => a.path))` — find structural dependents of directly affected nodes that are not themselves directly affected. Output as "Indirectly affected (structural dependents)" section.
+5. Total scope includes both directly and indirectly affected nodes.
+6. If --simulate: `runSimulation` with combined direct + indirect paths.
 
 ## --flow mode
 
