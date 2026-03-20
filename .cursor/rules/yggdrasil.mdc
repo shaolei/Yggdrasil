@@ -98,6 +98,7 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 | "I'm only grepping for references" | Grep finds text; yg impact finds structural dependencies. Use both. |
 | "I'll use the graph later when I modify" | Graph-first means BEFORE reading, not before modifying |
 | "I'll grep the codebase to find where to start" | Run `yg select --task` first — it matches your intent against graph artifacts. Then `yg owner` on results. |
+| "Drift is blocking repo-check, let me just sync it" | Drift means artifacts are stale. Update artifacts first, then sync. `drift-sync` without artifact update = hiding staleness. |
 
 ### Failure States
 
@@ -306,7 +307,7 @@ When reviewing graph quality (triggered by user or quality improvement):
 - **Budget warning (W005/W006)** → informational. `yg validate` shows a breakdown (own/hierarchy/aspects/flows/dependencies). Large inherited context means the system is complex — this is not a problem to fix, it is reality to acknowledge. Do not delete knowledge from artifacts. Do not attempt to "reduce" inherited context.
 - **Own budget warning (W015)** → own artifacts are large. Consider splitting this node's responsibilities into child nodes. Redistribute knowledge across children so total knowledge is preserved or increased, never reduced.
 - **Corrupted `.yggdrasil/` files** → report to user. Do not attempt repair.
-- **Incremental sync** → run `yg drift-sync` every 3-5 source files during multi-file tasks. Do not defer to end.
+- **Incremental sync** → run `yg drift-sync` every 3-5 source files during multi-file tasks. Do not defer to end. But NEVER run `yg drift-sync` to silence a failing drift check — drift is a signal that artifacts need updating. First update artifacts, then sync.
 
 ---
 
@@ -412,7 +413,7 @@ Test: "Does this describe what happens in the world, or only in the software?" I
 - **English only** for all files in `.yggdrasil/`. Conversation can be any language.
 - **Read schemas before creating** any `yg-node.yaml`, `yg-aspect.yaml`, or `yg-flow.yaml`.
 - **Tools read, you write.** The `yg` CLI only reads, validates, and manages metadata. You create and edit files manually.
-- **Incremental sync.** Run `yg drift-sync` after every 3-5 source file changes. Do not defer to end of task.
+- **Incremental sync.** Run `yg drift-sync` after every 3-5 source file changes. Do not defer to end of task. `drift-sync` is ONLY safe after artifacts are current — never use it to silence a drift check without updating artifacts first.
 - **Description maintenance.** Every `yg-node.yaml`, `yg-aspect.yaml`, and `yg-flow.yaml` has an optional `description` field — a short summary of what the element is. Write it when creating new elements. Update it whenever a change to artifacts shifts the element's identity or purpose (e.g., responsibility split, scope change). Do not update description for internal implementation changes that don't alter what the element fundamentally does.
 - **Completeness test:** Two checks, both required:
   1. **Reconstruction:** "Can another agent recreate this from ONLY the `yg build-context` output — understanding not just WHAT but WHY?" Test: rejected alternatives, correct algorithm, design arguments.
