@@ -1190,8 +1190,9 @@ describe('toContextMapOutput', () => {
     expect(output.node.name).toBe('OrderService');
     expect(output.hierarchy.length).toBeGreaterThan(0);
     expect(output.dependencies.length).toBeGreaterThan(0);
-    expect(Object.keys(output.artifacts.nodes).length).toBeGreaterThan(0);
-    expect(Object.keys(output.artifacts.aspects).length).toBeGreaterThan(0);
+    expect(Array.isArray(output.node.files)).toBe(true);
+    expect(output.node.files.length).toBeGreaterThan(0);
+    expect(Object.keys(output.glossary.aspects).length).toBeGreaterThan(0);
   });
 
   it('includes dependency hierarchy ancestors', async () => {
@@ -1218,14 +1219,14 @@ describe('toContextMapOutput', () => {
     }
   });
 
-  it('deduplicates nodes in artifact registry', async () => {
+  it('node.files is an array with no duplicates', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
-    const nodePaths = Object.keys(output.artifacts.nodes);
-    const uniquePaths = [...new Set(nodePaths)];
-    expect(nodePaths).toEqual(uniquePaths);
+    expect(Array.isArray(output.node.files)).toBe(true);
+    const uniqueFiles = [...new Set(output.node.files)];
+    expect(output.node.files).toEqual(uniqueFiles);
   });
 
   it('uses model/ prefix for node artifact paths', async () => {
@@ -1233,7 +1234,8 @@ describe('toContextMapOutput', () => {
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
-    const targetFiles = output.artifacts.nodes['orders/order-service']?.files ?? [];
+    const targetFiles = output.node.files;
+    expect(targetFiles.length).toBeGreaterThan(0);
     for (const f of targetFiles) {
       expect(f).toMatch(/^model\//);
     }
@@ -1244,7 +1246,7 @@ describe('toContextMapOutput', () => {
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
-    for (const [, aspect] of Object.entries(output.artifacts.aspects)) {
+    for (const [, aspect] of Object.entries(output.glossary.aspects)) {
       for (const f of aspect.files) {
         expect(f).toMatch(/^aspects\//);
       }
@@ -1262,22 +1264,22 @@ describe('toContextMapOutput', () => {
     expect(authDep!.failure).toBe('reject-request');
   });
 
-  it('includes implies on aspects in artifact registry', async () => {
+  it('includes implies on aspects in glossary', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
-    const auditAspect = output.artifacts.aspects['requires-audit'];
+    const auditAspect = output.glossary.aspects['requires-audit'];
     expect(auditAspect).toBeDefined();
     expect(auditAspect.implies).toEqual(['requires-logging']);
   });
 
-  it('includes flow aspects in artifact registry', async () => {
+  it('includes flow aspects in glossary', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
-    const flow = output.artifacts.flows['checkout-flow'];
+    const flow = output.glossary.flows['checkout-flow'];
     expect(flow).toBeDefined();
     expect(flow.aspects).toEqual(['requires-logging']);
   });
@@ -1370,7 +1372,7 @@ describe('toContextMapOutput', () => {
     expect(emitsDep!['event-name']).toBe('order.created');
   });
 
-  it('filters dependency artifacts by included_in_relations in artifact registry', async () => {
+  it('filters dependency files by included_in_relations', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
     // Add included_in_relations to responsibility.md
     graph.config.artifacts['responsibility.md'] = {
@@ -1380,17 +1382,17 @@ describe('toContextMapOutput', () => {
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
-    // Dependency targets should have artifacts filtered by included_in_relations
-    const depNode = output.artifacts.nodes['auth/auth-api'];
-    expect(depNode).toBeDefined();
+    // Dependency files should be filtered by included_in_relations
+    const authDep = output.dependencies.find((d) => d.path === 'auth/auth-api');
+    expect(authDep).toBeDefined();
     // With included_in_relations on responsibility.md, only that should appear for deps
-    const depFiles = depNode.files;
+    const depFiles = authDep!.files ?? [];
     for (const f of depFiles) {
       expect(f).toContain('responsibility.md');
     }
   });
 
-  it('includes flow without aspects in artifact registry', async () => {
+  it('includes flow without aspects in glossary', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
     // Add a flow without aspects that includes order-service
     graph.flows.push({
@@ -1403,7 +1405,7 @@ describe('toContextMapOutput', () => {
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
-    const flow = output.artifacts.flows['no-aspect-flow'];
+    const flow = output.glossary.flows['no-aspect-flow'];
     expect(flow).toBeDefined();
     expect(flow.name).toBe('No Aspect Flow');
     // Flow without aspects should not have aspects field
@@ -1483,7 +1485,7 @@ describe('toContextMapOutput', () => {
     expect(gatewayDep!.hierarchy[0].description).toBe('Payment domain module');
   });
 
-  it('surfaces description on aspects and flows in artifact registry', async () => {
+  it('surfaces description on aspects and flows in glossary', async () => {
     const node: GraphNode = {
       path: 'svc',
       meta: { name: 'Svc', type: 'service', aspects: [{ aspect: 'my-aspect' }] },
@@ -1522,8 +1524,8 @@ describe('toContextMapOutput', () => {
     const pkg = await buildContext(graph, 'svc');
     const output = toContextMapOutput(pkg, graph);
 
-    expect(output.artifacts.aspects['my-aspect'].description).toBe('Aspect description text');
-    expect(output.artifacts.flows['my-flow'].description).toBe('Flow description text');
+    expect(output.glossary.aspects['my-aspect'].description).toBe('Aspect description text');
+    expect(output.glossary.flows['my-flow'].description).toBe('Flow description text');
   });
 
   it('flow refs contain only path and aspects, not name or description', async () => {
@@ -1563,9 +1565,9 @@ describe('toContextMapOutput', () => {
     expect(flowRef!.path).toBe('my-flow');
     expect((flowRef as Record<string, unknown>).name).toBeUndefined();
     expect((flowRef as Record<string, unknown>).description).toBeUndefined();
-    // name and description are in artifacts.flows glossary instead
-    expect(output.artifacts.flows['my-flow'].name).toBe('My Flow');
-    expect(output.artifacts.flows['my-flow'].description).toBe('Flow description text');
+    // name and description are in glossary.flows instead
+    expect(output.glossary.flows['my-flow'].name).toBe('My Flow');
+    expect(output.glossary.flows['my-flow'].description).toBe('Flow description text');
   });
 
   it('omits description fields when not set', async () => {
@@ -1593,5 +1595,109 @@ describe('toContextMapOutput', () => {
     const output = toContextMapOutput(pkg, graph);
 
     expect(output.node.description).toBeUndefined();
+  });
+
+  it('glossary.aspects includes stability when aspect has it', async () => {
+    const node: GraphNode = {
+      path: 'svc',
+      meta: { name: 'Svc', type: 'service', aspects: [{ aspect: 'stable-aspect' }] },
+      artifacts: [{ filename: 'responsibility.md', content: 'x' }],
+      children: [],
+      parent: null,
+    };
+    const graph: Graph = {
+      config: {
+        name: 'T',
+        node_types: { service: { description: 'x' } },
+        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
+      },
+      nodes: new Map([['svc', node]]),
+      aspects: [
+        {
+          name: 'Stable Aspect',
+          id: 'stable-aspect',
+          stability: 'schema',
+          artifacts: [{ filename: 'content.md', content: 'rules' }],
+        },
+      ],
+      flows: [],
+      schemas: [],
+      rootPath: '/tmp',
+    };
+
+    const pkg = await buildContext(graph, 'svc');
+    const output = toContextMapOutput(pkg, graph);
+
+    expect(output.glossary.aspects['stable-aspect']).toBeDefined();
+    expect(output.glossary.aspects['stable-aspect'].stability).toBe('schema');
+  });
+
+  it('glossary.flows includes participants list', async () => {
+    const node: GraphNode = {
+      path: 'svc',
+      meta: { name: 'Svc', type: 'service' },
+      artifacts: [{ filename: 'responsibility.md', content: 'x' }],
+      children: [],
+      parent: null,
+    };
+    const graph: Graph = {
+      config: {
+        name: 'T',
+        node_types: { service: { description: 'x' } },
+        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
+      },
+      nodes: new Map([['svc', node]]),
+      aspects: [],
+      flows: [
+        {
+          path: 'my-flow',
+          name: 'My Flow',
+          nodes: ['svc'],
+          artifacts: [{ filename: 'description.md', content: 'flow desc' }],
+        },
+      ],
+      schemas: [],
+      rootPath: '/tmp',
+    };
+
+    const pkg = await buildContext(graph, 'svc');
+    const output = toContextMapOutput(pkg, graph);
+
+    expect(output.glossary.flows['my-flow']).toBeDefined();
+    expect(output.glossary.flows['my-flow'].participants).toContain('svc');
+  });
+
+  it('file lists exclude yg-node.yaml, yg-aspect.yaml, yg-flow.yaml', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    const pkg = await buildContext(graph, 'orders/order-service');
+    const output = toContextMapOutput(pkg, graph);
+
+    // Node files should not contain yg-node.yaml
+    for (const f of output.node.files) {
+      expect(f).not.toContain('yg-node.yaml');
+    }
+
+    // Aspect files should not contain yg-aspect.yaml
+    for (const [, aspect] of Object.entries(output.glossary.aspects)) {
+      for (const f of aspect.files) {
+        expect(f).not.toContain('yg-aspect.yaml');
+      }
+    }
+
+    // Flow files should not contain yg-flow.yaml
+    for (const [, flow] of Object.entries(output.glossary.flows)) {
+      for (const f of flow.files) {
+        expect(f).not.toContain('yg-flow.yaml');
+      }
+    }
+  });
+
+  it('output.node.files exists and is an array', async () => {
+    const graph = await loadGraph(FIXTURE_PROJECT);
+    const pkg = await buildContext(graph, 'orders/order-service');
+    const output = toContextMapOutput(pkg, graph);
+
+    expect(Array.isArray(output.node.files)).toBe(true);
+    expect(output.node.files.length).toBeGreaterThan(0);
   });
 });
