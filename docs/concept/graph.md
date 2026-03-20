@@ -213,6 +213,7 @@ context assembly algorithm guarantees this.
 ```yaml
 name: OrderService
 type: service
+description: "Manages order lifecycle from placement to fulfilment"  # optional
 
 aspects:
   - aspect: requires-audit
@@ -240,6 +241,7 @@ mapping:
 | -------------------- | -------- | ------------------------------------------------------------ |
 | `name`               | Yes      | Display name                                                 |
 | `type`               | Yes      | Node type from `config.node_types`                           |
+| `description`        | No       | Short summary shown in context maps for quick orientation    |
 | `aspects`            | No       | Aspect entries with embedded exceptions and anchors          |
 | `relations`          | No       | Outgoing dependencies to other nodes                         |
 | `mapping`            | No       | Link to source files (see Mapping section)                   |

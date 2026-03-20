@@ -181,6 +181,7 @@ node:
   path: orders/order-service
   name: OrderService
   type: service
+  description: "Manages order lifecycle from placement to fulfilment"
   mappings:
     - src/orders/order.service.ts
   aspects:

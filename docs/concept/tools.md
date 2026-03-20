@@ -86,6 +86,7 @@ Node identity and all its outgoing connections.
 ```yaml
 name: OrderService # string, required
 type: service # string, required — from config.node_types
+description: "Manages order lifecycle from placement to fulfilment" # string, optional — short summary for context maps
 aspects: # list of objects, optional — unified aspect entries
   - aspect: requires-audit # string, required — aspect identifier (directory path under aspects/)
     exceptions: # list of strings, optional — per-node deviations from this aspect's pattern
@@ -175,6 +176,7 @@ End-to-end flow metadata.
 
 ```yaml
 name: Checkout flow # string, required
+description: "End-to-end purchase flow from cart to payment confirmation" # string, optional — short summary for context maps
 nodes: # list of strings, required, non-empty (alias: participants)
   - orders/order-service # path relative to model/
   - payments/payment-service
@@ -972,6 +974,7 @@ Two levels of severity defined in the [Engine](engine) document.
 | `W013` | `directory-without-node`           | Directory in `model/` has only subdirectories but no `yg-node.yaml` — bare intermediate directory    |
 | `W014` | `anchor-not-found`                 | Anchor string for aspect not found in node's mapped source files                                  |
 | `W015` | `own-budget-warning`               | Own artifacts exceed threshold                                                                    |
+| `W016` | `missing-description`              | Node, aspect, or flow has no `description` field in its YAML                                      |
 
 **Message format:**
 
