@@ -5,8 +5,17 @@ import { parse as yamlParse } from 'yaml';
 
 function makeMinimalOutput(): ContextMapOutput {
   return {
-    meta: { tokenCount: 100, budgetStatus: 'ok' },
+    meta: { tokenCount: 100, budgetStatus: 'ok', breakdown: { own: 50, hierarchy: 20, aspects: 10, flows: 10, dependencies: 10, total: 100 } },
     project: 'TestProject',
+    glossary: {
+      aspects: {
+        deterministic: {
+          name: 'Determinism',
+          files: ['aspects/deterministic/content.md'],
+        },
+      },
+      flows: {},
+    },
     node: {
       path: 'test/node',
       name: 'TestNode',
@@ -14,26 +23,10 @@ function makeMinimalOutput(): ContextMapOutput {
       mappings: ['src/test.ts'],
       aspects: [{ id: 'deterministic' }],
       flows: [],
+      files: ['model/test/node/responsibility.md'],
     },
     hierarchy: [],
     dependencies: [],
-    artifacts: {
-      nodes: {
-        'test/node': {
-          files: ['model/test/node/responsibility.md'],
-        },
-      },
-      aspects: {
-        deterministic: {
-          name: 'Determinism',
-          files: [
-            'aspects/deterministic/yg-aspect.yaml',
-            'aspects/deterministic/content.md',
-          ],
-        },
-      },
-      flows: {},
-    },
   };
 }
 
@@ -44,11 +37,14 @@ describe('formatContextYaml', () => {
     expect(parsed.node.path).toBe('test/node');
   });
 
-  it('includes meta section at top', () => {
+  it('includes meta section with breakdown', () => {
     const output = formatContextYaml(makeMinimalOutput());
     const parsed = yamlParse(output);
     expect(parsed.meta['token-count']).toBe(100);
     expect(parsed.meta['budget-status']).toBe('ok');
+    expect(parsed.meta.breakdown).toBeDefined();
+    expect(parsed.meta.breakdown.own).toBe(50);
+    expect(parsed.meta.breakdown.total).toBe(100);
   });
 
   it('includes project name', () => {
@@ -57,28 +53,21 @@ describe('formatContextYaml', () => {
     expect(parsed.project).toBe('TestProject');
   });
 
-  it('includes node with aspects and mappings', () => {
+  it('includes node with aspects, mappings, and files', () => {
     const output = formatContextYaml(makeMinimalOutput());
     const parsed = yamlParse(output);
     expect(parsed.node.name).toBe('TestNode');
     expect(parsed.node.type).toBe('library');
     expect(parsed.node.mappings).toEqual(['src/test.ts']);
     expect(parsed.node.aspects[0].id).toBe('deterministic');
+    expect(parsed.node.files).toContain('model/test/node/responsibility.md');
   });
 
-  it('includes artifacts registry with node files', () => {
+  it('includes glossary with aspect files', () => {
     const output = formatContextYaml(makeMinimalOutput());
     const parsed = yamlParse(output);
-    expect(parsed.artifacts.nodes['test/node'].files).toContain(
-      'model/test/node/responsibility.md',
-    );
-  });
-
-  it('includes artifacts registry with aspect files', () => {
-    const output = formatContextYaml(makeMinimalOutput());
-    const parsed = yamlParse(output);
-    expect(parsed.artifacts.aspects.deterministic.name).toBe('Determinism');
-    expect(parsed.artifacts.aspects.deterministic.files).toContain(
+    expect(parsed.glossary.aspects.deterministic.name).toBe('Determinism');
+    expect(parsed.glossary.aspects.deterministic.files).toContain(
       'aspects/deterministic/content.md',
     );
   });
@@ -92,14 +81,15 @@ describe('formatContextYaml', () => {
 
   it('includes hierarchy when non-empty', () => {
     const data = makeMinimalOutput();
-    data.hierarchy = [{ path: 'parent', name: 'Parent', type: 'module', aspects: [] }];
+    data.hierarchy = [{ path: 'parent', name: 'Parent', type: 'module', aspects: [], files: ['model/parent/responsibility.md'] }];
     const output = formatContextYaml(data);
     const parsed = yamlParse(output);
     expect(parsed.hierarchy).toHaveLength(1);
     expect(parsed.hierarchy[0].path).toBe('parent');
+    expect(parsed.hierarchy[0].files).toContain('model/parent/responsibility.md');
   });
 
-  it('renders dependency with hierarchy and aspects', () => {
+  it('renders dependency with hierarchy, aspects, and files', () => {
     const data = makeMinimalOutput();
     data.dependencies = [{
       path: 'dep/svc',
@@ -113,32 +103,28 @@ describe('formatContextYaml', () => {
         name: 'Dep',
         type: 'module',
         aspects: ['deterministic'],
+        files: ['model/dep/responsibility.md'],
       }],
-    }];
-    data.artifacts.nodes['dep/svc'] = {
       files: ['model/dep/svc/responsibility.md', 'model/dep/svc/interface.md'],
-    };
-    data.artifacts.nodes['dep'] = {
-      files: ['model/dep/responsibility.md'],
-    };
+    }];
 
     const output = formatContextYaml(data);
     const parsed = yamlParse(output);
     expect(parsed.dependencies[0].path).toBe('dep/svc');
     expect(parsed.dependencies[0].hierarchy[0].path).toBe('dep');
-    expect(parsed.artifacts.nodes['dep/svc'].files).toHaveLength(2);
+    expect(parsed.dependencies[0].files).toHaveLength(2);
   });
 
-  it('renders flow in artifacts with path as key', () => {
+  it('renders flow in glossary with path as key', () => {
     const data = makeMinimalOutput();
     data.node.flows = [{
       path: 'checkout',
-      name: 'Checkout Flow',
       aspects: ['deterministic'],
     }];
-    data.artifacts.flows = {
+    data.glossary.flows = {
       checkout: {
         name: 'Checkout Flow',
+        participants: ['test/node'],
         aspects: ['deterministic'],
         files: ['flows/checkout/description.md'],
       },
@@ -146,23 +132,58 @@ describe('formatContextYaml', () => {
 
     const output = formatContextYaml(data);
     const parsed = yamlParse(output);
-    expect(parsed.artifacts.flows.checkout.name).toBe('Checkout Flow');
+    expect(parsed.glossary.flows.checkout.name).toBe('Checkout Flow');
+    expect(parsed.glossary.flows.checkout.participants).toContain('test/node');
   });
 
   it('renders aspect with implies', () => {
     const data = makeMinimalOutput();
-    data.artifacts.aspects['cli-command-contract'] = {
+    data.glossary.aspects['cli-command-contract'] = {
       name: 'CLI Command Contract',
       implies: ['deterministic'],
       files: [
-        'aspects/cli-command-contract/yg-aspect.yaml',
         'aspects/cli-command-contract/content.md',
       ],
     };
 
     const output = formatContextYaml(data);
     const parsed = yamlParse(output);
-    expect(parsed.artifacts.aspects['cli-command-contract'].implies).toEqual(['deterministic']);
+    expect(parsed.glossary.aspects['cli-command-contract'].implies).toEqual(['deterministic']);
+  });
+
+  it('glossary appears before node in raw output', () => {
+    const output = formatContextYaml(makeMinimalOutput());
+    const glossaryIdx = output.indexOf('glossary:');
+    const nodeIdx = output.indexOf('node:');
+    expect(glossaryIdx).toBeGreaterThan(-1);
+    expect(nodeIdx).toBeGreaterThan(-1);
+    expect(glossaryIdx).toBeLessThan(nodeIdx);
+  });
+
+  it('meta appears after node in raw output', () => {
+    const output = formatContextYaml(makeMinimalOutput());
+    const nodeIdx = output.indexOf('node:');
+    const metaIdx = output.indexOf('meta:');
+    expect(metaIdx).toBeGreaterThan(nodeIdx);
+  });
+
+  it('YAML comments are present in raw output', () => {
+    const data = makeMinimalOutput();
+    data.hierarchy = [{ path: 'parent', name: 'Parent', type: 'module', aspects: [] }];
+    data.dependencies = [{
+      path: 'dep/svc',
+      name: 'DepService',
+      type: 'service',
+      relation: 'uses',
+      aspects: [],
+      hierarchy: [],
+      files: ['model/dep/svc/responsibility.md'],
+    }];
+    const output = formatContextYaml(data);
+    expect(output).toContain('# Glossary:');
+    expect(output).toContain('# Target node:');
+    expect(output).toContain('# Hierarchy:');
+    expect(output).toContain('# Dependencies:');
   });
 });
 
