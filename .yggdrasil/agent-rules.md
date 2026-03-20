@@ -187,7 +187,7 @@ You are not allowed to edit or create source code without establishing graph cov
 - [ ] 1. Read specification: `yg build-context --node <node_path>`
 - [ ] 2. Assess blast radius: `yg impact --node <node_path>` — review dependents, descendants, and co-aspect nodes before changing interfaces or shared behavior
 - [ ] 3. Modify source code
-- [ ] 4. Sync graph artifacts — edit artifact files to reflect the changes (after each file, not batched — context is freshest immediately after the change)
+- [ ] 4. Sync graph artifacts — edit artifact files to reflect the changes (after each file, not batched — context is freshest immediately after the change). If the node's purpose changed, update `description` in `yg-node.yaml`.
 - [ ] 5. Run `yg validate` — fix all errors (if unfixable after 3 attempts → stop, report to user)
 - [ ] 6. Run `yg drift-sync --node <node_path>` — only after graph and code are both current
 
@@ -205,7 +205,7 @@ You are not allowed to edit or create source code without establishing graph cov
 
 1. Create aspects first (cross-cutting requirements the new code must satisfy)
 2. Create flows if the code participates in a business process
-3. Create nodes with full artifacts — responsibility, interface, internals
+3. Create nodes with full artifacts — description in `yg-node.yaml`, responsibility, interface, internals
 4. Review the context package (`yg build-context`) — it is now the behavioral specification
 5. Implement code that satisfies the specification
 6. The graph specifies WHAT and WHY; the code implements HOW (framework APIs, library choices)
@@ -230,6 +230,7 @@ Per area checklist:
 - [ ] 1. `yg owner --file <path>` — confirm no coverage
 - [ ] 2. Determine node granularity — propose to user if unclear
 - [ ] 3. Create node directory, read `schemas/yg-node.yaml`, create `yg-node.yaml`
+- [ ] 3b. Write `description` in `yg-node.yaml` — a short summary of what the node does
 - [ ] 4. Analyze source — for each artifact type in `yg-config.yaml artifacts`: extract content, do not invent
 - [ ] 5. Identify relations — add to `yg-node.yaml`
 - [ ] 6. Identify cross-cutting requirements — add matching aspects, create if needed
@@ -344,6 +345,8 @@ Projects can define additional artifact types in `yg-config.yaml` under `artifac
 
 **Default mode (paths-only):** Use for all graph operations. Read the YAML map first to understand topology. Then read artifact files from the `artifacts` section using the Read tool. For quick orientation (scoping, blast radius assessment), the map alone is sufficient. For implementation or modification, read all artifact files before changing code.
 
+The YAML map includes `description` for nodes, aspects, and flows when present. Use descriptions for quick orientation without reading full artifacts — they summarize what each element is.
+
 **Full mode (`--full`):** Use only when you cannot read files individually — e.g., when pasting context into a prompt, sharing with a user, or when you have no Read tool available.
 
 Artifact paths are stable identifiers within a session. When building context for multiple nodes, skip reading files you have already read — same path means same content.
@@ -391,7 +394,7 @@ When code anchors (`anchors` in an aspect entry in `yg-node.yaml`) are present, 
 
 - [ ] 1. Read `schemas/yg-flow.yaml`
 - [ ] 2. Create `flows/<name>/` directory
-- [ ] 3. Write `yg-flow.yaml` — declare nodes (participant list) and flow-level aspects
+- [ ] 3. Write `yg-flow.yaml` — name, description, nodes (participant list), and flow-level aspects
 - [ ] 4. Write `description.md` with required sections: Business context, Trigger, Goal, Participants, Paths (at least Happy path), Invariants across all paths
 - [ ] 5. `yg validate`
 
@@ -405,6 +408,7 @@ Test: "Does this describe what happens in the world, or only in the software?" I
 - **Read schemas before creating** any `yg-node.yaml`, `yg-aspect.yaml`, or `yg-flow.yaml`.
 - **Tools read, you write.** The `yg` CLI only reads, validates, and manages metadata. You create and edit files manually.
 - **Incremental sync.** Run `yg drift-sync` after every 3-5 source file changes. Do not defer to end of task.
+- **Description maintenance.** Every `yg-node.yaml`, `yg-aspect.yaml`, and `yg-flow.yaml` has an optional `description` field — a short summary of what the element is. Write it when creating new elements. Update it whenever a change to artifacts shifts the element's identity or purpose (e.g., responsibility split, scope change). Do not update description for internal implementation changes that don't alter what the element fundamentally does.
 - **Completeness test:** Two checks, both required:
   1. **Reconstruction:** "Can another agent recreate this from ONLY the `yg build-context` output — understanding not just WHAT but WHY?" Test: rejected alternatives, correct algorithm, design arguments.
   2. **Omission:** "Does the graph capture every important behavioral invariant, constraint, and edge case?" Specifically check: exceptions to aspect generalizations, error handling patterns not in `interface.md`, concurrency behaviors not in `internals.md`.
