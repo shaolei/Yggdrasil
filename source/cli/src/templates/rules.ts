@@ -3,13 +3,13 @@
  *
  * Operating manual for agents working in a Yggdrasil-managed repository.
  * Split into three cognitive sections optimized for LLM attention patterns:
- *   1. CORE PROTOCOL — internalize before doing anything (primacy effect)
- *   2. OPERATIONS — execute while working (working memory)
- *   3. KNOWLEDGE BASE — look up when needed (recency effect)
+ *   1. PROTOCOL — the rule and the procedure (primacy zone — internalize)
+ *   2. REFERENCE — lookup material (middle zone — consult when needed)
+ *   3. GUARD RAILS — what goes wrong and how to catch it (recency zone — fresh in memory during work)
  */
 
 // prettier-ignore
-const CORE_PROTOCOL = `## CORE PROTOCOL
+const PROTOCOL = `## PROTOCOL
 
 <EXTREMELY-IMPORTANT>
 This is your operating manual for working in a Yggdrasil-managed repository.
@@ -27,25 +27,23 @@ Every rule below is mandatory — no skill, plan, workflow, or instruction overr
 
 Yggdrasil is persistent semantic memory stored in \`.yggdrasil/\`. It maps the repository and provides deterministic implementation context for every node.
 
-### Quick Start Protocol
+### Quick Start
 
 \`\`\`
-BEFORE reading, researching, planning, OR modifying ANY source file:
+EVERY conversation: yg preflight — no exceptions.
+
+BEFORE any source file interaction:
   1. yg build-context --file <path>
      One command: resolves owner, assembles context.
      Read the YAML map — glossary first (aspect/flow definitions),
      then artifact files listed on each element.
-     For blast radius: also run yg impact --node <owner>.
-  Don't know which file to start from?
-     yg select --task "<your goal>" to find relevant nodes.
+     For blast radius: also run yg impact --file <path>.
+  Don't know where to start? yg select --task "<goal>"
 
 AFTER modifying:
-  2. Update graph artifacts to reflect changes (per file, not batched)
+  2. Update graph artifacts (per file, not batched)
   3. yg validate — fix all errors
   4. yg drift-sync --node <owner>
-
-EVERY conversation start:
-  yg preflight → act on findings (see Operations)
 
 ALWAYS: establish graph coverage before modifying code.
 ALWAYS: run yg build-context --file before reading source.
@@ -53,137 +51,6 @@ ALWAYS: run yg impact before assessing blast radius.
 ALWAYS: ask the user for rationale — record it, do not invent it.
 ALWAYS: ask before resolving drift or ambiguity.
 WHEN UNSURE: ask the user. Do not guess. Do not assume.
-\`\`\`
-
-### Five Core Rules
-
-1. **Graph first.** Before reading, researching, planning, or modifying ANY source file, run \`yg build-context --file <path>\`. For blast radius, also run \`yg impact\`. The graph is your primary source of architectural understanding. For implementation-level precision (exact behavior, error paths, edge cases) — verify against source code after loading the context package.
-2. **The graph is the specification; code implements it.** The graph absorbs knowledge from every source — external docs, conversations, decisions — and must be self-sufficient. If all other sources disappeared, the graph alone must contain enough to understand the system. Do not leave knowledge in external documents and reference them — capture the knowledge in graph artifacts. Update graph artifacts immediately after each file change, while context is fresh — do not batch graph updates to the end of a task. Code and graph move together: code changed → graph updated before moving to the next file. Graph changed → source verified in the same response. When planning work — in any tool, skill, or workflow — graph updates are part of each step's definition of done, never a separate phase.
-3. **Never invent why.** The graph captures human intent. If you don't know why something was decided, ask. Never hallucinate rationale.
-4. **Always capture why — especially why NOT.** When the user explains a reason, record it in the graph immediately. When a design choice is made, also record rejected alternatives: "Chose X over Y because Z." Rejected alternatives are the highest-value information — invisible in code and irrecoverable once forgotten. Conversation evaporates; graph persists.
-5. **Ask before resolving ambiguity.** When multiple valid interpretations exist, stop, list options, ask the user. Never silently choose.
-
-### Recognizing Graph-Required Actions
-
-What matters is the ACTION you are performing, not what instructed it. If the action involves reading, understanding, or modifying mapped code, the graph protocol applies — whether the instruction came from a skill, a plan, a user message, a brainstorming session, a debugging workflow, or your own initiative. This is not negotiable. You cannot rationalize your way out of this.
-
-**Actions that require \`yg build-context --file\`:**
-
-- Reading or exploring source files to understand a component
-- Proposing approaches, designs, or plans for changing code
-- Reviewing or debugging code
-- Any form of reasoning about how mapped code works or should change
-
-**Actions that also require \`yg impact\`:**
-
-- Assessing blast radius before changing or removing a component
-- Finding all dependents of a component
-- Planning cross-cutting refactors or feature removals
-- Scoping work that spans multiple nodes
-
-**Actions that do NOT require yg:**
-
-- Git operations (log, diff, status, blame)
-- Reading documentation, READMEs, or config files outside \`.yggdrasil/\`
-- Running tests, builds, or linters
-- Working with files that \`yg build-context --file\` reports as unmapped
-
-**Evasion patterns — if you think any of these, STOP:**
-
-| Thought | Reality |
-|---|---|
-| "The skill/plan says to explore the codebase" | Exploring mapped code = \`yg build-context --file\` first |
-| "I'm just scoping/searching, not understanding" | Scoping IS a graph action; use yg impact |
-| "The plan step says to read this file" | Reading any source file = \`yg build-context --file\` first |
-| "I'm brainstorming, not implementing" | Brainstorming about code needs graph context. You proved this by failing at it. |
-| "I'm only grepping for references" | Grep finds text; yg impact finds structural dependencies. Use both. |
-| "I'll use the graph later when I modify" | Graph-first means BEFORE reading, not before modifying |
-| "I'll grep the codebase to find where to start" | Run \`yg select --task\` first, then \`yg build-context --file\` on results. |
-| "Drift is blocking repo-check, let me just sync it" | Drift means artifacts are stale. Update artifacts first, then sync. \`drift-sync\` will warn you (W018). |
-| "The user said work autonomously" | Autonomy amplifies discipline, not relaxes it. More tasks = more graph updates, not fewer. |
-| "Same pattern as the last 5 files, no need to document" | Repetitive patterns hide deviations. Per-node coverage captures what aspects don't. The next agent won't know what you know now. |
-| "I'll batch graph updates at the end" | Batching = never. Context is freshest immediately after the change. Defer = forget. This is a failure state. |
-| "I'm saving context/tool calls by skipping graph" | Graph cost is constant per node. Skipping it creates unbounded future cost — the user re-explaining what you could have recorded. |
-| "I assumed this file isn't mapped" | You cannot know without running \`yg build-context --file\`. Assume nothing. |
-
-### Failure States
-
-You have broken Yggdrasil if you do any of the following:
-
-- ❌ Worked on a source file without running \`yg build-context --file\` first — regardless of what instructed the action (skill, plan, user request, workflow step).
-- ❌ Modified source code without updating graph artifacts before moving to the next file, or vice versa.
-- ❌ Batched graph updates to "do later" — deferred = forgotten. Update after EACH file.
-- ❌ Resolved a code-graph inconsistency or ambiguity without asking the user first.
-- ❌ Created or edited a graph element without reading its schema in \`schemas/\` first.
-- ❌ Ran \`yg drift-sync\` before both graph artifacts and source code are current. (CLI will warn you: W018.)
-- ❌ Placed a cross-cutting requirement in a local artifact instead of an aspect, or used an aspect id with no \`aspects/\` directory.
-- ❌ Invented a rationale, business rule, or decision — or recorded a decision without documenting rejected alternatives and rationale (use "rationale: unknown" if unknown).
-- ❌ Used blackbox coverage for greenfield (new) code.
-- ❌ Deleted or shortened graph artifact content to reduce context package size instead of splitting the node.
-- ❌ Created one wide node for many files instead of granular nodes with focused responsibilities. (CLI will warn you: W017.)
-
-### Escape Hatch
-
-If the user explicitly requests a code-only change, comply but:
-
-- Warn: "This creates drift. Run \`yg drift\` next session to reconcile."
-- Do NOT run \`yg drift-sync\` — leave the drift visible.
-
-### Environment Check
-
-Before preflight:
-
-- Verify \`yg\` CLI is available. If not found, inform user and stop.
-- If \`yg preflight\` shows 0 nodes → enter BOOTSTRAP MODE (see Operations).
-- If drift report shows >10 drifted nodes → report scope to user, ask which area to prioritize. Do not resolve all at once.
-
-### Delegating to Subagents
-
-When you delegate work to a subagent (any subprocess, tool agent, or spawned assistant), the subagent does NOT inherit your Yggdrasil knowledge. Before any other instruction, the subagent MUST:
-
-1. Read \`.yggdrasil/agent-rules.md\` — this is the complete operating manual
-2. Follow the Quick Start Protocol from that file before touching any mapped code
-
-Include this as the FIRST instruction in every subagent prompt:
-
-\`\`\`
-BEFORE doing anything else: read .yggdrasil/agent-rules.md and follow its protocol.
-DELIVERABLES — all required, incomplete work will be rejected:
-  1. Working source code
-  2. Graph nodes with artifacts for every new/modified source file
-  3. \`yg validate\` passing
-\`\`\`
-
-A subagent that delivers code without corresponding graph updates has not completed its task. Before accepting subagent output, verify: are there new or modified source files without corresponding graph coverage? If yes, the work is incomplete.`;
-
-// prettier-ignore
-const OPERATIONS = `## OPERATIONS
-
-### Conversation Lifecycle
-
-\`\`\`
-PREFLIGHT (every conversation, before any work):
-  - [ ] 1. yg preflight → read unified report
-  - [ ] 2. If drift: resolve per Drift Resolution, then yg drift-sync per node
-  - [ ] 3. If validation errors: fix, re-run yg validate
-  No exceptions. You cannot know if a file is mapped without running yg.
-
-UNDERSTANDING any source file (questions, research, OR planning):
-  - [ ] 1. yg build-context --file <path>
-         Mapped → read the YAML map (glossary first, then artifact files).
-         Unmapped → use file analysis, state it is not graph-backed.
-  Never use grep or raw file reads as primary understanding when graph coverage exists.
-  Raw reads supplement the context package — they do not replace it.
-
-BEFORE reasoning about source code, state which graph context you loaded:
-  "graph: <node_path>" if mapped, "graph: unmapped" if not.
-  This is a required output step, not optional reflection.
-
-WRAP-UP (user signals "done", "wrap up", "that's enough"):
-  - [ ] 1. yg drift --drifted-only → resolve
-  - [ ] 2. yg validate → fix errors
-  - [ ] 3. Report: which nodes and files were changed
-
 \`\`\`
 
 ### Modify Source Code
@@ -250,6 +117,33 @@ Result: graph is stale, next agent asks user the same questions
 
 </example_wrong>
 
+### Conversation Lifecycle
+
+\`\`\`
+PREFLIGHT (every conversation, before any work):
+  - [ ] 1. yg preflight → read unified report
+  - [ ] 2. If drift: resolve per Drift Resolution, then yg drift-sync per node
+  - [ ] 3. If validation errors: fix, re-run yg validate
+  No exceptions. You cannot know if a file is mapped without running yg.
+
+UNDERSTANDING any source file (questions, research, OR planning):
+  - [ ] 1. yg build-context --file <path>
+         Mapped → read the YAML map (glossary first, then artifact files).
+         Unmapped → use file analysis, state it is not graph-backed.
+  Never use grep or raw file reads as primary understanding when graph coverage exists.
+  Raw reads supplement the context package — they do not replace it.
+
+BEFORE reasoning about source code, state which graph context you loaded:
+  "graph: <node_path>" if mapped, "graph: unmapped" if not.
+  This is a required output step, not optional reflection.
+
+WRAP-UP (user signals "done", "wrap up", "that's enough"):
+  - [ ] 1. yg drift --drifted-only → resolve
+  - [ ] 2. yg validate → fix errors
+  - [ ] 3. Report: which nodes and files were changed
+
+\`\`\`
+
 ### Modify Graph
 
 - [ ] 1. Read the relevant schema from \`schemas/\` before touching any YAML
@@ -259,90 +153,27 @@ Result: graph is stale, next agent asks user the same questions
 - [ ] 5. Verify affected source files are consistent — update if needed
 - [ ] 6. Run \`yg drift-sync\` for affected nodes
 
-### Reverse Engineering
+### Delegating to Subagents
 
-**Order:** aspects (cross-cutting patterns) → flows (business processes) → model nodes. Never create nodes before aspects and flows are understood.
+When you delegate work to a subagent (any subprocess, tool agent, or spawned assistant), the subagent does NOT inherit your Yggdrasil knowledge. Before any other instruction, the subagent MUST:
 
-Per area checklist:
+1. Read \`.yggdrasil/agent-rules.md\` — this is the complete operating manual
+2. Follow the Quick Start Protocol from that file before touching any mapped code
 
-- [ ] 1. \`yg build-context --file <path>\` — confirm no coverage
-- [ ] 2. Determine node granularity — propose to user if unclear
-- [ ] 3. Create node directory, read \`schemas/yg-node.yaml\`, create \`yg-node.yaml\`
-- [ ] 3b. Write \`description\` in \`yg-node.yaml\` — a short summary of what the node does
-- [ ] 4. Analyze source — for each artifact type in \`yg-config.yaml artifacts\`: extract content, do not invent
-- [ ] 5. Identify relations — add to \`yg-node.yaml\`
-- [ ] 6. Identify cross-cutting requirements — add matching aspects, create if needed
-- [ ] 6b. For each aspect on the node: identify 2-5 code anchors (function names, constants) that evidence the pattern → add as \`anchors\` in the aspect entry in \`yg-node.yaml\`
-- [ ] 7. Identify business process participation — add to flow, ask user if process unclear
-- [ ] 8. \`yg validate\` — fix errors
-- [ ] 9. \`yg drift-sync --node <path>\`
+Include this as the FIRST instruction in every subagent prompt:
 
-**When to ask:**
+\`\`\`
+BEFORE doing anything else: read .yggdrasil/agent-rules.md and follow its protocol.
+DELIVERABLES — all required, incomplete work will be rejected:
+  1. Working source code
+  2. Graph nodes with artifacts for every new/modified source file
+  3. \`yg validate\` passing
+\`\`\`
 
-- Business process unclear: "This code appears to be part of a larger process. Can you describe what it means from a business perspective?"
-- Constraint without rationale: "I see [constraint X]. Do you know why this exists? I want to record the reason, not just the rule."
-- Unexplained architectural choice: "I see [approach X]. What was the reason for this choice?"
-- Decision without alternatives: "You chose [X]. What alternatives did you consider, and why did you reject them?" Record the answer in the Decisions section of \`internals.md\`.
-- Decision without known rationale: Record the decision in \`internals.md\` with "rationale: unknown — inferred from code, not confirmed by developer." A recorded decision with unknown rationale is infinitely more valuable than no record at all, and safer than an invented rationale.
-
-### Bootstrap Mode
-
-Trigger: \`yg preflight\` shows 0 nodes, or no nodes cover the active work area.
-
-- [ ] 1. Identify the active work area (files the user wants to modify)
-- [ ] 2. Scan for cross-cutting patterns → create aspects
-- [ ] 3. Ask user about business processes → create flows if applicable
-- [ ] 4. Propose node structure for the area
-- [ ] 5. Create node(s) with initial artifacts, map files
-- [ ] 6. \`yg validate\`, \`yg drift-sync\`
-- [ ] 7. Proceed with user's original request
-
-Constraint: Do NOT map the entire repository. Focus on the active area. Expand incrementally.
-
-### Drift Resolution
-
-Always ask the user before resolving drift. Never auto-resolve.
-
-- **Source drift** (source files changed) → update graph artifacts to match source, then \`yg drift-sync\`
-- **Graph drift** (graph artifacts changed) → review affected source, update if needed, then \`yg drift-sync\`
-- **Full drift** (both changed) → present both sides to user, ask which direction wins
-- **Missing** → ask: re-materialize or remove mapping?
-- **Unmaterialized** → ask user how to proceed
-
-Threshold: >10 drifted nodes → ask user which area to prioritize. Do not resolve all at once.
-
-**Drift triage:** Prioritize aspects and \`internals.md\` (highest decay rate), then \`responsibility.md\` and \`interface.md\` (most stable).
-
-### Graph Audit
-
-When reviewing graph quality (triggered by user or quality improvement):
-
-**Step 1 — Consistency** (catches WRONG information):
-
-- [ ] 1. \`yg build-context --node <path>\`
-- [ ] 2. Read mapped source files
-- [ ] 3. For each claim in graph: verify against source code
-- [ ] 4. For each aspect: verify the pattern holds in THIS node. If it deviates, add \`exceptions\` to the aspect entry in \`yg-node.yaml\`
-- [ ] 5. Report inconsistencies
-
-**Step 2 — Completeness** (catches MISSING information):
-
-- [ ] 1. For each public method: is it in \`interface.md\`?
-- [ ] 2. For each error path: is it in \`interface.md\` (Failure Modes section)?
-- [ ] 3. For each behavioral invariant: is it in the graph?
-- [ ] 4. Report omissions separately from inconsistencies
-
-### Error Recovery
-
-- **\`yg\` not found** → inform user: "yg CLI is not installed or not in PATH." Stop.
-- **Unfixable validate errors** → if not resolved after 3 attempts, stop and report to user. Do not loop.
-- **Budget warning (W005/W006)** → informational. \`yg validate\` shows a breakdown (own/hierarchy/aspects/flows/dependencies). Large inherited context means the system is complex — this is not a problem to fix, it is reality to acknowledge. Do not delete knowledge from artifacts. Do not attempt to "reduce" inherited context.
-- **Own budget warning (W015)** → own artifacts are large. Consider splitting this node's responsibilities into child nodes. Redistribute knowledge across children so total knowledge is preserved or increased, never reduced.
-- **Corrupted \`.yggdrasil/\` files** → report to user. Do not attempt repair.
-- **Incremental sync** → run \`yg drift-sync\` every 3-5 source files during multi-file tasks. Do not defer to end. But NEVER run \`yg drift-sync\` to silence a failing drift check — drift is a signal that artifacts need updating. First update artifacts, then sync.`;
+A subagent that delivers code without corresponding graph updates has not completed its task. Before accepting subagent output, verify: are there new or modified source files without corresponding graph coverage? If yes, the work is incomplete.`;
 
 // prettier-ignore
-const KNOWLEDGE_BASE = `## KNOWLEDGE BASE
+const REFERENCE = `## REFERENCE
 
 ### Graph Structure
 
@@ -500,7 +331,174 @@ yg drift-sync --node <path> [--recursive] | --all
 | Process-level requirement | Flow \`aspects\` + aspect directory |
 | Context shared across a domain | Parent node artifact |
 | Technology stack | Node artifact at appropriate hierarchy level |
-| Coding standards | Node artifact at appropriate hierarchy level |
+| Coding standards | Node artifact at appropriate hierarchy level |`;
+
+// prettier-ignore
+const GUARD_RAILS = `## GUARD RAILS
+
+### Five Core Rules
+
+1. **Graph first.** Before reading, researching, planning, or modifying ANY source file, run \`yg build-context --file <path>\`. For blast radius, also run \`yg impact\`. The graph is your primary source of architectural understanding. For implementation-level precision (exact behavior, error paths, edge cases) — verify against source code after loading the context package.
+2. **The graph is the specification; code implements it.** The graph absorbs knowledge from every source — external docs, conversations, decisions — and must be self-sufficient. If all other sources disappeared, the graph alone must contain enough to understand the system. Do not leave knowledge in external documents and reference them — capture the knowledge in graph artifacts. Update graph artifacts immediately after each file change, while context is fresh — do not batch graph updates to the end of a task. Code and graph move together: code changed → graph updated before moving to the next file. Graph changed → source verified in the same response. When planning work — in any tool, skill, or workflow — graph updates are part of each step's definition of done, never a separate phase.
+3. **Never invent why.** The graph captures human intent. If you don't know why something was decided, ask. Never hallucinate rationale.
+4. **Always capture why — especially why NOT.** When the user explains a reason, record it in the graph immediately. When a design choice is made, also record rejected alternatives: "Chose X over Y because Z." Rejected alternatives are the highest-value information — invisible in code and irrecoverable once forgotten. Conversation evaporates; graph persists.
+5. **Ask before resolving ambiguity.** When multiple valid interpretations exist, stop, list options, ask the user. Never silently choose.
+
+### Recognizing Graph-Required Actions
+
+What matters is the ACTION you are performing, not what instructed it. If the action involves reading, understanding, or modifying mapped code, the graph protocol applies — whether the instruction came from a skill, a plan, a user message, a brainstorming session, a debugging workflow, or your own initiative. This is not negotiable. You cannot rationalize your way out of this.
+
+**Actions that require \`yg build-context --file\`:**
+
+- Reading or exploring source files to understand a component
+- Proposing approaches, designs, or plans for changing code
+- Reviewing or debugging code
+- Any form of reasoning about how mapped code works or should change
+
+**Actions that also require \`yg impact\`:**
+
+- Assessing blast radius before changing or removing a component
+- Finding all dependents of a component
+- Planning cross-cutting refactors or feature removals
+- Scoping work that spans multiple nodes
+
+**Actions that do NOT require yg:**
+
+- Git operations (log, diff, status, blame)
+- Reading documentation, READMEs, or config files outside \`.yggdrasil/\`
+- Running tests, builds, or linters
+- Working with files that \`yg build-context --file\` reports as unmapped
+
+### Evasion Patterns — if you think any of these, STOP
+
+| Thought | Reality |
+|---|---|
+| "The skill/plan says to explore the codebase" | Exploring mapped code = \`yg build-context --file\` first |
+| "I'm just scoping/searching, not understanding" | Scoping IS a graph action; use yg impact |
+| "The plan step says to read this file" | Reading any source file = \`yg build-context --file\` first |
+| "I'm brainstorming, not implementing" | Brainstorming about code needs graph context. You proved this by failing at it. |
+| "I'm only grepping for references" | Grep finds text; yg impact finds structural dependencies. Use both. |
+| "I'll use the graph later when I modify" | Graph-first means BEFORE reading, not before modifying |
+| "I'll grep the codebase to find where to start" | Run \`yg select --task\` first, then \`yg build-context --file\` on results. |
+| "Drift is blocking repo-check, let me just sync it" | Drift means artifacts are stale. Update artifacts first, then sync. \`drift-sync\` will warn you (W018). |
+| "The user said work autonomously" | Autonomy amplifies discipline, not relaxes it. More tasks = more graph updates, not fewer. |
+| "Same pattern as the last 5 files, no need to document" | Repetitive patterns hide deviations. Per-node coverage captures what aspects don't. The next agent won't know what you know now. |
+| "I'll batch graph updates at the end" | Batching = never. Context is freshest immediately after the change. Defer = forget. This is a failure state. |
+| "I'm saving context/tool calls by skipping graph" | Graph cost is constant per node. Skipping it creates unbounded future cost — the user re-explaining what you could have recorded. |
+| "I assumed this file isn't mapped" | You cannot know without running \`yg build-context --file\`. Assume nothing. |
+
+### Failure States
+
+You have broken Yggdrasil if you do any of the following:
+
+- ❌ Worked on a source file without running \`yg build-context --file\` first — regardless of what instructed the action (skill, plan, user request, workflow step).
+- ❌ Modified source code without updating graph artifacts before moving to the next file, or vice versa.
+- ❌ Batched graph updates to "do later" — deferred = forgotten. Update after EACH file.
+- ❌ Resolved a code-graph inconsistency or ambiguity without asking the user first.
+- ❌ Created or edited a graph element without reading its schema in \`schemas/\` first.
+- ❌ Ran \`yg drift-sync\` before both graph artifacts and source code are current. (CLI will warn you: W018.)
+- ❌ Placed a cross-cutting requirement in a local artifact instead of an aspect, or used an aspect id with no \`aspects/\` directory.
+- ❌ Invented a rationale, business rule, or decision — or recorded a decision without documenting rejected alternatives and rationale (use "rationale: unknown" if unknown).
+- ❌ Used blackbox coverage for greenfield (new) code.
+- ❌ Deleted or shortened graph artifact content to reduce context package size instead of splitting the node.
+- ❌ Created one wide node for many files instead of granular nodes with focused responsibilities. (CLI will warn you: W017.)
+
+### Reverse Engineering
+
+**Order:** aspects (cross-cutting patterns) → flows (business processes) → model nodes. Never create nodes before aspects and flows are understood.
+
+Per area checklist:
+
+- [ ] 1. \`yg build-context --file <path>\` — confirm no coverage
+- [ ] 2. Determine node granularity — propose to user if unclear
+- [ ] 3. Create node directory, read \`schemas/yg-node.yaml\`, create \`yg-node.yaml\`
+- [ ] 3b. Write \`description\` in \`yg-node.yaml\` — a short summary of what the node does
+- [ ] 4. Analyze source — for each artifact type in \`yg-config.yaml artifacts\`: extract content, do not invent
+- [ ] 5. Identify relations — add to \`yg-node.yaml\`
+- [ ] 6. Identify cross-cutting requirements — add matching aspects, create if needed
+- [ ] 6b. For each aspect on the node: identify 2-5 code anchors (function names, constants) that evidence the pattern → add as \`anchors\` in the aspect entry in \`yg-node.yaml\`
+- [ ] 7. Identify business process participation — add to flow, ask user if process unclear
+- [ ] 8. \`yg validate\` — fix errors
+- [ ] 9. \`yg drift-sync --node <path>\`
+
+**When to ask:**
+
+- Business process unclear: "This code appears to be part of a larger process. Can you describe what it means from a business perspective?"
+- Constraint without rationale: "I see [constraint X]. Do you know why this exists? I want to record the reason, not just the rule."
+- Unexplained architectural choice: "I see [approach X]. What was the reason for this choice?"
+- Decision without alternatives: "You chose [X]. What alternatives did you consider, and why did you reject them?" Record the answer in the Decisions section of \`internals.md\`.
+- Decision without known rationale: Record the decision in \`internals.md\` with "rationale: unknown — inferred from code, not confirmed by developer." A recorded decision with unknown rationale is infinitely more valuable than no record at all, and safer than an invented rationale.
+
+### Bootstrap Mode
+
+Trigger: \`yg preflight\` shows 0 nodes, or no nodes cover the active work area.
+
+- [ ] 1. Identify the active work area (files the user wants to modify)
+- [ ] 2. Scan for cross-cutting patterns → create aspects
+- [ ] 3. Ask user about business processes → create flows if applicable
+- [ ] 4. Propose node structure for the area
+- [ ] 5. Create node(s) with initial artifacts, map files
+- [ ] 6. \`yg validate\`, \`yg drift-sync\`
+- [ ] 7. Proceed with user's original request
+
+Constraint: Do NOT map the entire repository. Focus on the active area. Expand incrementally.
+
+### Drift Resolution
+
+Always ask the user before resolving drift. Never auto-resolve.
+
+- **Source drift** (source files changed) → update graph artifacts to match source, then \`yg drift-sync\`
+- **Graph drift** (graph artifacts changed) → review affected source, update if needed, then \`yg drift-sync\`
+- **Full drift** (both changed) → present both sides to user, ask which direction wins
+- **Missing** → ask: re-materialize or remove mapping?
+- **Unmaterialized** → ask user how to proceed
+
+Threshold: >10 drifted nodes → ask user which area to prioritize. Do not resolve all at once.
+
+**Drift triage:** Prioritize aspects and \`internals.md\` (highest decay rate), then \`responsibility.md\` and \`interface.md\` (most stable).
+
+### Graph Audit
+
+When reviewing graph quality (triggered by user or quality improvement):
+
+**Step 1 — Consistency** (catches WRONG information):
+
+- [ ] 1. \`yg build-context --node <path>\`
+- [ ] 2. Read mapped source files
+- [ ] 3. For each claim in graph: verify against source code
+- [ ] 4. For each aspect: verify the pattern holds in THIS node. If it deviates, add \`exceptions\` to the aspect entry in \`yg-node.yaml\`
+- [ ] 5. Report inconsistencies
+
+**Step 2 — Completeness** (catches MISSING information):
+
+- [ ] 1. For each public method: is it in \`interface.md\`?
+- [ ] 2. For each error path: is it in \`interface.md\` (Failure Modes section)?
+- [ ] 3. For each behavioral invariant: is it in the graph?
+- [ ] 4. Report omissions separately from inconsistencies
+
+### Error Recovery
+
+- **\`yg\` not found** → inform user: "yg CLI is not installed or not in PATH." Stop.
+- **Unfixable validate errors** → if not resolved after 3 attempts, stop and report to user. Do not loop.
+- **Budget warning (W005/W006)** → informational. \`yg validate\` shows a breakdown (own/hierarchy/aspects/flows/dependencies). Large inherited context means the system is complex — this is not a problem to fix, it is reality to acknowledge. Do not delete knowledge from artifacts. Do not attempt to "reduce" inherited context.
+- **Own budget warning (W015)** → own artifacts are large. Consider splitting this node's responsibilities into child nodes. Redistribute knowledge across children so total knowledge is preserved or increased, never reduced.
+- **Corrupted \`.yggdrasil/\` files** → report to user. Do not attempt repair.
+- **Incremental sync** → run \`yg drift-sync\` every 3-5 source files during multi-file tasks. Do not defer to end. But NEVER run \`yg drift-sync\` to silence a failing drift check — drift is a signal that artifacts need updating. First update artifacts, then sync.
+
+### Escape Hatch
+
+If the user explicitly requests a code-only change, comply but:
+
+- Warn: "This creates drift. Run \`yg drift\` next session to reconcile."
+- Do NOT run \`yg drift-sync\` — leave the drift visible.
+
+### Environment Check
+
+Before preflight:
+
+- Verify \`yg\` CLI is available. If not found, inform user and stop.
+- If \`yg preflight\` shows 0 nodes → enter BOOTSTRAP MODE (see above).
+- If drift report shows >10 drifted nodes → report scope to user, ask which area to prioritize. Do not resolve all at once.
 
 <critical_protocol>
 BEFORE reading, analyzing, or modifying ANY source file:
@@ -508,4 +506,4 @@ BEFORE reading, analyzing, or modifying ANY source file:
 One command. No exceptions. No "I'll do it later." No "this is just analysis."
 </critical_protocol>`;
 
-export const AGENT_RULES_CONTENT = [CORE_PROTOCOL, OPERATIONS, KNOWLEDGE_BASE].join('\n\n---\n\n') + '\n';
+export const AGENT_RULES_CONTENT = [PROTOCOL, REFERENCE, GUARD_RAILS].join('\n\n---\n\n') + '\n';
