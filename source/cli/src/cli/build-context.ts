@@ -3,6 +3,8 @@ import { loadGraph } from '../core/graph-loader.js';
 import { buildContext, collectAncestors, toContextMapOutput } from '../core/context-builder.js';
 import { formatContextYaml, formatFullContent } from '../formatters/context-text.js';
 import { validate } from '../core/validator.js';
+import { findOwner } from './owner.js';
+import { projectRootFromGraph } from '../utils/paths.js';
 import type { Graph } from '../model/types.js';
 
 function collectRelevantNodePaths(graph: Graph, nodePath: string): Set<string> {
@@ -35,12 +37,35 @@ export function registerBuildCommand(program: Command): void {
   program
     .command('build-context')
     .description('Assemble a context package for one node')
-    .requiredOption('--node <node-path>', 'Node path relative to .yggdrasil/model/')
+    .option('--node <node-path>', 'Node path relative to .yggdrasil/model/')
+    .option('--file <file-path>', 'Source file path — resolves owner node automatically')
     .option('--full', 'Include artifact file contents in output')
-    .action(async (options: { node: string; full?: boolean }) => {
+    .action(async (options: { node?: string; file?: string; full?: boolean }) => {
       try {
+        if (!options.node && !options.file) {
+          process.stderr.write("Error: either '--node <path>' or '--file <path>' is required\n");
+          process.exit(1);
+        }
+        if (options.node && options.file) {
+          process.stderr.write("Error: '--node' and '--file' are mutually exclusive\n");
+          process.exit(1);
+        }
+
         const graph = await loadGraph(process.cwd());
-        const nodePath = options.node.trim().replace(/^\.\//, '').replace(/\/$/, '');
+        let nodePath: string;
+
+        if (options.file) {
+          const repoRoot = projectRootFromGraph(graph.rootPath);
+          const result = findOwner(graph, repoRoot, options.file.trim());
+          if (!result.nodePath) {
+            process.stderr.write(`${result.file} -> no graph coverage\n`);
+            process.exit(1);
+          }
+          process.stderr.write(`${result.file} -> ${result.nodePath}\n`);
+          nodePath = result.nodePath;
+        } else {
+          nodePath = options.node!.trim().replace(/^\.\//, '').replace(/\/$/, '');
+        }
 
         const relevantNodes = collectRelevantNodePaths(graph, nodePath);
 

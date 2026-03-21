@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-03-21
+
+### Added
+
+- **`yg build-context --file <path>`** — resolves owning node and assembles context
+  in one step. Reduces the agent workflow from two commands (`yg owner` + `yg build-context
+  --node`) to one.
+- **`yg impact --file <path>`** — resolves owning node and shows blast radius in one
+  step. All existing flags (`--simulate`, `--method`) work with `--file`.
+- **W017 wide-node** — validation warning when a node maps more source files than
+  `quality.max_mapping_source_files` (default: 10). Suggests splitting into child nodes.
+- **W018 source-only-sync** — `yg drift-sync` warns when source files changed but graph
+  artifacts are unchanged, signaling that artifacts should be updated before syncing.
+
+### Changed
+
+- **Agent rules: motivation-first opening.** The `EXTREMELY-IMPORTANT` block now leads
+  with why the graph matters ("the user loses time and opportunities") instead of
+  authority-based compliance ("YOU DO NOT HAVE A CHOICE").
+- **Agent rules: simplified Quick Start.** Replaced multi-step decision tree with single
+  command: `yg build-context --file <path>`.
+- **Agent rules: preflight exception removed.** "Read-only requests skip preflight" was
+  exploitable — agents classified code analysis as read-only. No exceptions now.
+- **Agent rules: self-audit removed.** Post-response self-audit was never executed by
+  agents. Replaced by CLI guardrails (W017, W018) that provide feedback at the point of
+  action.
+- **Agent rules: 5 new evasion patterns.** Autonomous mode, repetitive patterns, batching,
+  saving tool calls, "assumed not mapped."
+- **Agent rules: 3 new failure states.** Batching graph updates, source-only drift-sync,
+  wide umbrella nodes.
+
 ## [2.7.0] - 2026-03-20
 
 ### Changed

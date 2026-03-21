@@ -3,7 +3,7 @@
 # Build Context Command Logic
 
 1. `loadGraph(process.cwd())`
-2. Trim node path, strip leading `./` and trailing `/`
+2. Validate options: require exactly one of --node or --file. If --file: resolve owner via `findOwner(graph, repoRoot, filePath)`, exit 1 if no coverage, print mapping to stderr, use resolved nodePath. If --node: trim, strip leading `./` and trailing `/`.
 3. `collectRelevantNodePaths(graph, nodePath)` — collects the node itself, its ancestors, direct relation targets, and ancestors of relation targets
 4. `validate(graph, 'all')` — check for structural errors, but only block on errors relevant to the node's context (matching relevantNodes set). Unrelated errors are reported as ignored count.
 5. `buildContext(graph, nodePath)` — assemble context package

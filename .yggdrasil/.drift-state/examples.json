@@ -124,7 +124,7 @@
     "examples/expense-tracker/package.json": "d42ff4e29e776c2c1f8894946a0b2c15baff83d65be9e13fcf0bfede355fe6c5"
   },
   "mtimes": {
-    ".yggdrasil/model/examples/yg-node.yaml": 1774000500537.5996,
+    ".yggdrasil/model/examples/yg-node.yaml": 1774035679171.4736,
     ".yggdrasil/model/examples/responsibility.md": 1772743197465.3506,
     "examples/expense-tracker/.yggdrasil/aspects/error-format/content.md": 1772485235627.9312,
     "examples/expense-tracker/.yggdrasil/aspects/error-format/yg-aspect.yaml": 1772485235627.711,

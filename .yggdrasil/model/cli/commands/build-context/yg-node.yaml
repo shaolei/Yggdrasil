@@ -1,6 +1,6 @@
 name: BuildContextCommand
 type: library
-description: "Assembles and outputs a context package for a node via yg build-context"
+description: "Assembles and outputs a context package for a node via yg build-context --node or --file"
 aspects:
   - aspect: deterministic
   - aspect: cli-command-contract
@@ -18,6 +18,12 @@ relations:
   - target: cli/formatters
     type: uses
     consumes: [formatContextYaml, formatFullContent]
+  - target: cli/commands/owner
+    type: uses
+    consumes: [findOwner]
+  - target: cli/utils
+    type: uses
+    consumes: [projectRootFromGraph]
 
 mapping:
   paths:

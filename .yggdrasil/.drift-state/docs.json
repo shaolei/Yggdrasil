@@ -1,9 +1,9 @@
 {
-  "hash": "fb080700b8208e2c9a132826b44b4c8d2a8a11b1a4c5ca6fd324b16bb1aac96d",
+  "hash": "8acbd736c1033271ad349ca9c63cbab6c1bd975531d5e54b5ccc948f760d58fb",
   "files": {
     ".yggdrasil/model/docs/yg-node.yaml": "7703eeb36a741d8f3223b2e1b7387320780667ec09c5ad9ba0813e4c9c4e7732",
     ".yggdrasil/model/docs/responsibility.md": "070a2a6c6b29116ab18d2b824068d227cc4682f30fd5ef79b3cbe307dbe632fe",
-    "docs/cli-reference.md": "7b16db6631915f9da1ab5aeaa92fc30e9e17cb15b538dc1e68f742170f8c31b4",
+    "docs/cli-reference.md": "b84eb79c3cf20e4abde5dce6a2026306e7fc2f74dabbf1db98a20dd7154fe7b3",
     "docs/configuration.md": "930d07f178709dced83eb0e1d27479ae5fa2d804eecaaa349fc8ef765620c627",
     "docs/getting-started.md": "bd967ee1fb52aaca13ba218b44610b767c6bf276ab98e1d4dd637ab8955ccf3a",
     "docs/index.md": "4bfc5e57d2f214863e2aba80a2f5ba3f7dde2e057a49cb3a1ca46ba428a5eebe",
@@ -12,9 +12,9 @@
     "docs/package-lock.json": "5de0744623b0f0d3ae0f73845845ae1d5c89623da74cf542447129cb159f167e"
   },
   "mtimes": {
-    ".yggdrasil/model/docs/yg-node.yaml": 1774000493275.099,
+    ".yggdrasil/model/docs/yg-node.yaml": 1774035679171.2683,
     ".yggdrasil/model/docs/responsibility.md": 1772828320283.2747,
-    "docs/cli-reference.md": 1773390442106.5479,
+    "docs/cli-reference.md": 1774070267812.155,
     "docs/configuration.md": 1772776392202.4404,
     "docs/getting-started.md": 1772829457957.486,
     "docs/index.md": 1773065874221.2637,

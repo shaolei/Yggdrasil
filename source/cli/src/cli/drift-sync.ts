@@ -56,11 +56,17 @@ export function registerDriftSyncCommand(program: Command): void {
             }
             continue;
           }
-          const { previousHash, currentHash } = await syncDriftState(graph, np);
+          const { previousHash, currentHash, sourceOnlyChange } = await syncDriftState(graph, np);
           process.stdout.write(chalk.green(`Synchronized: ${np}\n`));
           process.stdout.write(
             `  Hash: ${previousHash ? previousHash.slice(0, 8) : 'none'} -> ${currentHash.slice(0, 8)}\n`,
           );
+          if (sourceOnlyChange) {
+            process.stderr.write(
+              chalk.yellow(`  ⚠ W018: Source files changed but graph artifacts are unchanged for '${np}'.\n`) +
+              chalk.yellow(`    Update artifacts BEFORE syncing — drift-sync without artifact update hides staleness.\n`),
+            );
+          }
         }
 
         // Garbage collect orphaned drift state files after --all sync

@@ -25,6 +25,7 @@ export interface ArtifactConfig {
 export interface QualityConfig {
   min_artifact_length: number;
   max_direct_relations: number;
+  max_mapping_source_files?: number;
   context_budget: { warning: number; error: number; own_warning?: number };
 }
 

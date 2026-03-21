@@ -8,6 +8,8 @@ import {
   computeBudgetBreakdown,
 } from '../core/context-builder.js';
 import { detectDrift } from '../core/drift-detector.js';
+import { findOwner } from './owner.js';
+import { projectRootFromGraph } from '../utils/paths.js';
 import type { Graph } from '../model/types.js';
 
 const STRUCTURAL_TYPES = new Set(['uses', 'calls', 'extends', 'implements']);
@@ -381,28 +383,46 @@ export function registerImpactCommand(program: Command): void {
     .command('impact')
     .description('Show reverse dependency impact for a node, aspect, or flow')
     .option('--node <path>', 'Node path relative to .yggdrasil/model/')
+    .option('--file <file-path>', 'Source file path — resolves owner node automatically')
     .option('--aspect <id>', 'Aspect id (directory path under aspects/)')
     .option('--flow <name>', 'Flow name (directory name under flows/)')
-    .option('--method <name>', 'Filter impact to dependents consuming a specific method (requires --node)')
+    .option('--method <name>', 'Filter impact to dependents consuming a specific method (requires --node or --file)')
     .option('--simulate', 'Simulate context package impact (compare HEAD vs current)')
     .action(
-      async (options: { node?: string; aspect?: string; flow?: string; method?: string; simulate?: boolean }) => {
+      async (options: { node?: string; file?: string; aspect?: string; flow?: string; method?: string; simulate?: boolean }) => {
         try {
-          const modeCount = [options.node, options.aspect, options.flow].filter(Boolean).length;
+          if (options.node && options.file) {
+            process.stderr.write("Error: '--node' and '--file' are mutually exclusive\n");
+            process.exit(1);
+          }
+
+          const modeCount = [options.node || options.file, options.aspect, options.flow].filter(Boolean).length;
           if (modeCount === 0) {
             process.stderr.write(
-              'Error: one of --node, --aspect, or --flow is required\n',
+              'Error: one of --node, --file, --aspect, or --flow is required\n',
             );
             process.exit(1);
           }
           if (modeCount > 1) {
             process.stderr.write(
-              'Error: --node, --aspect, and --flow are mutually exclusive\n',
+              'Error: --node/--file, --aspect, and --flow are mutually exclusive\n',
             );
             process.exit(1);
           }
 
           const graph = await loadGraph(process.cwd());
+
+          // Resolve --file to --node
+          if (options.file) {
+            const repoRoot = projectRootFromGraph(graph.rootPath);
+            const result = findOwner(graph, repoRoot, options.file.trim());
+            if (!result.nodePath) {
+              process.stderr.write(`${result.file} -> no graph coverage\n`);
+              process.exit(1);
+            }
+            process.stderr.write(`${result.file} -> ${result.nodePath}\n`);
+            options.node = result.nodePath;
+          }
 
           if (options.aspect) {
             await handleAspectImpact(graph, options.aspect.trim(), options.simulate);

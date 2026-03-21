@@ -41,6 +41,7 @@ Prints the full structure of the semantic memory.
 
 ```bash
 yg build-context --node <node-path> [--full]
+yg build-context --file <file-path> [--full]
 ```
 
 Shows the exact context package your agent reads before working on a node. Output is a
@@ -48,6 +49,8 @@ two-section YAML format: a structural map (topology, relationships, aspects, flo
 by an artifact registry (file paths). Default mode returns paths only — agents read files
 individually using their file-reading tool.
 
+- `--file <path>` — Resolves the owning node automatically, then assembles context. Prints
+  owner mapping to stderr. Exits 1 if file has no graph coverage. Mutually exclusive with `--node`.
 - `--full` — Appends artifact file contents below a `---` separator in XML-style tags, for
   environments without file reading capabilities
 
@@ -56,6 +59,7 @@ yg owner --file <path>
 ```
 
 Finds which memory node owns a given file. Path is relative to repository root.
+Quick ownership check — use `build-context --file` when you need the full context package.
 
 ```bash
 yg deps --node <path> [--depth <n>] [--type <structural|event|all>]
@@ -178,11 +182,13 @@ Records current file hash after resolving drift.
 
 ```bash
 yg impact --node <path> [--simulate]
+yg impact --file <path> [--simulate]
 yg impact --aspect <id> [--simulate]
 yg impact --flow <name> [--simulate]
 ```
 
 Shows the blast radius of changes to a node, aspect, or flow.
+`--file` resolves the owning node automatically, then proceeds as `--node`.
 
 - `--node` — Show reverse dependencies, descendants, structural dependents of descendants, flows, aspects, and co-aspect nodes
 - `--aspect` — Show all nodes where this aspect is effective (own, hierarchy, flow, or implied), plus structural dependents of affected nodes

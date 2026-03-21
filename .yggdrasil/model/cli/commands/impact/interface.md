@@ -2,7 +2,7 @@
 
 | Function | Signature | Command | Options |
 | -------- | --------- | ------- | ------- |
-| registerImpactCommand | (program: Command) => void | impact | --node, --aspect, --flow (mutually exclusive, one required), --method (requires --node), --simulate |
+| registerImpactCommand | (program: Command) => void | impact | --node, --file, --aspect, --flow (mutually exclusive, one required), --method (requires --node or --file), --simulate |
 
 **Also exported:**
 
@@ -13,7 +13,9 @@
 
 **Return:** void for registerImpactCommand. Contract: errors to stderr, process.exit(1) on failure.
 
-**--method filter:** When `--method <name>` is provided with `--node`, filters direct dependents to only those whose relation consumes the specified method (or has no consumes constraint). Transitive dependents are rebuilt from the filtered direct set.
+**--file flag:** Resolves the owning node via `findOwner`, prints `<file> -> <node>` to stderr, then proceeds as `--node`. Mutually exclusive with `--node`.
+
+**--method filter:** When `--method <name>` is provided with `--node` or `--file`, filters direct dependents to only those whose relation consumes the specified method (or has no consumes constraint). Transitive dependents are rebuilt from the filtered direct set.
 
 **Event-dependent tracking:** In `--node` mode, output includes an "Event-connected" section showing nodes linked via `emits`/`listens` relations to the target node, including event listeners for events the target emits. Event dependents are included in the total scope count.
 
@@ -28,9 +30,11 @@
 **Command-specific:**
 
 - Node not found: `Node not found: ${nodePath}` — when --node path does not exist in graph.
+- File not mapped (--file): `<file> -> no graph coverage` (exit 1).
+- --node and --file together: `'--node' and '--file' are mutually exclusive` (exit 1).
 - Aspect not found: `Aspect not found: ${aspectId}` — when --aspect id does not exist.
 - Flow not found: `Flow not found: ${flowName}` — when --flow name does not exist.
-- Mode validation: `Specify exactly one of: --node, --aspect, --flow` — when 0 or >1 modes given.
-- Method without node: `--method requires --node` — when --method is used without --node.
+- Mode validation: `one of --node, --file, --aspect, or --flow is required` — when 0 given. Mutually exclusive when >1 given.
+- Method without node: `--method requires --node` — when --method is used without --node/--file.
 
 **Generic:** I/O errors — standard Node.js Error, caught and reported to stderr.

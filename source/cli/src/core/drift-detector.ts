@@ -185,10 +185,17 @@ async function allPathsMissing(projectRoot: string, mappingPaths: string[]): Pro
   return true;
 }
 
+export interface SyncResult {
+  previousHash?: string;
+  currentHash: string;
+  /** True when source files changed but no graph artifacts changed since last sync */
+  sourceOnlyChange: boolean;
+}
+
 export async function syncDriftState(
   graph: Graph,
   nodePath: string,
-): Promise<{ previousHash?: string; currentHash: string }> {
+): Promise<SyncResult> {
   const projectRoot = path.dirname(graph.rootPath);
   const node = graph.nodes.get(nodePath);
   if (!node) throw new Error(`Node not found: ${nodePath}`);
@@ -205,11 +212,41 @@ export async function syncDriftState(
 
   const previousHash = existingEntry?.hash;
 
+  // Detect source-only change pattern: source files changed, graph artifacts didn't
+  let sourceOnlyChange = false;
+  if (previousHash && previousHash !== canonicalHash && existingEntry?.files) {
+    let hasSourceChange = false;
+    let hasGraphChange = false;
+    const yggPrefix = path.relative(projectRoot, graph.rootPath).split(path.sep).join('/');
+    for (const [filePath, hash] of Object.entries(fileHashes)) {
+      const storedHash = existingEntry.files[filePath];
+      if (storedHash && storedHash === hash) continue;
+      if (!storedHash || storedHash !== hash) {
+        if (filePath.startsWith(yggPrefix)) {
+          hasGraphChange = true;
+        } else {
+          hasSourceChange = true;
+        }
+      }
+    }
+    // Check deleted files
+    for (const storedPath of Object.keys(existingEntry.files)) {
+      if (!(storedPath in fileHashes)) {
+        if (storedPath.startsWith(yggPrefix)) {
+          hasGraphChange = true;
+        } else {
+          hasSourceChange = true;
+        }
+      }
+    }
+    sourceOnlyChange = hasSourceChange && !hasGraphChange;
+  }
+
   await writeNodeDriftState(graph.rootPath, nodePath, {
     hash: canonicalHash,
     files: fileHashes,
     mtimes: fileMtimes,
   });
 
-  return { previousHash, currentHash: canonicalHash };
+  return { previousHash, currentHash: canonicalHash, sourceOnlyChange };
 }

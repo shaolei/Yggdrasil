@@ -300,6 +300,61 @@ mapping:
       }
     });
 
+    it('reports sourceOnlyChange when only source files changed', async () => {
+      const { tmpDir } = await createTmpProject('drift-source-only-sync', {
+        nodePath: 'svc/src-only',
+        nodeYaml: 'name: SrcOnly\ntype: service\nmapping:\n  paths:\n    - src/mod.ts',
+        mappingFiles: {
+          'src/mod.ts': 'v1',
+        },
+      });
+
+      try {
+        const graph = await loadGraph(tmpDir);
+
+        // Initial sync — no previous state, so sourceOnlyChange is false
+        const first = await syncDriftState(graph, 'svc/src-only');
+        expect(first.sourceOnlyChange).toBe(false);
+
+        // Modify only source file
+        await writeFile(path.join(tmpDir, 'src/mod.ts'), 'v2');
+
+        const second = await syncDriftState(graph, 'svc/src-only');
+        expect(second.sourceOnlyChange).toBe(true);
+      } finally {
+        await rm(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it('sourceOnlyChange is false when graph artifacts also changed', async () => {
+      const { tmpDir } = await createTmpProject('drift-both-sync', {
+        nodePath: 'svc/both',
+        nodeYaml: 'name: Both\ntype: service\nmapping:\n  paths:\n    - src/both.ts',
+        mappingFiles: {
+          'src/both.ts': 'v1',
+        },
+      });
+
+      try {
+        const graph = await loadGraph(tmpDir);
+
+        // Initial sync
+        await syncDriftState(graph, 'svc/both');
+
+        // Modify both source and graph
+        await writeFile(path.join(tmpDir, 'src/both.ts'), 'v2');
+        await writeFile(
+          path.join(tmpDir, '.yggdrasil/model/svc/both/yg-node.yaml'),
+          'name: BothUpdated\ntype: service\nmapping:\n  paths:\n    - src/both.ts',
+        );
+
+        const result = await syncDriftState(graph, 'svc/both');
+        expect(result.sourceOnlyChange).toBe(false);
+      } finally {
+        await rm(tmpDir, { recursive: true, force: true });
+      }
+    });
+
     it('throws when node not found', async () => {
       const graph = await loadGraph(FIXTURE_PROJECT);
       await expect(syncDriftState(graph, 'nonexistent/node')).rejects.toThrow('Node not found');

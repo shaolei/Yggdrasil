@@ -301,13 +301,15 @@ Operations are invoked as tool commands with the `yg` prefix:
 yg init --platform cursor
 yg init --platform cursor --upgrade   # refreshes rules when .yggdrasil/ exists
 yg build-context --node orders/order-service
+yg build-context --file src/modules/orders/order.service.ts  # resolves owner + context
 yg tree
 yg aspects
 yg status
 yg preflight
-yg owner --file src/modules/orders/order.service.ts
+yg owner --file src/modules/orders/order.service.ts          # quick ownership check
 yg deps --node orders/order-service
 yg impact --node payments/payment-service --simulate
+yg impact --file src/modules/payments/payment.service.ts     # resolves owner + impact
 yg validate
 yg drift
 yg drift-sync --node orders/order-service

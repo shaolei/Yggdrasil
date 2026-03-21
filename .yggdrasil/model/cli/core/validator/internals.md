@@ -19,6 +19,7 @@
 - **checkRequiredArtifacts**: artifactRequiredReason evaluates required (always | never | when conditions)
 - **checkContextBudget**: buildContext per node; uses `computeBudgetBreakdown` to get per-category token costs; compares tokenCount to warning/error thresholds. Produces W015 (own-budget-warning) when own-layer tokens exceed 50% of the warning threshold — this is the actionable warning directing agents to split nodes. W005 (budget-warning) and W006 (budget-error) are now informational, showing the full breakdown (own, hierarchy, aspects, flows, dependencies) so agents can diagnose WHERE the budget is consumed
 - **checkAnchorPresence**: For each node with aspect entries containing `anchors`, validates W014 — each anchor string must appear in at least one mapped source file. Uses `expandMappingToFiles` helper to recursively collect files from mapping paths (skips dotfiles and `node_modules`). All source files for a node are read once and searched for each anchor string via simple `content.includes(anchor)`. E018 (invalid-aspect-exception) and E019 (invalid-anchor-ref) were removed — the unified aspects format makes structurally invalid references impossible.
+- **checkWideNodes**: W017 — for each non-blackbox node, expands mapping paths to source files (reusing `expandMappingToFiles`). If file count exceeds `quality.max_mapping_source_files` (default 10), emits warning with file count and filled artifact count, suggesting node splitting.
 
 ## Order of checks
 

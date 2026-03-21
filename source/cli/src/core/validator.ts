@@ -59,6 +59,7 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   issues.push(...checkFlowAspectIds(graph));
   issues.push(...(await checkDirectoriesHaveNodeYaml(graph)));
   issues.push(...(await checkShallowArtifacts(graph)));
+  issues.push(...(await checkWideNodes(graph)));
   issues.push(...checkUnpairedEvents(graph));
 
   let filtered = issues;
@@ -646,6 +647,36 @@ async function checkShallowArtifacts(graph: Graph): Promise<ValidationIssue[]> {
         });
       }
     }
+  }
+  return issues;
+}
+
+// --- W017: Wide node (maps too many source files) ---
+
+async function checkWideNodes(graph: Graph): Promise<ValidationIssue[]> {
+  const issues: ValidationIssue[] = [];
+  const maxFiles = graph.config.quality?.max_mapping_source_files ?? 10;
+  const projectRoot = path.dirname(graph.rootPath);
+
+  for (const [nodePath, node] of graph.nodes) {
+    if (node.meta.blackbox) continue;
+    const mappingPaths = normalizeMappingPaths(node.meta.mapping);
+    if (mappingPaths.length === 0) continue;
+
+    const sourceFiles = await expandMappingToFiles(projectRoot, mappingPaths);
+    if (sourceFiles.length <= maxFiles) continue;
+
+    const filledArtifacts = node.artifacts.filter(
+      (a) => a.content.trim().length >= (graph.config.quality?.min_artifact_length ?? 50),
+    ).length;
+
+    issues.push({
+      severity: 'warning',
+      code: 'W017',
+      rule: 'wide-node',
+      message: `Node maps ${sourceFiles.length} source files (max: ${maxFiles}) with ${filledArtifacts} artifact(s). Consider splitting into child nodes with focused responsibilities.`,
+      nodePath,
+    });
   }
   return issues;
 }

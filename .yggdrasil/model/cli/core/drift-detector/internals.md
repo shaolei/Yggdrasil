@@ -36,8 +36,9 @@ For each mapped node (or single node if filterNodePath):
 - Read existing state for the node via readNodeDriftState (per-node JSON file)
 - Compute currentHash via hashForMapping
 - Per-file hashes via perFileHashes → build files Record
+- Detect source-only change: when hash changed, compare old vs new per-file hashes, categorize each changed file as source or graph (by checking if path starts with `.yggdrasil/` prefix). Set `sourceOnlyChange = true` when source files changed but no graph artifacts changed — this signals W018 to the drift-sync command.
 - Write { hash, files, mtimes } via writeNodeDriftState to `.drift-state/<nodePath>.json`
-- Return { previousHash?, currentHash }
+- Return SyncResult { previousHash?, currentHash, sourceOnlyChange }
 - GC (garbage collection of orphaned drift state files) runs during drift-sync --all
 
 ## Constraints

@@ -5,9 +5,9 @@
   - Returns: DriftReport with entries (nodePath, mappingPaths, status, details), totalChecked, okCount, driftCount, missingCount, unmaterializedCount.
   - Status: `ok` | `drift` | `missing` | `unmaterialized`. Skips nodes without mapping.
 
-- `syncDriftState(graph: Graph, nodePath: string): Promise<{ previousHash?: string; currentHash: string }>`
+- `syncDriftState(graph: Graph, nodePath: string): Promise<SyncResult>`
   - Parameters: `graph` (Graph), `nodePath` (string).
-  - Returns: `{ previousHash?: string; currentHash: string }` — previousHash if node had drift state, currentHash always.
+  - Returns: `SyncResult { previousHash?: string; currentHash: string; sourceOnlyChange: boolean }` — previousHash if node had drift state, currentHash always, sourceOnlyChange true when source files changed but no graph artifacts changed since last sync (W018 signal).
   - Computes current hash from node mapping via hashForMapping, writes entry (hash + per-file hashes) to .drift-state via writeDriftState.
 
 ## Failure Modes

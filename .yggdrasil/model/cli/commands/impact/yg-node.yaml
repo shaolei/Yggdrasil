@@ -15,6 +15,12 @@ relations:
   - target: cli/core/drift-detector
     type: uses
     consumes: [detectDrift]
+  - target: cli/commands/owner
+    type: uses
+    consumes: [findOwner]
+  - target: cli/utils
+    type: uses
+    consumes: [projectRootFromGraph]
   - target: cli/model
     type: uses
     consumes: [Graph]
