@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.0] - 2026-03-25
+
 ### Changed
 
 - **drift:** Blackbox nodes are excluded from drift detection — no source
