@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-03-25
+
+### Changed
+
+- **Agent rules v2: spec ingestion & non-code knowledge.** Major rules update driven by
+  a real-world finding: during full-system implementation from external specs, the agent
+  captured only ~30% of spec knowledge — all technical, zero business context. The root
+  cause was a file-centric protocol with no triggers for knowledge that has no source file.
+  New sections: Working from External Specifications, Non-Code Knowledge, Aspect Discovery
+  During Implementation. Expanded: completeness test (3 checks), information routing table
+  (6 new entries), graph audit (Step 3: non-derivable knowledge), evasion patterns (+6),
+  failure states (+4). Added node sizing rule for greenfield workflows.
+
 ## [2.8.0] - 2026-03-21
 
 ### Added

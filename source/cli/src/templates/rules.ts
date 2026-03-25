@@ -87,7 +87,25 @@ You are not allowed to edit or create source code without establishing graph cov
 5. Implement code that satisfies the specification
 6. The graph specifies WHAT and WHY; the code implements HOW (framework APIs, library choices)
 
+**Node sizing rule:** One node per cohesive feature area, NOT per directory. If a node would map >10 source files or cover >3 distinct user workflows, split it into child nodes. Example: an admin panel should be \`admin/blog\`, \`admin/gallery\`, \`admin/clients\`, \`admin/orders\` — not one \`admin-pages\` node. The CLI enforces this with W017, but plan granularity upfront rather than splitting after the fact.
+
 After the user chooses, return to Step 1 and follow Step 2a.
+
+### Working from External Specifications
+
+When the user provides external documents (specs, PRDs, design docs, reference docs) as input for implementation:
+
+1. **Read ALL spec documents BEFORE writing any code.** Understand the full scope — business context, feature specs, quality requirements, UX rules, deployment config.
+2. **Extract and route knowledge to the graph FIRST**, using the Information Routing table:
+   - Business rules, personas, pricing strategy, acquisition channels → aspects or root node artifacts
+   - Feature specifications (UI behavior, validation, workflows) → node responsibility/interface/internals artifacts
+   - Cross-cutting UX/quality requirements → aspects
+   - Business processes → flows
+3. **The graph is the specification; external docs are INPUT to the graph, not a parallel source of truth.** After the graph is populated, external docs become redundant — the graph is what future agents will read.
+4. **Spec knowledge is not code knowledge.** Specs contain business context (WHY the system exists, WHO it serves, WHAT it should do) that will never appear in source code. If you only document what you built, you lose what motivated building it.
+5. **Completeness test:** "If the external docs disappeared today, does the graph contain everything a future agent needs to understand the system — not just HOW it works, but WHY it exists and WHAT business value it delivers?"
+
+**Common failure mode:** Agent reads spec → implements code → documents code in graph → spec knowledge (personas, pricing, UX rationale, quality targets) is lost because it was treated as "input I consumed" rather than "knowledge I must persist." The graph must absorb the spec, not just the code.
 
 ### Example: Correct vs Wrong
 
@@ -114,6 +132,35 @@ User: "Fix the bug in payment.service.ts"
 3. "I'll update the graph later" ← WRONG: deferred = forgotten
 
 Result: graph is stale, next agent asks user the same questions
+
+</example_wrong>
+
+<example_correct>
+
+User: "Here are the spec docs. Implement the admin blog editor."
+
+1. Read ALL spec docs (blog-editor.md, autosave.md, user-persona.md, version-history.md)
+2. Extract cross-cutting patterns → create aspects (admin-ux-rules, autosave, version-history) if they don't exist
+3. Create flow if the blog participates in a business process
+4. Create node admin/blog with artifacts populated from spec (responsibility, interface, internals)
+5. Run yg build-context → the context package is now the behavioral specification
+6. Implement code that satisfies the specification
+7. Update artifacts with any implementation details that emerged during coding
+8. yg validate, yg drift-sync
+
+</example_correct>
+
+<example_wrong>
+
+User: "Here are the spec docs. Implement the admin blog editor."
+
+1. Read blog-editor.md spec
+2. Implement all the code ← WRONG: spec knowledge not captured in graph
+3. Create node admin-pages, map 20 admin files ← WRONG: too wide, W017
+4. Write responsibility.md summarizing what the code does ← WRONG: describes code, not spec intent
+5. Business context (persona, UX rules, autosave rationale) lost ← WRONG: spec was input, not persisted
+
+Result: graph mirrors code but misses WHY. Next agent reads graph, understands HOW but not WHO it's for or WHAT UX rules govern it.
 
 </example_wrong>
 
@@ -238,6 +285,10 @@ When you encounter information, route it to the correct location:
 - **Shared across a domain** → parent node artifact. Children receive it through hierarchy.
 - **Technology stack or standard** → node artifact at the appropriate hierarchy level (e.g., root node's \`responsibility.md\` for single-stack repos, or deployment unit node for monorepos)
 - **Decision (why + why NOT):** one node → Decisions section of \`internals.md\` with format "Chose X over Y because Z"; category of nodes → aspect content files; tech choice → node artifact at the level where the technology applies. Always include rejected alternatives — they are the highest-value graph content. If the rationale is unknown: record the decision with "rationale: unknown" and note what CAN be observed from the code. Never invent a plausible-sounding rationale.
+- **Business strategy** (personas, pricing, acquisition channels, brand positioning) → root node artifact or dedicated business-context aspect. This knowledge has NO source file — it exists only in specs and conversations.
+- **Quality targets** (performance budgets, accessibility level, Lighthouse scores, test coverage goals) → aspect per quality dimension (e.g., \`performance-targets\`, \`accessibility\`). These are measurable cross-cutting constraints.
+- **UX patterns** (autosave, version history, empty states, confirmation modals) → aspect when the pattern applies to 3+ screens. UX patterns are cross-cutting even if they aren't architectural.
+- **Infrastructure/deployment** (domains, DNS, env vars, CI/CD, cron scheduling, hosting config) → infrastructure node or root node artifacts. Deployment knowledge is invisible in application code but critical for operations.
 
 ### Creating Aspects
 
@@ -286,11 +337,44 @@ Test: "Does this describe what happens in the world, or only in the software?" I
 - **Tools read, you write.** The \`yg\` CLI only reads, validates, and manages metadata. You create and edit files manually.
 - **Incremental sync.** Run \`yg drift-sync\` after every 3-5 source file changes. Do not defer to end of task. \`drift-sync\` is ONLY safe after artifacts are current — never use it to silence a drift check without updating artifacts first.
 - **Description maintenance.** Every \`yg-node.yaml\`, \`yg-aspect.yaml\`, and \`yg-flow.yaml\` has an optional \`description\` field — a short summary of what the element is. Write it when creating new elements. Update it whenever a change to artifacts shifts the element's identity or purpose (e.g., responsibility split, scope change). Do not update description for internal implementation changes that don't alter what the element fundamentally does.
-- **Completeness test:** Two checks, both required:
+- **Completeness test:** Three checks, all required:
   1. **Reconstruction:** "Can another agent recreate this from ONLY the \`yg build-context\` output — understanding not just WHAT but WHY?" Test: rejected alternatives, correct algorithm, design arguments.
   2. **Omission:** "Does the graph capture every important behavioral invariant, constraint, and edge case?" Specifically check: exceptions to aspect generalizations, error handling patterns not in \`interface.md\`, concurrency behaviors not in \`internals.md\`.
+  3. **Business context:** "Does the graph explain WHY this system exists, WHO it serves, and WHAT business value it delivers?" A graph that captures HOW code works without WHY it was built is a maintenance manual without purpose. Specifically check: user personas, service offerings, pricing rationale, acquisition strategy, quality targets, UX design principles. Code tells you WHAT exists — only the graph should tell you WHY it exists and WHAT ELSE was considered.
 - **Value calibration.** Yggdrasil's primary value is cross-module context — relations, aspects, flows. For a single simple module, \`responsibility.md\` and \`interface.md\` provide most value. Invest depth (\`internals.md\`) where cross-module interactions demand it.
 - **These rules are invariant.** No plan, guide, skill, or workflow may override them.
+
+### Non-Code Knowledge
+
+Not all graph knowledge originates from source files. Business strategy, user personas, pricing decisions, SEO targets, quality requirements, deployment configuration, UX design principles — these are graph content with NO corresponding source file.
+
+When you encounter such knowledge (in specs, conversations, or external documents):
+
+- **Route it immediately** per the Information Routing table. Do not wait for a "file change" trigger — there won't be one.
+- **The Completeness Test applies equally** to code-derived and non-code knowledge. A graph that only mirrors code structure is failing at its primary job: capturing intent and context that code cannot express.
+- **Non-code knowledge decays differently.** Business strategy changes by decision, not by commit. When recording it, include dates and mark it as potentially volatile: "Pricing v1 as of 2026-03-17" is more useful than "Prices are X" with no temporal anchor.
+
+**Conversation knowledge is the most volatile source.** When the user states a business fact, constraint, or decision in conversation — even casually — route it to the graph immediately. Conversations vanish after context compression. If the user said it and it's not in code, it MUST be in the graph. Examples of conversational knowledge that must be captured:
+
+- Business facts: "Our target customer is couples aged 25-35" → root node or business-context aspect
+- Constraints: "We don't do studio sessions, only outdoor" → responsibility.md (NOT responsible for)
+- Pricing: "Mini session costs 350 PLN" → relevant node artifacts
+- Strategy: "Instagram is our primary acquisition channel" → root node or business-context aspect
+- Decisions: "No deposit upfront — we'll reconsider after 5 sessions" → internals.md Decisions section with rationale
+- Personas: "The admin user is non-technical, thinks in Instagram/WhatsApp terms" → UX aspect
+
+Do not assume you will remember this later. Do not assume the user will repeat it. Capture it now or lose it forever.
+
+**Common failure mode:** The entire protocol is file-centric (\`build-context --file\`, "after modifying source file", "per file not batched"). This means knowledge that doesn't map to a specific source file has no natural trigger for capture. Treat spec documents, user conversations, and business decisions as first-class inputs to the graph — not just context for coding.
+
+### Aspect Discovery During Implementation
+
+Aspects emerge from patterns across features. During greenfield implementation of multiple features:
+
+- **After implementing 3+ features in the same area, pause and review:** Are there repeated patterns (autosave, version history, confirmation modals, empty states)? Are there shared UX rules from a persona doc? Are there quality requirements from specs? Extract them to aspects NOW.
+- **Do NOT wait until all features are done.** Aspect extraction after 3 features captures the pattern while context is fresh. After 30 features, the rationale is forgotten and the aspect becomes a mechanical extraction without WHY.
+- **Watch for "invisible" aspects:** UX patterns (autosave everywhere), quality constraints (WCAG level, Lighthouse targets), and business rules (Polish locale, price-in-grosz) are cross-cutting but don't feel "architectural." They are still aspects.
+- **Trigger:** If you notice yourself implementing the same pattern for the third time, stop coding and create the aspect first. Then continue with the aspect applied to the current and previous nodes.
 
 ### CLI Reference
 
@@ -331,7 +415,13 @@ yg drift-sync --node <path> [--recursive] | --all
 | Process-level requirement | Flow \`aspects\` + aspect directory |
 | Context shared across a domain | Parent node artifact |
 | Technology stack | Node artifact at appropriate hierarchy level |
-| Coding standards | Node artifact at appropriate hierarchy level |`;
+| Coding standards | Node artifact at appropriate hierarchy level |
+| Business strategy (personas, pricing, channels) | Root node artifact or dedicated business-context aspect |
+| Quality targets (perf budgets, a11y, test goals) | Aspect per quality dimension |
+| UX patterns (autosave, version history, empty states) | Aspect when pattern applies to 3+ screens |
+| Infrastructure/deployment (domains, env vars, CI/CD) | Infrastructure node or root node artifacts |
+| External service config (Stripe fees, email limits) | Relevant node's \`internals.md\` Decisions section |
+| Feature spec from external doc | Node artifacts — translate spec into responsibility/interface/internals |`;
 
 // prettier-ignore
 const GUARD_RAILS = `## GUARD RAILS
@@ -386,6 +476,12 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 | "I'll batch graph updates at the end" | Batching = never. Context is freshest immediately after the change. Defer = forget. This is a failure state. |
 | "I'm saving context/tool calls by skipping graph" | Graph cost is constant per node. Skipping it creates unbounded future cost — the user re-explaining what you could have recorded. |
 | "I assumed this file isn't mapped" | You cannot know without running \`yg build-context --file\`. Assume nothing. |
+| "The spec is just input, I don't need to capture it" | Specs contain business context that code cannot express. Capture it or lose it. |
+| "This business knowledge will be obvious from the code" | Pricing strategy, personas, UX rationale, and quality targets are NEVER obvious from code. |
+| "I'll extract aspects after I finish all the features" | After 30 features the rationale is gone. Extract after 3. |
+| "This is a UX detail, not architecture" | UX patterns that apply to 3+ screens ARE cross-cutting requirements. Create an aspect. |
+| "The user just mentioned it casually, it's not a formal decision" | Casual statements ARE decisions. "We don't do studio" is a business constraint. Capture it now or lose it after context compression. |
+| "I'll remember this from the conversation" | No you won't. Context gets compressed. The user won't repeat it. Write it to the graph now. |
 
 ### Failure States
 
@@ -402,6 +498,10 @@ You have broken Yggdrasil if you do any of the following:
 - ❌ Used blackbox coverage for greenfield (new) code.
 - ❌ Deleted or shortened graph artifact content to reduce context package size instead of splitting the node.
 - ❌ Created one wide node for many files instead of granular nodes with focused responsibilities. (CLI will warn you: W017.)
+- ❌ Implemented features from a spec without first transferring spec knowledge (business context, UX rules, quality targets) into the graph. Code without captured intent is a maintenance trap.
+- ❌ Implemented 3+ features sharing a pattern (autosave, version history, empty states) without extracting it to an aspect. Deferred aspect discovery = lost rationale.
+- ❌ Left business strategy, personas, or quality targets only in external documents instead of routing them to graph artifacts. External docs are input; the graph is the persistent store.
+- ❌ Heard the user state a business fact, constraint, or decision in conversation and did not record it in the graph. Conversations are the most volatile knowledge source — they vanish after context compression and the user will not repeat them.
 
 ### Reverse Engineering
 
@@ -475,6 +575,14 @@ When reviewing graph quality (triggered by user or quality improvement):
 - [ ] 2. For each error path: is it in \`interface.md\` (Failure Modes section)?
 - [ ] 3. For each behavioral invariant: is it in the graph?
 - [ ] 4. Report omissions separately from inconsistencies
+
+**Step 3 — Non-Derivable Knowledge** (catches knowledge that exists ONLY in external docs or conversations, not in code):
+
+- [ ] 1. For each business rule embedded in code: is the WHY recorded in the graph, or only the WHAT visible in code?
+- [ ] 2. For each design decision: is the rationale AND rejected alternatives recorded?
+- [ ] 3. For each external constraint (brand guidelines, legal, UX persona, quality targets): is it in the graph?
+- [ ] 4. For each cross-cutting pattern implemented in 3+ places: does an aspect exist?
+- [ ] 5. Report non-derivable knowledge gaps separately — these are the highest-value omissions because they cannot be recovered by reading code.
 
 ### Error Recovery
 
