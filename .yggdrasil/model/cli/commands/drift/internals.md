@@ -22,7 +22,7 @@
 
 1. Validate: either --node or --all must be provided. If neither, exit 1.
 2. loadGraph(process.cwd())
-3. If --all: collect all nodes with non-empty mappings. Sort.
+3. If --all: collect all nodes where `!blackbox` and non-empty mappings. Sort. (Blackbox nodes are excluded — their source files are not modeled, so syncing them is meaningless. The subsequent GC step also removes any orphaned `.drift-state/` files for blackbox nodes.)
 4. If --node: nodePath = trim, strip `./` and trailing `/`. If --recursive: collect nodePath + all descendants. Sort.
 5. For each node to sync: skip nodes without mapping (unless explicitly requested without --recursive/--all). Call syncDriftState(graph, np) for each.
 6. Output "Synchronized: ${np}" (green), hash line (previous 8 chars -> current 8 chars) per synced node.

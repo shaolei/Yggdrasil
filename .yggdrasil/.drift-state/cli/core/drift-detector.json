@@ -1,9 +1,9 @@
 {
-  "hash": "c100c77f056f65d26f1315ca5f9429df148160b63dbbfc52d96ba4075fce068c",
+  "hash": "a7cdd09daefb20577639d674c4a86f369846e0600e1a19f4952bf1b7346c9ca0",
   "files": {
     ".yggdrasil/model/cli/core/drift-detector/yg-node.yaml": "637ed90ba83b308082e9877fdfd47b8bec6b7d7fe334888fba9362076d3ae65f",
     ".yggdrasil/model/cli/core/drift-detector/interface.md": "7136927e5d6a1c23bc098356cb7b1f1cc88fcd760040c6fd04f83c0efd6622e9",
-    ".yggdrasil/model/cli/core/drift-detector/internals.md": "60a8802b7e35f217d1879420499320bae5266a89d2850ca863a7f85d05055d43",
+    ".yggdrasil/model/cli/core/drift-detector/internals.md": "028b77ef92197ed48c799c039e917fbf79de60cdac0527bc402e47cb82ce6709",
     ".yggdrasil/model/cli/core/drift-detector/responsibility.md": "926478f7aeddd1c18eb38494c910510c3f0d2feecac6e06774792d7f650f6065",
     ".yggdrasil/model/cli/yg-node.yaml": "df8a5321838edda0335736e81375b7219819d8b4065a45f883ed9686a07bd049",
     ".yggdrasil/model/cli/internals.md": "fcd16e38b431eead0b12e14b05dd25184ad4ef23884fbde7402172b0985857f6",
@@ -26,12 +26,12 @@
     ".yggdrasil/flows/drift/description.md": "ac41d0633df7faed0cfe81f52c895344076a08657bdd65372e96abf8cf4d02c3",
     ".yggdrasil/flows/preflight/yg-flow.yaml": "ae00a14baaa472ccd007225b0bd0525098560c72f96f23db8f09d8744182b37c",
     ".yggdrasil/flows/preflight/description.md": "c8680e694af2907fb56c068661cc458ea0053a21a8afe6249a33096e89da108e",
-    "source/cli/src/core/drift-detector.ts": "26d78d91585595897f0fca711809aa37695f3accc6370d38c64ddc7bb823113a"
+    "source/cli/src/core/drift-detector.ts": "b55791936cd9b84faac3b912ea61845ebd88d5b44ebbe3833dd65995848a4641"
   },
   "mtimes": {
     ".yggdrasil/model/cli/core/drift-detector/yg-node.yaml": 1774035679166.7454,
     ".yggdrasil/model/cli/core/drift-detector/interface.md": 1774070026335.9746,
-    ".yggdrasil/model/cli/core/drift-detector/internals.md": 1774070036651.2927,
+    ".yggdrasil/model/cli/core/drift-detector/internals.md": 1774475141952.8953,
     ".yggdrasil/model/cli/core/drift-detector/responsibility.md": 1772743197437.916,
     ".yggdrasil/model/cli/yg-node.yaml": 1774035679170.8608,
     ".yggdrasil/model/cli/internals.md": 1772829219205.6714,
@@ -54,6 +54,6 @@
     ".yggdrasil/flows/drift/description.md": 1772743197471.8792,
     ".yggdrasil/flows/preflight/yg-flow.yaml": 1774035679161.8953,
     ".yggdrasil/flows/preflight/description.md": 1772778827687.0562,
-    "source/cli/src/core/drift-detector.ts": 1774069681780.8748
+    "source/cli/src/core/drift-detector.ts": 1774474730787.6184
   }
 }

@@ -177,6 +177,67 @@ describe('drift-pipeline', () => {
     }
   });
 
+  it('blackbox nodes excluded from drift pipeline', async () => {
+    const projectRoot = await mkdtemp(path.join(tmpdir(), 'ygg-drift-bb-'));
+    const yggRoot = path.join(projectRoot, '.yggdrasil');
+
+    // Create .yggdrasil structure with two nodes
+    await mkdir(path.join(yggRoot, 'model', 'svc', 'regular'), { recursive: true });
+    await mkdir(path.join(yggRoot, 'model', 'svc', 'blackbox-svc'), { recursive: true });
+
+    // Config
+    await writeFile(
+      path.join(yggRoot, 'yg-config.yaml'),
+      'name: bb-test\nnode_types:\n  service:\n    description: svc\n  module:\n    description: mod\nartifacts:\n  responsibility:\n    required: always\n    description: x',
+    );
+
+    // Parent node
+    await writeFile(path.join(yggRoot, 'model', 'svc', 'yg-node.yaml'), 'name: svc\ntype: module\n');
+
+    // Regular node with mapping
+    await writeFile(
+      path.join(yggRoot, 'model', 'svc', 'regular', 'yg-node.yaml'),
+      'name: regular\ntype: service\nmapping:\n  paths:\n    - src/regular.ts\n',
+    );
+    await writeFile(path.join(yggRoot, 'model', 'svc', 'regular', 'responsibility.md'), 'Regular node');
+
+    // Blackbox node with mapping
+    await writeFile(
+      path.join(yggRoot, 'model', 'svc', 'blackbox-svc', 'yg-node.yaml'),
+      'name: blackbox-svc\ntype: service\nblackbox: true\nmapping:\n  paths:\n    - src/blackbox/\n',
+    );
+    await writeFile(path.join(yggRoot, 'model', 'svc', 'blackbox-svc', 'responsibility.md'), 'Blackbox node');
+
+    // Create source files
+    await mkdir(path.join(projectRoot, 'src', 'blackbox'), { recursive: true });
+    await writeFile(path.join(projectRoot, 'src', 'regular.ts'), '// regular code');
+    await writeFile(path.join(projectRoot, 'src', 'blackbox', 'index.ts'), '// blackbox internals');
+
+    try {
+      const graph = await loadGraph(projectRoot);
+
+      // Sync the regular node
+      await syncDriftState(graph, 'svc/regular');
+
+      // Detect drift
+      const report = await detectDrift(graph);
+
+      // Regular node should be in the report
+      const regularEntry = report.entries.find((e) => e.nodePath === 'svc/regular');
+      expect(regularEntry).toBeDefined();
+      expect(regularEntry!.status).toBe('ok');
+
+      // Blackbox node should NOT be in the report
+      const bbEntry = report.entries.find((e) => e.nodePath === 'svc/blackbox-svc');
+      expect(bbEntry).toBeUndefined();
+
+      // Total checked should only count non-blackbox nodes
+      expect(report.entries.every((e) => e.nodePath !== 'svc/blackbox-svc')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('drift --format <invalid> returns validation error', async () => {
     if (!distExists) return;
 
