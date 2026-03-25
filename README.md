@@ -1,8 +1,8 @@
+<video src="https://github.com/user-attachments/assets/49c8fe8f-c3b9-4202-b655-7f987dcab4cb" controls></video>
+
 <div align="center">
   <img src="docs/public/logo.svg" alt="Yggdrasil" width="150" />
 </div>
-
-<video src="https://github.com/user-attachments/assets/49c8fe8f-c3b9-4202-b655-7f987dcab4cb" controls></video>
 
 # Yggdrasil
 
