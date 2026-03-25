@@ -65,6 +65,7 @@ You are not allowed to edit or create source code without establishing graph cov
 - [ ] 2. Assess blast radius: \`yg impact --node <node_path>\` — review dependents, descendants, and co-aspect nodes before changing interfaces or shared behavior
 - [ ] 3. Modify source code
 - [ ] 4. Sync graph artifacts — edit artifact files to reflect the changes (after each file, not batched — context is freshest immediately after the change). If the node's purpose changed, update \`description\` in \`yg-node.yaml\`.
+- [ ] 4b. If you split, merged, or renamed a node: run \`yg flows\` and update any flow \`nodes\` lists that referenced the old node path to point to the correct child/new nodes.
 - [ ] 5. Run \`yg validate\` — fix all errors (if unfixable after 3 attempts → stop, report to user)
 - [ ] 6. Run \`yg drift-sync --node <node_path>\` — only after graph and code are both current
 
@@ -330,6 +331,12 @@ Test: "Does this describe what happens in the world, or only in the software?" I
 
 **Warning:** Flow descriptions must describe business processes, not code sequences. "The OrderService calls PaymentGateway.charge()" is WRONG. "The system charges the customer's payment method" is CORRECT.
 
+**Flow identification heuristic:** If a spec, conversation, or code reveals a sequence of steps toward a business goal — it IS a flow, and you MUST create one. This applies to multi-actor processes (user submits form → system notifies → admin responds) AND single-actor workflows (admin creates post → edits → publishes → system revalidates). A user performing actions on the system toward a goal is a business process, not "just CRUD." This applies equally when working from specs and when working from code. Examples: "user submits contact form → system sends notification → user receives response" (ContactInquiry), "user creates gallery → sends link → recipient views photos → user sees stats" (GalleryDelivery), "user writes blog post → publishes → system revalidates → readers see content" (BlogPublishing). Test: "Does this describe a goal-directed sequence of steps that a future agent needs to understand as a whole?" Yes → create the flow before or during implementation, never after.
+
+**Flow verification from specs:** When working from external specifications, for EACH business process described in the specs, verify a corresponding flow exists. If it doesn't, create one. Specs are the primary source of flow discovery — they describe what happens in the world, which is exactly what flows capture. Do not wait until implementation is complete to create flows.
+
+**Flow participant maintenance:** When splitting a node that participates in a flow (e.g., splitting \`admin-pages\` into \`admin-pages/blog\`, \`admin-pages/gallery\`, etc.), update the flow's \`nodes\` list to reference the specific child nodes that actually participate, not the parent. A flow participant must be the most specific node that performs the action. After any node restructuring (split, merge, rename), run \`yg flows\` and verify all participant references are still valid.
+
 ### Operational Rules
 
 - **English only** for all files in \`.yggdrasil/\`. Conversation can be any language.
@@ -482,6 +489,9 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 | "This is a UX detail, not architecture" | UX patterns that apply to 3+ screens ARE cross-cutting requirements. Create an aspect. |
 | "The user just mentioned it casually, it's not a formal decision" | Casual statements ARE decisions. "We don't do studio" is a business constraint. Capture it now or lose it after context compression. |
 | "I'll remember this from the conversation" | No you won't. Context gets compressed. The user won't repeat it. Write it to the graph now. |
+| "Flows can wait until I understand the full system" | Flows capture business processes from specs. Create them BEFORE implementing — they are part of the specification, not an afterthought. |
+| "I split the node but the flow still works" | Flow participants reference specific node paths. After a split, old paths are stale. Run \`yg flows\` and update. |
+| "This is just CRUD, not a business process" | A user performing a sequence of steps toward a goal IS a business process — even single-actor workflows (publish blog, manage portfolio, fulfill order). Create a flow. |
 
 ### Failure States
 
@@ -502,6 +512,9 @@ You have broken Yggdrasil if you do any of the following:
 - ❌ Implemented 3+ features sharing a pattern (autosave, version history, empty states) without extracting it to an aspect. Deferred aspect discovery = lost rationale.
 - ❌ Left business strategy, personas, or quality targets only in external documents instead of routing them to graph artifacts. External docs are input; the graph is the persistent store.
 - ❌ Heard the user state a business fact, constraint, or decision in conversation and did not record it in the graph. Conversations are the most volatile knowledge source — they vanish after context compression and the user will not repeat them.
+- ❌ Split or renamed a node that participates in a flow without updating the flow's \`nodes\` list. Stale flow participants are invisible broken references.
+- ❌ Implemented a spec that describes a goal-directed workflow (publishing content, managing portfolio, fulfilling orders, processing payments) without creating a corresponding flow. Any sequence of steps toward a business goal IS a flow — single-actor workflows included.
+- ❌ Created flows only after all implementation was complete. Flows are part of the specification phase — they describe WHAT happens in the world, which informs HOW to implement it.
 
 ### Reverse Engineering
 

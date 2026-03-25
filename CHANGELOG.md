@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-03-25
+
+### Changed
+
+- **Agent rules: flow creation enforcement.** Agents were skipping flow creation
+  during greenfield implementation — building nodes and aspects but treating
+  business processes as optional. New rules: flow identification heuristic
+  (expanded to cover single-actor workflows, not just multi-actor processes),
+  flow verification from specs (mandatory check per spec business process),
+  flow participant maintenance (update flow `nodes` after node splits/renames).
+  Added step 4b to Modify Source Code checklist (update flows after node
+  restructuring). Added 3 evasion patterns and 3 failure states for flow
+  omission. Root cause: agents dismissed single-actor workflows (blog
+  publishing, portfolio management) as "just CRUD" rather than goal-directed
+  business processes.
+
 ## [2.9.0] - 2026-03-25
 
 ### Changed
