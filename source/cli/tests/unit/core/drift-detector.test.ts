@@ -7,6 +7,8 @@ import { detectDrift, syncDriftState } from '../../../src/core/drift-detector.js
 import {
   readDriftState,
   writeDriftState,
+  readNodeDriftState,
+  writeNodeDriftState,
 } from '../../../src/io/drift-state-store.js';
 import { hashString } from '../../../src/utils/hash.js';
 
@@ -719,6 +721,38 @@ mapping:
         await rm(tmpDir, { recursive: true, force: true });
       }
     });
+  });
+
+  it('drift-sync --all skips blackbox nodes and GC cleans orphaned state', async () => {
+    const { tmpDir } = await createTmpProject('drift-blackbox-gc', {
+      nodePath: 'svc/bb-gc',
+      nodeYaml:
+        'name: BBGC\ntype: service\nblackbox: true\nmapping:\n  paths:\n    - src/bb.ts',
+      mappingFiles: {
+        'src/bb.ts': '// content',
+      },
+    });
+
+    try {
+      const graph = await loadGraph(tmpDir);
+
+      // Manually write a drift state file for the blackbox node (simulating legacy state)
+      await writeNodeDriftState(graph.rootPath, 'svc/bb-gc', {
+        hash: 'fake',
+        files: { 'src/bb.ts': 'fake' },
+      });
+
+      // Verify the drift state file exists
+      const stateBefore = await readNodeDriftState(graph.rootPath, 'svc/bb-gc');
+      expect(stateBefore).toBeDefined();
+
+      // detectDrift should NOT include blackbox node
+      const report = await detectDrift(graph);
+      const entry = report.entries.find((e) => e.nodePath === 'svc/bb-gc');
+      expect(entry).toBeUndefined();
+    } finally {
+      await rm(tmpDir, { recursive: true, force: true });
+    }
   });
 
   describe('child-wins exclusion model', () => {

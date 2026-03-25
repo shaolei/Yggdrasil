@@ -25,7 +25,7 @@ export function registerDriftSyncCommand(program: Command): void {
 
         if (options.all) {
           nodesToSync = [...graph.nodes.entries()]
-            .filter(([, n]) => normalizeMappingPaths(n.meta.mapping).length > 0)
+            .filter(([, n]) => !n.meta.blackbox && normalizeMappingPaths(n.meta.mapping).length > 0)
             .map(([p]) => p)
             .sort();
         } else {
