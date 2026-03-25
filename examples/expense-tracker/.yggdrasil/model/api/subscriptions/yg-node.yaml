@@ -1,11 +1,22 @@
 name: Subscriptions
 type: service
+description: "Subscription management: plan status and free-to-pro upgrade"
+
 aspects:
   - aspect: requires-auth
-  - aspect: subscription-limits
+    anchors:
+      - requireAuth
   - aspect: error-format
-relations: []
+
+relations:
+  - target: api/db
+    type: uses
+    consumes: [db.prepare, db.run]
+  - target: api/auth
+    type: uses
+    consumes: [requireAuth]
+
 mapping:
   paths:
-    - apps/api/src/services/subscriptions.ts
     - apps/api/src/routes/subscriptions.ts
+    - apps/api/src/services/subscriptions.ts

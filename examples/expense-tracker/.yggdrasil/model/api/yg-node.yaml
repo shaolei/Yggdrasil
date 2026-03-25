@@ -1,3 +1,7 @@
 name: API
 type: module
-relations: []
+description: "Fastify REST API backend serving all business logic and data access"
+
+mapping:
+  paths:
+    - apps/api/src/index.ts

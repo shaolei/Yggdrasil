@@ -1,43 +1,21 @@
-# Error Format
+# Consistent Error Format
 
-All API error responses follow a consistent structure for client parsing.
+## What
 
-## Structure
+All API error responses follow a consistent JSON structure with an `error` string code and appropriate HTTP status.
 
-Prefer RFC 7807 problem details:
+## Why
 
-```json
-{
-  "type": "https://api.example.com/errors/validation",
-  "title": "Validation Failed",
-  "status": 400,
-  "detail": "Invalid request body",
-  "instance": "/expenses",
-  "errors": [
-    { "path": "/amount", "message": "Must be positive" }
-  ]
-}
-```
+Clients can rely on a predictable error shape for display and branching logic. Error codes are stable identifiers (not user-facing messages), allowing the web app to map them to UI behavior.
 
-Or simple format when sufficient:
+## Error Codes
 
-```json
-{
-  "error": "Human-readable message",
-  "details": { "field": "value" }
-}
-```
-
-## Status codes
-
-- 400 — Validation failure, bad request
-- 401 — Unauthenticated
-- 403 — Forbidden (e.g. plan limit)
-- 404 — Not found
-- 409 — Conflict (e.g. duplicate email)
-- 500 — Internal error (never expose stack traces)
-
-## Security
-
-- Do not reveal whether an email exists (401 for both invalid password and unknown email).
-- Do not expose internal error details to clients.
+| Code | HTTP Status | Meaning |
+| ---- | ----------- | ------- |
+| `EMAIL_TAKEN` | 409 | Registration with existing email |
+| `INVALID_CREDENTIALS` | 401 | Wrong email or password |
+| `EXPENSE_LIMIT` | 403 | Free plan monthly expense limit reached |
+| `CATEGORY_LIMIT` | 403 | Free plan custom category limit reached |
+| `NOT_FOUND` | 404 | Resource does not exist or not owned by user |
+| `INVALID_PASSWORD` | 400 | Current password verification failed |
+| Validation errors | 400 | `{ error: "Validation failed", details: fieldErrors }` |

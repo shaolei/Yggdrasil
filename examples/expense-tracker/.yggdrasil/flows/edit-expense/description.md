@@ -1,38 +1,40 @@
-# Edit Expense Flow
+# Edit Expense
 
 ## Business context
 
-User corrects an existing expense — wrong amount, category, date, or description. Edit does not count toward plan limits.
+Users correct mistakes or recategorize expenses after the fact.
 
 ## Trigger
 
-User clicks "Edit" on an expense and submits the edit form.
+User clicks "Edit" on an expense row.
 
 ## Goal
 
-Expense updated in database. User sees updated list.
+Expense is updated with new values.
 
 ## Participants
 
-- `api/expenses` — updates expense, enforces ownership
-- `api/categories` — provides category list for selection
-- `web/expenses` — edit form, pre-filled data, submit handling
+- **web/expenses** — EditExpense form pre-filled with current values
+- **api/expenses** — Validates ownership and updates
+- **api/categories** — Provides category list for the dropdown
+- **api/db** — Updates expense row
 
 ## Paths
 
 ### Happy path
 
-Validation OK → verify ownership → update Expense → 200 → redirect /expenses.
+1. Web fetches expense by ID (GET /expenses/:id) and categories (GET /categories).
+2. User modifies fields and submits.
+3. API validates input, verifies expense belongs to user (user_id match).
+4. API updates expense row.
+5. Web navigates to /expenses.
 
-### Not found / no permission
+### Not found
 
-Expense does not exist or belongs to another user. API returns 404.
+3a. Expense ID doesn't exist or belongs to another user.
+3b. API returns 404 NOT_FOUND.
 
-### Validation failure
+## Invariants
 
-Invalid amount, category, or date. API returns 400. UI shows field errors.
-
-## Invariants across all paths
-
-- Edit does not increase plan limit counter (limit applies to new inserts only).
-- Amount must remain positive. Category must be accessible to user.
+- Only the expense owner can edit (user_id check in WHERE clause).
+- Edit does not re-check subscription limits (limits apply only to creation).

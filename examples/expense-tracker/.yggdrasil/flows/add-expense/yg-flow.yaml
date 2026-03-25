@@ -1,8 +1,7 @@
 name: Add Expense
-aspects: [subscription-limits]
+description: "User records a new expense, with subscription limit check and budget overage warning"
 nodes:
-  - api/auth
-  - api/categories
-  - api/expenses
-  - web/auth
   - web/expenses
+  - api/expenses
+  - api/categories
+  - api/db

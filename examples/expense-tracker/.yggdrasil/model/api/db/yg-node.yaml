@@ -1,6 +1,8 @@
-name: DB
-type: library
-relations: []
+name: Database
+type: service
+description: "SQLite database initialization, schema DDL, and seed data"
+
 mapping:
   paths:
-    - apps/api/src/db
+    - apps/api/src/db/index.ts
+    - apps/api/src/db/schema.ts

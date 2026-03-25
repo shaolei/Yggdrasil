@@ -1,10 +1,14 @@
-name: Auth
+name: Auth Pages
 type: module
-relations: []
+description: "Login, register, and landing pages for unauthenticated users"
+
+relations:
+  - target: api/auth
+    type: calls
+    consumes: [POST /auth/register, POST /auth/login]
+
 mapping:
   paths:
     - apps/web/src/pages/Landing.tsx
     - apps/web/src/pages/Login.tsx
     - apps/web/src/pages/Register.tsx
-    - apps/web/src/contexts/AuthContext.tsx
-    - apps/web/src/api/client.ts

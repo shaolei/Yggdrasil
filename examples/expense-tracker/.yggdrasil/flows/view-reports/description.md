@@ -1,33 +1,39 @@
-# View Reports Flow
+# View Reports
 
 ## Business context
 
-User reviews spending by category for a selected month. Chart and table show totals per category and percentage of total.
+Spending visibility is the primary value proposition. Users see where their money goes to make better financial decisions.
 
 ## Trigger
 
-User navigates to Reports, selects month from dropdown.
+User navigates to the dashboard or reports page.
 
 ## Goal
 
-User sees chart (e.g. bar chart) and table: category, sum, % of total.
+User sees total spending, top categories, and detailed per-category breakdown for a given month.
 
 ## Participants
 
-- `api/reports` — aggregates expenses by category for month (reads from expenses table)
-- `web/reports` — month selector, chart, table
+- **web/dashboard** — Summary view: total spent, top 5 categories, recent 5 expenses
+- **web/reports** — Detailed view: all categories with amounts and percentages
+- **api/reports** — Aggregation queries (summary and by-category)
+- **api/db** — Expense aggregation with GROUP BY category
 
 ## Paths
 
-### Happy path
+### Dashboard (summary)
 
-User selects month. API returns aggregated data. Chart and table render. Empty month shows "No expenses".
+1. Web fetches GET /reports/summary?month=YYYY-MM and GET /expenses?limit=5.
+2. Displays total spent, top 5 categories, and 5 most recent expenses.
 
-### No data
+### Reports page (detailed)
 
-Selected month has no expenses. API returns empty array. UI shows empty state.
+1. Web fetches GET /reports?month=YYYY-MM.
+2. Displays all categories with amount and percentage of total.
+3. User can change month filter to view different periods.
 
-## Invariants across all paths
+## Invariants
 
-- Amounts in cents. Display converts to currency (e.g. 1234 → 12.34).
-- Only user's own expenses included.
+- All aggregation is computed at query time (no materialized summaries).
+- Reports are scoped to the authenticated user's expenses only.
+- Month defaults to current month if not specified.

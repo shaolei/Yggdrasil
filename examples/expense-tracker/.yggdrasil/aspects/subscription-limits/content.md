@@ -1,20 +1,16 @@
 # Subscription Limits
 
-Nodes carrying this aspect enforce plan-based limits before allowing operations.
+## What
 
-## Plan limits
+Free-plan users have enforced limits: max 50 expenses per calendar month and max 5 custom categories. Pro-plan users have no limits.
 
-| Plan | Expenses per month | Custom categories |
-|------|--------------------|-------------------|
-| Free | 50                 | max 5             |
-| Pro  | unlimited          | unlimited         |
+## Why
 
-## Enforcement
+Freemium model: free tier provides enough value to onboard users, limits create upgrade incentive. Limits are enforced server-side in the service layer before INSERT to prevent over-quota data.
 
-- **Expenses:** Before inserting a new expense, count user's expenses in current month. Free users exceeding 50 get 403.
-- **Categories:** Before inserting a custom category, count user's custom categories. Free users exceeding 5 get 403.
-- **Edit/Delete:** Do not count toward limits — limits apply only to new inserts.
+## How
 
-## Error response
-
-403 Forbidden with message: "You've reached the Free plan limit. Upgrade to Pro for unlimited [expenses|categories]."
+- **Expenses:** `expenses.service.create()` counts user's expenses for the current month. If count >= 50 and plan is "free", returns `EXPENSE_LIMIT` error (403).
+- **Categories:** `categories.service.create()` counts user's custom categories (user_id IS NOT NULL). If count >= 5 and plan is "free", returns `CATEGORY_LIMIT` error (403).
+- **Web:** AddExpense and Categories pages display limit counters for free-plan users. 403 responses show upgrade prompts.
+- **Upgrade:** POST /subscriptions/upgrade changes plan to "pro" (idempotent, no payment processing in this example).

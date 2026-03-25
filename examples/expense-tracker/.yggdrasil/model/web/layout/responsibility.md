@@ -1,5 +1,15 @@
-# Layout — Responsibility
+# Layout
 
-Header with navigation, user dropdown, logout. ProtectedRoute: redirects to /login when no token. Wraps all authenticated pages.
+Shared layout wrapper for all authenticated pages.
 
-Not responsible for: auth logic (AuthContext), page content.
+## Responsible for
+
+- Header with navigation links (Dashboard, Expenses, Categories, Budgets, Reports)
+- User dropdown menu (Settings, Logout)
+- Active route highlighting based on current path
+- Wrapping page content via React Router outlet
+
+## Not responsible for
+
+- Page content (rendered by child routes)
+- Authentication logic (ProtectedRoute in web parent handles this)

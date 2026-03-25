@@ -1,8 +1,16 @@
-name: Categories
+name: Categories Page
 type: module
+description: "Category list and custom category creation with limit counter"
+
 aspects:
   - aspect: requires-auth
-relations: []
+  - aspect: subscription-limits
+
+relations:
+  - target: api/categories
+    type: calls
+    consumes: [GET /categories, POST /categories, DELETE /categories/:id]
+
 mapping:
   paths:
     - apps/web/src/pages/Categories.tsx

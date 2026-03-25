@@ -1,2 +1,3 @@
-name: Error Format
-description: "RFC 7807 problem details or consistent error structure"
+name: Consistent Error Format
+description: "Standardized JSON error responses with error codes and HTTP status mapping"
+stability: protocol

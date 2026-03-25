@@ -1,9 +1,11 @@
 name: Layout
 type: module
+description: "Shared page layout with navigation header and active route highlighting"
+
 aspects:
   - aspect: requires-auth
-relations: []
+
 mapping:
   paths:
-    - apps/web/src/components/Layout
-    - apps/web/src/components/ProtectedRoute.tsx
+    - apps/web/src/components/Layout/Layout.tsx
+    - apps/web/src/components/Layout/Header.tsx

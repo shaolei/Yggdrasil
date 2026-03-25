@@ -1,49 +1,51 @@
-# Add Expense Flow
+# Add Expense
 
 ## Business context
 
-User records a new expense in the system. This is the core user action — tracking how much was spent, when, and under which category.
+Expense recording is the core action of the product. Budget awareness at creation time helps users stay on track.
 
 ## Trigger
 
-User is authenticated and navigates to the Expenses page, then submits the add-expense form.
+User clicks "Add expense" from the expenses list.
 
 ## Goal
 
-Expense is stored in the database, linked to the user and category, and visible in the expense list.
+New expense is saved. User is informed if a budget limit was exceeded.
 
 ## Participants
 
-- `api/auth` — verifies user identity for protected routes
-- `api/categories` — provides category list for selection
-- `api/expenses` — creates expense record, checks Free plan limit (50/month) and budget exceeded internally
-- `web/auth` — maintains session, redirects if unauthenticated
-- `web/expenses` — form UI, category picker, submit handling
+- **web/expenses** — AddExpense form (category, amount, date, description)
+- **api/expenses** — Validates, checks subscription limit, inserts, checks budget
+- **api/categories** — Provides category list for the form
+- **api/db** — Persists expense row, queries budget/expense aggregates
 
 ## Paths
 
 ### Happy path
 
-User selects category, enters amount and date, optionally description. Limit check OK (Free: count < 50). Submit succeeds. New expense appears in list.
+1. Web fetches categories (GET /categories) to populate the dropdown.
+2. User fills category, amount (in display currency, converted to cents), date, optional description.
+3. Web submits POST /expenses.
+4. API validates input against expenseSchema.
+5. API checks free-plan limit (50 expenses/month). Plan is "pro" or count < 50: proceeds.
+6. API inserts expense row.
+7. API queries budget for this month+category. If budget exists and current_total > limit, returns `{id, budgetExceeded: {categoryId, categoryName}}`.
+8. Web shows budget warning alert (2s delay), then navigates to /expenses.
 
-### Plan limit exceeded (Free)
+### Subscription limit reached (free plan)
 
-User has 50 expenses this month. API returns 403. UI shows "You've reached the Free plan limit. Upgrade to Pro for unlimited expenses."
+5a. User is on free plan and has >= 50 expenses this month.
+5b. API returns 403 EXPENSE_LIMIT.
+5c. Web shows limit error with upgrade prompt.
 
-### Budget exceeded
+### No budget set
 
-Expense saved, but category budget exceeded. API returns 201 with `budget_exceeded: true`. UI shows toast "Budget exceeded for category X".
+7a. No budget row for this month+category.
+7b. Returns `{id}` without budgetExceeded.
+7c. Web navigates immediately to /expenses.
 
-### Validation failure
+## Invariants
 
-Invalid amount (negative, zero), missing category, or invalid date. API returns 400. UI shows error message.
-
-### Unauthenticated
-
-User session expired or missing. Web redirects to Login. API returns 401 if called directly.
-
-## Invariants across all paths
-
-- Amount must be positive integer (cents).
-- Category must exist and be accessible to user (predef or custom).
-- Date must be valid ISO date string.
+- Amounts are stored as positive integers (cents).
+- Budget overage is a warning, not a blocker — the expense is always saved if under the subscription limit.
+- Expense is always scoped to the authenticated user_id.

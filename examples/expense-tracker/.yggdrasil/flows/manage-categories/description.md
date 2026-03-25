@@ -1,41 +1,54 @@
-# Manage Categories Flow
+# Manage Categories
 
 ## Business context
 
-User adds, edits, or deletes custom categories. Predefined categories (Food, Transport, etc.) are read-only.
+Custom categories let users organize expenses according to their personal spending patterns beyond the 6 system defaults.
 
 ## Trigger
 
-User on Categories page: adds new category, or edits/deletes an existing custom one.
+User navigates to the categories page.
 
 ## Goal
 
-Custom category stored, updated, or removed. Free plan: max 5 custom categories.
+User can view all categories and create/delete custom ones.
 
 ## Participants
 
-- `api/categories` — CRUD for custom categories, checks Free plan limit (5 custom) internally
-- `web/categories` — list, add form, edit/delete actions
+- **web/categories** — Category list and creation form
+- **api/categories** — CRUD with subscription limit enforcement
+- **api/db** — Persists category rows
 
 ## Paths
 
-### Add — happy path
+### Happy path (create)
 
-Validation OK → check limit (Free: count < 5) → insert → 201. New category in list.
+1. Web loads categories (GET /categories) — shows system + custom categories.
+2. User fills name for a new custom category and submits.
+3. API validates input, checks free-plan limit (5 custom categories).
+4. API inserts category row with user_id.
+5. Web refreshes list.
 
-### Add — limit exceeded (Free)
+### Delete custom category
 
-User has 5 custom categories. API returns 403. "Maximum 5 custom categories on Free plan. Upgrade to Pro."
+1. User clicks Delete on a custom category (system categories cannot be deleted).
+2. Web sends DELETE /categories/:id.
+3. API verifies category is user-owned (user_id IS NOT NULL) and deletes.
+4. Returns 204.
 
-### Edit / Delete — happy path
+### Subscription limit reached
 
-Verify ownership → update or delete → 200/204. List refreshed.
+3a. Free plan user has >= 5 custom categories.
+3b. API returns 403 CATEGORY_LIMIT.
+3c. Web shows limit error.
 
-### Edit / Delete — not found
+### Category has expenses (delete blocked)
 
-Category does not exist or is predefined (read-only). API returns 404.
+3a. Category has associated expenses (FK RESTRICT).
+3b. Delete fails at DB level.
+3c. API returns error.
 
-## Invariants across all paths
+## Invariants
 
-- Predefined categories (user_id IS NULL) are read-only. Custom = user_id = current user.
-- Name must be unique per user.
+- System categories (user_id IS NULL) are immutable — seeded at DB init, cannot be modified or deleted.
+- A category with existing expenses cannot be deleted (RESTRICT foreign key).
+- Free plan: max 5 custom categories.

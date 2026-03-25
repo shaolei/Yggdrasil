@@ -1,8 +1,15 @@
-name: Reports
+name: Reports Page
 type: module
+description: "Monthly spending breakdown by category with percentages"
+
 aspects:
   - aspect: requires-auth
-relations: []
+
+relations:
+  - target: api/reports
+    type: calls
+    consumes: [GET /reports]
+
 mapping:
   paths:
     - apps/web/src/pages/Reports.tsx

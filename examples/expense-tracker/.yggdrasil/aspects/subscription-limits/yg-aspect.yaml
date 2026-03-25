@@ -1,2 +1,3 @@
 name: Subscription Limits
-description: "Enforces Free vs Pro plan limits (expenses/month, custom categories)"
+description: "Freemium enforcement: free plan caps on expenses (50/month) and custom categories (5)"
+stability: implementation

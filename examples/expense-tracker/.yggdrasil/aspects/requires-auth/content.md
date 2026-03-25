@@ -1,22 +1,14 @@
-# Requires Auth
+# Requires Authentication
 
-Nodes carrying this aspect enforce that the user is authenticated before allowing access.
+## What
 
-## API
+All API routes (except /health, /auth/register, /auth/login) must be protected by the `requireAuth` middleware. All web pages (except Landing, Login, Register) must be wrapped in `ProtectedRoute`.
 
-- Protected routes must use auth middleware to verify JWT.
-- Unauthenticated requests return 401 with clear message.
-- Token is read from `Authorization: Bearer <token>` header.
-- JWT payload includes `user_id` and `plan` (free|pro).
+## Why
 
-## Web
+User data is isolated per account. Every request must identify the user via JWT so the service layer can scope queries to the correct user_id. Unauthenticated access would expose or corrupt other users' data.
 
-- Protected pages redirect to Login when no valid session.
-- AuthContext provides `user` and `token`; null means unauthenticated.
-- API client attaches token to requests when available.
-- Protected routes: `/dashboard`, `/expenses`, `/categories`, `/budgets`, `/reports`, `/settings`.
+## How
 
-## Public vs protected
-
-- Public: Landing, Login, Register — no auth required.
-- Protected: all other routes except auth endpoints.
+- **API:** Fastify `preHandler` hook calls `requireAuth`, which extracts the Bearer token from the Authorization header, verifies it with `jsonwebtoken`, and attaches `{userId, email, plan}` to `request.user`. Returns 401 if missing or invalid.
+- **Web:** `ProtectedRoute` component checks for a token in localStorage and loads user state on mount. Redirects to `/login` if no token. The API client auto-clears token and redirects on 401 responses.

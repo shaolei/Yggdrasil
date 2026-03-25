@@ -1,5 +1,15 @@
-# Dashboard — Responsibility
+# Dashboard
 
-Main view after login. Summary of month total, top categories, recent 5 expenses. Fetches /reports/summary and /expenses.
+Main overview page shown after login. Provides a quick snapshot of current-month spending.
 
-Not responsible for: raw data aggregation (API).
+## Responsible for
+
+- Displaying total spent this month
+- Top 5 spending categories
+- 5 most recent expenses
+- Fetching data from /reports/summary and /expenses?limit=5
+
+## Not responsible for
+
+- Detailed reports (delegated to web/reports)
+- Expense CRUD (delegated to web/expenses)

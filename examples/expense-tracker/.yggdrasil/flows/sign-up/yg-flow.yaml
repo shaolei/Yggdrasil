@@ -1,4 +1,6 @@
 name: Sign Up
+description: "New user creates an account and lands on the dashboard with a free subscription"
 nodes:
-  - api/auth
   - web/auth
+  - api/auth
+  - api/db

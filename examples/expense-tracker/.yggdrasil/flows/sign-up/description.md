@@ -1,37 +1,43 @@
-# Sign Up Flow
+# Sign Up
 
 ## Business context
 
-New user creates an account to start using the expense tracker. After sign-up, user is logged in and can access the dashboard.
+User onboarding is the entry point to the product. A frictionless sign-up with immediate access to the dashboard reduces drop-off.
 
 ## Trigger
 
-User is on Landing page and clicks "Sign up" or navigates to Register.
+User visits the landing page and clicks "Get started."
 
 ## Goal
 
-User account created. Subscription (Free) created automatically. User logged in and redirected to Dashboard.
+User has an account with a free subscription and sees the dashboard.
 
 ## Participants
 
-- `api/auth` — validates input, checks email uniqueness, hashes password, inserts User and Subscription (Free) atomically, issues JWT
-- `web/auth` — registration form, redirect after success
+- **web/auth** — Registration form (email, password, confirm)
+- **api/auth** — Validates input, creates user + free subscription, issues JWT
+- **api/db** — Persists user and subscription rows
 
 ## Paths
 
 ### Happy path
 
-User enters email and password. Validation OK → check email uniqueness → hash password → insert User → insert Subscription (Free) → return JWT → redirect /dashboard.
+1. User fills the registration form with email, password, and confirmation.
+2. Web submits POST /auth/register with validated fields.
+3. API checks email uniqueness, hashes password (bcrypt, 10 rounds), inserts user row.
+4. API auto-creates a free subscription (plan=free, status=active).
+5. API returns a JWT (7-day expiry, payload: userId, email, plan).
+6. Web stores token in localStorage, parses payload, sets auth context.
+7. User is redirected to /dashboard.
 
-### Duplicate email
+### Email already taken
 
-Email already registered. API returns 409. UI shows "This email is already in use".
+2a. API finds existing user with same email.
+2b. Returns 409 EMAIL_TAKEN.
+2c. Web displays error message on the form.
 
-### Validation failure
+## Invariants
 
-Invalid email format or weak password. API returns 400. UI shows validation errors.
-
-## Invariants across all paths
-
-- Every new user gets Free plan. Subscription created atomically with User.
-- Password never stored in plain text.
+- Every new user gets exactly one subscription row (free plan).
+- Password is never stored in plaintext — always bcrypt hashed.
+- JWT is the only session mechanism (no server-side sessions).

@@ -1,2 +1,3 @@
-name: Requires Auth
-description: "API routes and web pages that require authenticated user session"
+name: Requires Authentication
+description: "Routes and pages that require a valid JWT token to access"
+stability: protocol

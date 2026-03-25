@@ -1,5 +1,16 @@
-# Web — Responsibility
+# Web
 
-Frontend module for Expense Tracker. React SPA with Vite. Handles auth flows, dashboard, expenses CRUD, categories, budgets, reports, settings (including subscription upgrade).
+React SPA serving the expense tracker frontend. Provides routing, authentication context, API communication, and page layout.
 
-Not responsible for: persistence, business rules enforcement (API is source of truth).
+## Responsible for
+
+- Application routing (BrowserRouter with protected and public routes)
+- Authentication context (AuthContext): user state, token storage in localStorage, login/register/logout/loadUser
+- API client: fetch wrapper with /api base URL, automatic Bearer token injection, 401 auto-logout
+- Protected route wrapper: redirects to /login when unauthenticated
+- Global CSS: dark theme with CSS variables, component classes, responsive layout
+
+## Not responsible for
+
+- Business logic (all data operations go through the API)
+- Page-specific UI (delegated to child nodes)

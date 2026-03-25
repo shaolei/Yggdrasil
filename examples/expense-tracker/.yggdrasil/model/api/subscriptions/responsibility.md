@@ -1,5 +1,13 @@
-# Subscriptions — Responsibility
+# Subscriptions
 
-Current plan: GET /subscriptions/me. Mock upgrade: POST /subscriptions/upgrade (Free → Pro, no payment).
+Manages user subscription plans (free/pro) and the upgrade path.
 
-Not responsible for: plan limit enforcement (expenses, categories services check plan).
+## Responsible for
+
+- Fetching current subscription status (plan + status)
+- Processing upgrade from free to pro (idempotent, mock — no payment processing)
+
+## Not responsible for
+
+- Enforcing subscription limits (handled by api/expenses and api/categories)
+- Payment processing (not implemented in this example)

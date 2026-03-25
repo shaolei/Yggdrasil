@@ -1,11 +1,24 @@
 name: Auth
 type: service
+description: "JWT authentication: registration, login, and request middleware"
+
 aspects:
   - aspect: validation
+    anchors:
+      - registerSchema
+      - loginSchema
   - aspect: error-format
-relations: []
+    anchors:
+      - EMAIL_TAKEN
+      - INVALID_CREDENTIALS
+
+relations:
+  - target: api/db
+    type: uses
+    consumes: [db.prepare, db.run]
+
 mapping:
   paths:
-    - apps/api/src/services/auth.ts
     - apps/api/src/routes/auth.ts
+    - apps/api/src/services/auth.ts
     - apps/api/src/middleware/auth.ts

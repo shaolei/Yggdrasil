@@ -1,2 +1,3 @@
-name: Validation
-description: "Input validation and sanitization before processing"
+name: Input Validation
+description: "Zod schema validation on all user input before processing"
+stability: protocol

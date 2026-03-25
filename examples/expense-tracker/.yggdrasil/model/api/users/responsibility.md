@@ -1,5 +1,13 @@
-# Users — Responsibility
+# Users
 
-User profile: GET /users/me. Password change: PUT /users/me/password (requires current password verification).
+User profile and account management operations.
 
-Not responsible for: registration (auth), subscription (subscriptions service).
+## Responsible for
+
+- Fetching authenticated user's profile (GET /users/me)
+- Password change with current password verification (bcrypt.compare + bcrypt.hash)
+
+## Not responsible for
+
+- User creation (handled by api/auth during registration)
+- Subscription management (delegated to api/subscriptions)

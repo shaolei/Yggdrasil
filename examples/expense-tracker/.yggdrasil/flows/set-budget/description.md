@@ -1,34 +1,40 @@
-# Set Budget Flow
+# Set Budget
 
 ## Business context
 
-User sets a monthly spending limit for a category. Used to track overspending and show alerts on Dashboard.
+Budget limits help users control spending by category. Visual feedback (red highlighting) when over budget creates awareness.
 
 ## Trigger
 
-User navigates to Budgets, selects category and month, enters limit amount, saves.
+User navigates to the budgets page for a specific month.
 
 ## Goal
 
-Budget record stored. Visible on Dashboard and /budgets. Alerts when exceeded.
+User has set spending limits per category and can see current spending vs. limits.
 
 ## Participants
 
-- `api/budgets` — upserts budget per (user, category, month)
-- `api/categories` — provides category list
-- `web/budgets` — form, limit input, status display
+- **web/budgets** — Budget table with inline limit editing
+- **api/budgets** — Upserts budget limits, returns spent totals
+- **api/db** — Budget rows with ON CONFLICT upsert, expense aggregation via JOIN
 
 ## Paths
 
 ### Happy path
 
-Validation OK (limit >= 0) → upsert Budget → 200. UI shows saved limit and current vs limit.
+1. Web loads budgets for month (GET /budgets?month=YYYY-MM) — returns categories with current_total (spent) and limit_amount.
+2. User enters a limit amount for a category and clicks Save.
+3. Web sends PUT /budgets with {categoryId, month, limitAmount}.
+4. API validates input, upserts budget row (INSERT ... ON CONFLICT(user_id, category_id, month) UPDATE).
+5. Web refreshes budget list.
 
-### Validation failure
+### Over budget
 
-Negative limit. API returns 400. UI shows error.
+1a. On load, categories where current_total > limit_amount are highlighted in red.
+1b. This is informational — no blocking behavior.
 
-## Invariants across all paths
+## Invariants
 
-- One budget per (user, category, month). No record = no limit (unlimited).
-- Limit in cents (integer). Zero = no spending allowed for that category.
+- Budget is per user, per category, per month (compound unique key).
+- Upsert semantics: setting a budget for an existing month+category updates it.
+- Spent totals are computed at query time from expenses, not stored.

@@ -1,36 +1,44 @@
-# Subscription Upgrade Flow
+# Subscription Upgrade
 
 ## Business context
 
-Free user upgrades to Pro to remove limits (unlimited expenses, unlimited custom categories). On start: mock upgrade without real payment.
+The upgrade path is the monetization mechanism. Free-plan limits create natural pressure to upgrade when users hit caps.
 
 ## Trigger
 
-User on Settings or Subscription page clicks "Upgrade to Pro".
+User navigates to subscription page and clicks "Upgrade to Pro."
 
 ## Goal
 
-Plan changed to Pro. Limits removed. UI shows "You have Pro".
+User's plan changes from free to pro, removing all limits.
 
 ## Participants
 
-- `api/subscriptions` — updates plan to pro
-- `web/settings` — upgrade button, subscription card, plan display
+- **web/settings** — Subscription page with upgrade button
+- **api/subscriptions** — Processes upgrade (mock, no payment)
+- **api/db** — Updates subscription row
 
 ## Paths
 
-### Happy path (mock)
+### Happy path
 
-Update Subscription plan → pro → 200. Frontend refreshes, shows "You have Pro".
+1. User on free plan visits /settings/subscription.
+2. Page shows current plan (Free) and upgrade button.
+3. User clicks "Upgrade to Pro."
+4. Web sends POST /subscriptions/upgrade.
+5. API updates subscription plan to "pro" (idempotent — no-op if already pro).
+6. Returns {ok: true, plan: "pro"}.
+7. Web calls loadUser() to refresh auth context (fetches /users/me + /subscriptions/me).
+8. Page refreshes, shows "You have Pro plan." Upgrade button disappears.
 
-### Already Pro
+### Already pro
 
-User already on Pro. API returns 200 idempotently or 400. UI shows current plan.
+5a. User is already on pro plan.
+5b. API returns same success response (idempotent).
+5c. No visible change.
 
-### Future: real billing
+## Invariants
 
-Stripe checkout → webhook → update. Not implemented on start.
-
-## Invariants across all paths
-
-- Downgrade Pro→Free optional on start. Can be omitted.
+- Upgrade is idempotent — calling it multiple times has no side effects.
+- No payment processing in this example — upgrade is instant and free.
+- Plan change takes effect immediately for all subsequent limit checks.

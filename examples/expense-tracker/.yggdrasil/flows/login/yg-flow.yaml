@@ -1,4 +1,6 @@
 name: Login
+description: "Existing user authenticates and receives a JWT for session access"
 nodes:
-  - api/auth
   - web/auth
+  - api/auth
+  - api/db

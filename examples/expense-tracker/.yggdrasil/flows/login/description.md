@@ -1,37 +1,40 @@
-# Login Flow
+# Login
 
 ## Business context
 
-Existing user authenticates to access the app. After login, user can access dashboard and all protected features.
+Returning users need quick, secure access to their expense data.
 
 ## Trigger
 
-User enters email and password on Login page and clicks "Log in".
+User navigates to the login page.
 
 ## Goal
 
-JWT stored (cookie/localStorage), user redirected to Dashboard.
+User is authenticated and redirected to the dashboard.
 
 ## Participants
 
-- `api/auth` — validates credentials, issues JWT
-- `web/auth` — login form, stores token, redirects
+- **web/auth** — Login form (email, password)
+- **api/auth** — Validates credentials, issues JWT
+- **api/db** — Queries user + subscription for JWT payload
 
 ## Paths
 
 ### Happy path
 
-Validation OK → find User → verify password → return JWT → redirect /dashboard.
+1. User enters email and password.
+2. Web submits POST /auth/login.
+3. API queries user by email (JOIN subscriptions for plan), verifies password with bcrypt.compare.
+4. API returns JWT with payload {sub: userId, email, plan}.
+5. Web stores token, sets auth context, redirects to /dashboard.
 
 ### Invalid credentials
 
-Wrong password or non-existent email. API returns 401. "Invalid email or password" (no hint which is wrong).
+3a. Email not found or password mismatch.
+3b. Returns 401 INVALID_CREDENTIALS.
+3c. Web displays error on the form.
 
-### Validation failure
+## Invariants
 
-Invalid email format or empty password. API returns 400. UI shows field errors.
-
-## Invariants across all paths
-
-- JWT contains user_id and plan. Lifetime e.g. 7 days.
-- Never reveal whether email exists.
+- Credential verification uses constant-time bcrypt comparison.
+- JWT payload includes the subscription plan so protected routes can check limits without extra DB queries.

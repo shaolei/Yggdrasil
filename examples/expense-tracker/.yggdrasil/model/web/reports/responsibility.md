@@ -1,5 +1,14 @@
-# Reports — Responsibility
+# Reports Page
 
-Per-category totals for selected month. Table with amount and percentage.
+Detailed spending report showing per-category breakdown with amounts and percentages.
 
-Not responsible for: aggregation (API).
+## Responsible for
+
+- Month filter for selecting report period
+- Table of all categories with amount and percentage of total spending
+- Total spending display
+
+## Not responsible for
+
+- Summary view (delegated to web/dashboard)
+- Data aggregation (delegated to api/reports)

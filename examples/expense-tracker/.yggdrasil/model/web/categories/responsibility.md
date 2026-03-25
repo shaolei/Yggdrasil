@@ -1,5 +1,15 @@
-# Categories — Responsibility
+# Categories Page
 
-List categories (predef + custom). Add custom category. Delete custom. Shows Free plan limit (5).
+UI for viewing and managing expense categories.
 
-Not responsible for: limit enforcement (API).
+## Responsible for
+
+- Displaying system + custom categories
+- Custom category creation form with limit counter (x/5 for free plan)
+- Deleting custom categories (system categories show no delete option)
+- Handling 403 CATEGORY_LIMIT errors
+
+## Not responsible for
+
+- System category seeding (handled by api/db)
+- Category editing (not exposed in the web UI — only name can be set at creation)

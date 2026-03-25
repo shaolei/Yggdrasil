@@ -1,4 +1,5 @@
 version: "2.0.0"
+
 name: expense-tracker
 
 node_types:
@@ -8,6 +9,8 @@ node_types:
     description: "Component providing functionality to other nodes"
   library:
     description: "Shared utility code with no domain knowledge"
+  infrastructure:
+    description: "Guards, middleware, interceptors — invisible in call graphs but affect blast radius"
 
 artifacts:
   responsibility.md:
@@ -29,3 +32,4 @@ quality:
   context_budget:
     warning: 10000
     error: 20000
+    own_warning: 5000
