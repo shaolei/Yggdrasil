@@ -236,6 +236,30 @@ mapping:
       }
     });
 
+    it('skips blackbox nodes entirely', async () => {
+      const { tmpDir } = await createTmpProject('drift-blackbox-skip', {
+        nodePath: 'svc/blackbox-svc',
+        nodeYaml:
+          'name: BlackboxSvc\ntype: service\nblackbox: true\nmapping:\n  paths:\n    - src/blackbox',
+        mappingFiles: {
+          'src/blackbox/index.ts': '// blackbox internals',
+          'src/blackbox/helper.ts': '// more internals',
+        },
+      });
+
+      try {
+        const graph = await loadGraph(tmpDir);
+        const report = await detectDrift(graph);
+
+        // Blackbox node should not appear in drift report at all
+        const entry = report.entries.find((e) => e.nodePath === 'svc/blackbox-svc');
+        expect(entry).toBeUndefined();
+        expect(report.totalChecked).toBe(0);
+      } finally {
+        await rm(tmpDir, { recursive: true, force: true });
+      }
+    });
+
     it('--node filter: only checks specified node', async () => {
       const graph = await loadGraph(FIXTURE_PROJECT);
       const report = await detectDrift(graph, 'orders/order-service');
@@ -363,6 +387,26 @@ mapping:
     it('throws when node has no mapping', async () => {
       const graph = await loadGraph(FIXTURE_PROJECT);
       await expect(syncDriftState(graph, 'auth')).rejects.toThrow('Node has no mapping');
+    });
+
+    it('throws when node is blackbox', async () => {
+      const { tmpDir } = await createTmpProject('drift-blackbox-sync', {
+        nodePath: 'svc/bb-sync',
+        nodeYaml:
+          'name: BBSync\ntype: service\nblackbox: true\nmapping:\n  paths:\n    - src/bb.ts',
+        mappingFiles: {
+          'src/bb.ts': '// content',
+        },
+      });
+
+      try {
+        const graph = await loadGraph(tmpDir);
+        await expect(syncDriftState(graph, 'svc/bb-sync')).rejects.toThrow(
+          'Cannot sync blackbox node',
+        );
+      } finally {
+        await rm(tmpDir, { recursive: true, force: true });
+      }
     });
   });
 

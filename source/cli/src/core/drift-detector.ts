@@ -51,6 +51,7 @@ export async function detectDrift(graph: Graph, filterNodePath?: string): Promis
 
   for (const [nodePath, node] of graph.nodes) {
     if (filterNodePath && nodePath !== filterNodePath && !nodePath.startsWith(filterNodePath + '/')) continue;
+    if (node.meta.blackbox) continue;
     const mapping = node.meta.mapping;
     if (!mapping) continue;
 
@@ -200,6 +201,7 @@ export async function syncDriftState(
   const node = graph.nodes.get(nodePath);
   if (!node) throw new Error(`Node not found: ${nodePath}`);
   if (!node.meta.mapping) throw new Error(`Node has no mapping: ${nodePath}`);
+  if (node.meta.blackbox) throw new Error(`Cannot sync blackbox node: ${nodePath}`);
 
   const trackedFiles = collectTrackedFiles(node, graph);
   const excludePrefixes = getChildMappingExclusions(graph, nodePath);
