@@ -295,7 +295,7 @@ Projects can define additional artifact types in `yg-config.yaml` under `artifac
 
 All artifact paths are relative to `.yggdrasil/` — construct full path as `.yggdrasil/<path>`.
 
-**Default mode (paths-only):** Use for all graph operations. Read the YAML map first — start with the `glossary` to understand aspects and flows, then the `node` section for the target. Read artifact files inline on each element using the Read tool. For quick orientation (scoping, blast radius assessment), the map alone is sufficient. For implementation or modification, read all artifact files before changing code.
+**Default mode (paths-only):** Use for all graph operations. Read the YAML map first — start with the `glossary` to understand aspects and flows, then the `node` section for the target. Read artifact files inline on each element using the Read tool. Always read ALL artifact files listed in the map — a typical context package is ~8K tokens (less than a single source file), so "too much to read" is never true.
 
 The glossary at the top defines all aspects and flows — read it first to understand IDs used throughout.
 
@@ -520,11 +520,15 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 | "Flows can wait until I understand the full system" | Flows capture business processes from specs. Create them BEFORE implementing — they are part of the specification, not an afterthought. |
 | "I split the node but the flow still works" | Flow participants reference specific node paths. After a split, old paths are stale. Run `yg flows` and update. |
 | "This is just CRUD, not a business process" | A user performing a sequence of steps toward a goal IS a business process — even single-actor workflows (publish blog, manage portfolio, fulfill order). Create a flow. |
+| "The context package is too large to read" | A typical context package is ~8K tokens — less than one source file. Read ALL of it. |
+| "I have a plan, I don't need graph context" | A plan is not a substitute for graph context. Plans capture task steps; the graph captures cross-cutting aspects, flows, and conventions that plans may not repeat. Always run `build-context`. |
+| "The user told me what to do, that's my plan" | A verbal instruction is not a written plan. And even a written plan does not exempt you from the graph protocol. |
 
 ### Failure States
 
 You have broken Yggdrasil if you do any of the following:
 
+- ❌ Started brainstorming, design, or planning without running `yg select --task` and reading graph context first. The graph contains aspects, flows, and conventions that MUST inform design decisions.
 - ❌ Worked on a source file without running `yg build-context --file` first — regardless of what instructed the action (skill, plan, user request, workflow step).
 - ❌ Modified source code without updating graph artifacts before moving to the next file, or vice versa.
 - ❌ Batched graph updates to "do later" — deferred = forgotten. Update after EACH file.

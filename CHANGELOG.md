@@ -20,7 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   without loading graph context, missing cross-cutting aspects, flows, and
   conventions. Three changes: (1) expanded `critical_protocol` to lead with the
   task-level trigger, (2) added task-level entry to Quick Start, (3) added
-  brainstorming correct/wrong example pair.
+  brainstorming correct/wrong example pair, (4) closed Context Assembly loophole
+  ("the map alone is sufficient" → "read ALL artifact files" + measured ~8K token
+  cost), (5) added 3 evasion patterns, (6) added failure state for brainstorming
+  without graph.
 
 ## [2.11.0] - 2026-03-25
 
