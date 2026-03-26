@@ -1,9 +1,5 @@
 <video src="https://github.com/user-attachments/assets/49c8fe8f-c3b9-4202-b655-7f987dcab4cb" controls></video>
 
-<div align="center">
-  <img src="docs/public/logo.svg" alt="Yggdrasil" width="150" />
-</div>
-
 # Yggdrasil
 
 ## Stop re-explaining your codebase to your AI agent
@@ -14,6 +10,8 @@ AI agents keep forgetting your architecture, constraints, and past decisions. Yg
 [![npm version](https://img.shields.io/npm/v/@chrisdudek/yg.svg)](https://www.npmjs.com/package/@chrisdudek/yg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/krzysztofdudek/Yggdrasil/graph/badge.svg)](https://codecov.io/gh/krzysztofdudek/Yggdrasil)
+[![GitHub Stars](https://img.shields.io/github/stars/krzysztofdudek/ResearcherSkill)](...)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/SZTbgsH8Wm)
 
 ---
 
@@ -216,3 +214,15 @@ Full specification and architecture:
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+<div align="center">
+  <img src="docs/public/logo.svg" alt="Yggdrasil" width="150" />
+  <br/><br/>
+  <a href="https://discord.gg/SZTbgsH8Wm">
+    <img src="https://img.shields.io/badge/Discord-Join%20Community-5865F2?logo=discord&logoColor=white" alt="Discord" />
+  </a>
+  <br/>
+  <sub>Building something similar or have questions? Join the Discord.</sub>
+</div>
