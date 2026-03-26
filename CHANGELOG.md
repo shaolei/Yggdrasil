@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-03-26
+
+### Changed
+
+- **Agent rules: task-level graph trigger.** Added a task-level trigger
+  (`yg select --task`) alongside the existing file-level trigger
+  (`yg build-context --file`). Root cause: agents in brainstorming/design/planning
+  modes skipped graph context because the file-level trigger didn't fire — they
+  didn't think of themselves as "interacting with a source file." Real-world
+  impact: an agent designed a 4-feature admin panel by reading 6+ source files
+  without loading graph context, missing cross-cutting aspects, flows, and
+  conventions. Three changes: (1) expanded `critical_protocol` to lead with the
+  task-level trigger, (2) added task-level entry to Quick Start, (3) added
+  brainstorming correct/wrong example pair.
+
 ## [2.11.0] - 2026-03-25
 
 ### Changed

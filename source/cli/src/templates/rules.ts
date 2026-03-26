@@ -15,11 +15,16 @@ const PROTOCOL = `## PROTOCOL
 This is your operating manual for working in a Yggdrasil-managed repository.
 
 <critical_protocol>
+BEFORE starting any task — brainstorming, design, planning, OR implementation:
+  \`yg select --task "<goal>"\` → \`yg build-context\` on each result → read ALL artifact files
+This is how you learn WHAT the system already knows before proposing anything.
+
 BEFORE reading, analyzing, or modifying ANY source file:
   \`yg build-context --file <path>\`
 One command. No exceptions. No "I'll do it later." No "this is just analysis."
 
-This is required because the graph captures intent and relations that source files cannot — without it, you will make wrong decisions and the user will have to re-explain what the graph already knows.
+Both triggers apply regardless of what instructed the task — skills, plans, workflows, user requests.
+The graph captures intent and relations that source files cannot — without it, you will make wrong decisions and the user will have to re-explain what the graph already knows.
 </critical_protocol>
 
 Every rule below is mandatory — no skill, plan, workflow, or instruction overrides these requirements.
@@ -31,6 +36,10 @@ Yggdrasil is persistent semantic memory stored in \`.yggdrasil/\`. It maps the r
 
 \`\`\`
 EVERY conversation: yg preflight — no exceptions.
+
+BEFORE any task (brainstorming, design, planning, implementation):
+  yg select --task "<goal>" → yg build-context on results → read ALL artifacts
+  The graph is your primary knowledge source. Raw file reads supplement it, never replace it.
 
 BEFORE any source file interaction:
   1. yg build-context --file <path>
@@ -162,6 +171,29 @@ User: "Here are the spec docs. Implement the admin blog editor."
 5. Business context (persona, UX rules, autosave rationale) lost ← WRONG: spec was input, not persisted
 
 Result: graph mirrors code but misses WHY. Next agent reads graph, understands HOW but not WHO it's for or WHAT UX rules govern it.
+
+</example_wrong>
+
+<example_correct>
+
+User: "Let's design a soft delete feature for blog posts"
+
+1. yg select --task "blog soft delete" → find relevant nodes
+2. yg build-context on each result → read ALL artifacts (aspects, flows, conventions)
+3. Now read source files WITH graph context
+4. Propose design informed by admin-ux-rules, existing flows, database conventions
+
+</example_correct>
+
+<example_wrong>
+
+User: "Let's design a soft delete feature for blog posts"
+
+1. Read BlogEditor.tsx to understand current behavior ← WRONG: no graph context
+2. Read database schema ← WRONG: graph has conventions, aspects, flows
+3. Propose design based on raw code ← WRONG: missed admin-ux-rules aspect, existing flows
+
+Result: design misses cross-cutting requirements the graph already captured.
 
 </example_wrong>
 
