@@ -50,7 +50,9 @@ by an artifact registry (file paths). Default mode returns paths only — agents
 individually using their file-reading tool.
 
 - `--file <path>` — Resolves the owning node automatically, then assembles context. Prints
-  owner mapping to stderr. Exits 1 if file has no graph coverage. Mutually exclusive with `--node`.
+  owner mapping to stderr. If the file has no graph coverage but other files in the same
+  directory are mapped, lists candidate nodes with file counts and a hint to use `--node`.
+  Exits 1 if no coverage. Mutually exclusive with `--node`.
 - `--full` — Appends artifact file contents below a `---` separator in XML-style tags, for
   environments without file reading capabilities
 - `--self` — Returns only the node's own artifacts (no hierarchy, dependencies, aspects, or

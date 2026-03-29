@@ -29,6 +29,13 @@ BEFORE reading, analyzing, or modifying ANY source file:
   Resolves owner, gives you local context (node artifacts, dependencies).
   If you have NOT done the task-level READING phase above — stop and do it now. File-level work without task-level constraints leads to code that violates cross-cutting requirements.
 
+BEFORE creating a NEW source file:
+  Identify which existing node the new file belongs to (by intent, not by filename).
+  Run \`yg build-context --node <node-path>\` to load the context — especially aspect rules the new file must follow.
+  If the file doesn't fit an existing node, create the node first (Step 2b below).
+  If unsure which node: run \`yg build-context --file <path>\` — the CLI will list candidate nodes from the same directory.
+  New files without graph context are the #1 source of convention violations.
+
 WHEN spec/external documents are provided AND work is greenfield:
   BEFORE creating any feature aspect, node, or code — do this first:
   1. Read ALL spec documents completely.
@@ -62,9 +69,10 @@ BEFORE any task (brainstorming, design, planning, implementation):
     - Parent artifacts: inherited context not repeated in child nodes.
   This is the moment that determines quality. Everything after follows from here.
 
-BEFORE any source file interaction:
-  yg build-context --file <path>
-  Resolves owner. Read local node artifacts.
+BEFORE any source file interaction (read, modify, OR create):
+  yg build-context --file <path>  (existing file: resolves owner)
+  yg build-context --node <path>  (new file: load target node context)
+  Read local node artifacts. Read aspect rules the file must follow.
   If you skipped the task-level READ phase above — do it now before proceeding.
   For blast radius: also run yg impact --file <path>.
 
@@ -364,7 +372,8 @@ Test: "Does this requirement apply to more than one node?" Yes → aspect. No �
 **Aspect identification heuristic:** If the same pattern, constraint, or rule appears in 3+ places, it is a candidate aspect. Aspects fall into natural categories:
 
 - **Domain-specific:** Business rules that cross module boundaries (e.g., timezone handling, booking periods, currency rounding)
-- **Architectural:** Structural patterns with rationale (e.g., dual-rollback on provider failure, idempotency via key generation, fire-and-forget dispatch)
+- **Architectural:** Structural patterns with rationale (e.g., dual-rollback on provider failure, idempotency via key generation, fire-and-forget dispatch, singleton/cached initialization, env-var-driven configuration)
+- **Operational:** Patterns that govern how the system behaves at runtime (e.g., async job dispatch, audit logging on state changes, webhook emission after mutations, transactional integrity boundaries)
 - **Concurrency:** Shared concurrency strategies (e.g., pessimistic locking, retry-on-deadlock, optimistic versioning)
 
 When a node follows an aspect's pattern with exceptions, record them in the \`exceptions\` field of the aspect entry in \`yg-node.yaml\`. Example: aspect says "fire-and-forget" but this node awaits the publish call — add \`exceptions: ["awaits publish call instead of fire-and-forget because..."]\`. Exceptions appear in the context package next to the aspect content, preventing abstractions from masking implementation details.
@@ -544,6 +553,7 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 | "I'll batch graph updates at the end" | Batching = never. Context is freshest immediately after the change. Defer = forget. This is a failure state. |
 | "I'm saving context/tool calls by skipping graph" | Graph cost is constant per node. Skipping it creates unbounded future cost — the user re-explaining what you could have recorded. |
 | "I assumed this file isn't mapped" | You cannot know without running \`yg build-context --file\`. Assume nothing. |
+| "I'm creating a new file, it doesn't exist yet" | New files need graph context MORE than existing files. Run \`yg build-context --node\` for the target node to load its aspect rules. New files without context are the #1 source of convention violations. |
 | "The spec is just input, I don't need to capture it" | Specs contain business context that code cannot express. Capture it or lose it. |
 | "This business knowledge will be obvious from the code" | Pricing strategy, personas, UX rationale, and quality targets are NEVER obvious from code. |
 | "I'll extract aspects after I finish all the features" | After 30 features the rationale is gone. Extract after 3. |
@@ -592,9 +602,11 @@ Per area checklist:
 - [ ] 3. Create node directory, read \`schemas/yg-node.yaml\`, create \`yg-node.yaml\`
 - [ ] 3b. Write \`description\` in \`yg-node.yaml\` — a short summary of what the node does
 - [ ] 4. Analyze source — write \`responsibility.md\`, \`interface.md\`, and \`internals.md\` from code analysis, do not invent
-- [ ] 5. Identify relations — add to \`yg-node.yaml\`
-- [ ] 6. Identify cross-cutting requirements — add matching aspects, create if needed
-- [ ] 6b. For each aspect on the node: identify 2-5 code anchors (function names, constants) that evidence the pattern → add as \`anchors\` in the aspect entry in \`yg-node.yaml\`
+- [ ] 4b. **Invariant extraction** — scan for guards, throws, early returns, and conditionals that enforce business rules. Each one is a behavioral invariant. Record ALL of them in \`interface.md\` (Failure Modes) or \`internals.md\` (Constraints). Pay special attention to: validation windows (timeouts, token expiry), timestamp semantics (what gets a timestamp and when), fallback chains (priority order of config sources), and conditional behavior gated by flags or version numbers.
+- [ ] 5. Identify relations — add to \`yg-node.yaml\`. Include both cross-node relations within the graph AND key unmapped dependencies (e.g., database clients, job queues, external libraries) that define what this node fundamentally is.
+- [ ] 6. Identify cross-cutting requirements — add matching aspects, create if needed. **Commonly missed aspect types** (these are cross-cutting but don't feel "architectural" — they are still aspects): async job dispatch via queue (fire-and-forget pattern), cached/singleton initialization (\`once()\`, lazy singletons, module-level caches), env var configuration conventions (naming schemes, fallback chains), and multi-method authorization patterns.
+- [ ] 6b. **Convention extraction** — when the same utility function, guard, or helper (e.g., \`assertX()\`, \`isValidY()\`, \`getZWhereInput()\`) appears in 3+ files within a module, it is a convention for new code in that module. Record it in the aspect rules or in the parent node's \`responsibility.md\` as a requirement — not just as "this function exists" but as "new code in this area MUST use this function." The difference between a description and a convention: "sendDocument calls getEnvelopeWhereInput" is a description; "All document mutations MUST use getEnvelopeWhereInput for ownership validation" is a convention.
+- [ ] 6c. For each aspect on the node: identify 2-5 code anchors (function names, constants) that evidence the pattern → add as \`anchors\` in the aspect entry in \`yg-node.yaml\`
 - [ ] 7. Identify business process participation — add to flow, ask user if process unclear
 - [ ] 8. \`yg validate\` — fix errors
 - [ ] 9. \`yg drift-sync --node <path>\`

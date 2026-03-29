@@ -8,12 +8,19 @@ description: "Short description of what this node does"  # optional
 blackbox: false               # optional, default false — if true, coarse-grained coverage without deep artifacts
 
 aspects:                      # optional — list of aspect configurations
-  - aspect: aspect-id         # required — aspect identifier (directory path under aspects/)
+  - aspect: aspect-id         # required — the key MUST be "aspect", value is the aspect directory name under aspects/
     exceptions:               # optional — how this node deviates from the aspect's pattern
       - "Description of deviation and why"
     anchors:                  # optional — code patterns for aspect staleness detection
       - functionName          # yg validate checks each pattern exists in mapped source files (W014)
       - CONSTANT_NAME
+# Example with real values:
+#   aspects:
+#     - aspect: audit-logging
+#       anchors: [createAuditLog, AUDIT_LOG_TYPE]
+#     - aspect: provider-pattern
+#       exceptions: ["Uses eager init instead of lazy — surfaces config errors at startup"]
+#       anchors: [getTransport, createTransport]
 
 relations:                    # optional — outgoing dependencies to other nodes
   - target: other/module-path # required — path relative to model/

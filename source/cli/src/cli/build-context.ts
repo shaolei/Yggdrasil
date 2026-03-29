@@ -4,8 +4,36 @@ import { buildContext, collectAncestors, toContextMapOutput } from '../core/cont
 import { formatContextYaml, formatFullContent } from '../formatters/context-text.js';
 import { validate } from '../core/validator.js';
 import { findOwner } from './owner.js';
-import { projectRootFromGraph } from '../utils/paths.js';
+import { normalizeMappingPaths, projectRootFromGraph } from '../utils/paths.js';
 import type { Graph } from '../model/types.js';
+
+type CandidateNode = { nodePath: string; fileCount: number };
+
+function findCandidateNodes(graph: Graph, unmappedFile: string): CandidateNode[] {
+  const dir = unmappedFile.replace(/\/[^/]+$/, '');
+  if (!dir || dir === unmappedFile) return [];
+
+  const candidates = new Map<string, number>();
+
+  for (const [nodePath, node] of graph.nodes) {
+    const mappingPaths = normalizeMappingPaths(node.meta.mapping);
+    let count = 0;
+    for (const mp of mappingPaths) {
+      const mpNorm = mp.replace(/\\/g, '/').replace(/\/+$/, '');
+      const mpDir = mpNorm.replace(/\/[^/]+$/, '');
+      if (mpDir === dir) {
+        count++;
+      }
+    }
+    if (count > 0) {
+      candidates.set(nodePath, count);
+    }
+  }
+
+  return Array.from(candidates.entries())
+    .map(([nodePath, fileCount]) => ({ nodePath, fileCount }))
+    .sort((a, b) => b.fileCount - a.fileCount);
+}
 
 function collectRelevantNodePaths(graph: Graph, nodePath: string): Set<string> {
   const relevant = new Set<string>();
@@ -59,7 +87,18 @@ export function registerBuildCommand(program: Command): void {
           const repoRoot = projectRootFromGraph(graph.rootPath);
           const result = findOwner(graph, repoRoot, options.file.trim());
           if (!result.nodePath) {
-            process.stderr.write(`${result.file} -> no graph coverage\n`);
+            const candidates = findCandidateNodes(graph, result.file);
+            if (candidates.length > 0) {
+              let msg = `${result.file} -> no graph coverage\n`;
+              msg += `\nCandidate nodes (other files in the same directory are mapped to these nodes):\n`;
+              for (const c of candidates) {
+                msg += `  - ${c.nodePath} (${c.fileCount} file${c.fileCount === 1 ? '' : 's'} in same dir)\n`;
+              }
+              msg += `\nUse: yg build-context --node <node-path>\n`;
+              process.stderr.write(msg);
+            } else {
+              process.stderr.write(`${result.file} -> no graph coverage\n`);
+            }
             process.exit(1);
           }
           process.stderr.write(`${result.file} -> ${result.nodePath}\n`);

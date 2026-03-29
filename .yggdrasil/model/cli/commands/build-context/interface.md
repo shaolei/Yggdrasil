@@ -22,7 +22,7 @@
 
 - Neither --node nor --file: `Error: either '--node <path>' or '--file <path>' is required` (exit 1).
 - Both --node and --file: `Error: '--node' and '--file' are mutually exclusive` (exit 1).
-- File not mapped (--file): `<file> -> no graph coverage` (exit 1).
+- File not mapped (--file): `<file> -> no graph coverage` (exit 1). If other files in the same directory are mapped, lists candidate nodes with file counts and a `Use: yg build-context --node <node-path>` hint.
 - Node not found: exits when node path does not exist in graph.
 - Validation errors: blocks build-context if graph has structural errors (E001-E017) affecting this node's context (own node, ancestors, relation targets and their ancestors). Unrelated errors in other nodes are ignored.
 

@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Candidate node listing for unmapped files.** `yg build-context --file` now
+  lists candidate nodes when a file has no graph coverage but sibling files in
+  the same directory are mapped. Helps agents find the right context when
+  creating new files.
+- **Convention extraction step (6b) in reverse-engineering protocol.** When the
+  same utility/guard/helper appears in 3+ files, the protocol now instructs
+  agents to record it as a MUST-use convention, not just a description.
+- **New file creation trigger in agent rules.** Added "BEFORE creating a NEW
+  source file" to the critical protocol, requiring agents to load graph context
+  for the target node before writing new code.
+- **Operational aspect category.** Added to the aspect identification heuristic
+  alongside domain-specific, architectural, and concurrency categories. Covers
+  audit logging, webhook emission, async job dispatch, and transactional
+  integrity boundaries.
+- **Invariant extraction step (4b) in reverse-engineering protocol.** Instructs
+  agents to scan for guards, throws, and conditionals and record them as
+  behavioral invariants.
+
+### Changed
+
+- **Schema example in `yg-node.yaml`.** Added a commented example with real
+  values (`aspect: audit-logging`) to prevent agents from using `id:` instead
+  of the required `aspect:` key.
+
 ## [3.0.0] - 2026-03-29
 
 ### Breaking

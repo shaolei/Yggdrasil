@@ -79,4 +79,40 @@ describe('build-context command (unit-like CLI contract)', () => {
       expect(result.stderr).toContain('Node not found');
     });
   });
+
+  it('build-context --file <unmapped> lists candidate nodes from same directory', async () => {
+    await withFixtureCopy(async (cwd) => {
+      const result = spawnSync(
+        'node',
+        [BIN_PATH, 'build-context', '--file', 'src/orders/new-feature.ts'],
+        {
+          cwd,
+          encoding: 'utf-8',
+        },
+      );
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('no graph coverage');
+      expect(result.stderr).toContain('Candidate nodes');
+      expect(result.stderr).toContain('orders/order-service');
+      expect(result.stderr).toContain('yg build-context --node');
+    });
+  });
+
+  it('build-context --file <unmapped-no-siblings> shows no candidates', async () => {
+    await withFixtureCopy(async (cwd) => {
+      const result = spawnSync(
+        'node',
+        [BIN_PATH, 'build-context', '--file', 'src/totally-new/module.ts'],
+        {
+          cwd,
+          encoding: 'utf-8',
+        },
+      );
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('no graph coverage');
+      expect(result.stderr).not.toContain('Candidate nodes');
+    });
+  });
 });
