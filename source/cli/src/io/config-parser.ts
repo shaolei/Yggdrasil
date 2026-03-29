@@ -7,6 +7,24 @@ import type {
   NodeTypeConfig,
 } from '../model/types.js';
 
+/** The three standard artifacts — always present, cannot be removed from config. */
+const STANDARD_ARTIFACTS: Record<string, ArtifactConfig> = {
+  'responsibility.md': {
+    required: 'always',
+    description: 'What this node is responsible for, and what it is not',
+    included_in_relations: true,
+  },
+  'interface.md': {
+    required: { when: 'has_incoming_relations' },
+    description: 'Public API — methods, parameters, return types, contracts, failure modes, exposed data structures',
+    included_in_relations: true,
+  },
+  'internals.md': {
+    required: 'never',
+    description: 'How the node works and why — algorithms, business rules, state machines, design decisions with rejected alternatives',
+  },
+};
+
 const DEFAULT_QUALITY: QualityConfig = {
   min_artifact_length: 50,
   max_direct_relations: 10,
@@ -125,6 +143,13 @@ export async function parseConfig(filePath: string): Promise<YggConfig> {
 
   if (quality.context_budget.own_warning !== undefined && quality.context_budget.own_warning <= 0) {
     throw new Error('quality.context_budget.own_warning must be a positive number');
+  }
+
+  // Ensure the three standard artifacts are always present (safety net)
+  for (const [key, defaults] of Object.entries(STANDARD_ARTIFACTS)) {
+    if (!artifactsMap[key]) {
+      artifactsMap[key] = { ...defaults };
+    }
   }
 
   return {

@@ -124,8 +124,10 @@ of a file placed next to `yg-node.yaml`. Configuration defines:
 - **Description** — what the artifact captures. This text is available to agents via tool
   feedback when creating or validating nodes.
 
-The above list is a default configuration that covers most projects. Projects can add
-domain-specific artifacts:
+The three standard artifacts above (`responsibility.md`, `interface.md`, `internals.md`) are
+always present and cannot be removed from config. The config parser injects them automatically
+if missing, and the validator reports an error (E020) if they are absent. Projects can add
+domain-specific artifacts on top of the standard three:
 
 ```yaml
 artifacts:

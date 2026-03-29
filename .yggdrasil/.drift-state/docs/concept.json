@@ -1,5 +1,5 @@
 {
-  "hash": "9d74d3d6f59b3be4c2253efb422d611213afd3a975e6e43be2d642e9a346c7ba",
+  "hash": "e471eeb2506045514bb2c97c9a03a5f6ea96120ae5e2718a274d3470529f1395",
   "files": {
     ".yggdrasil/model/docs/concept/yg-node.yaml": "0d5413e7e504a3bc4ed599cda747953b8f706c756b09f5aeb827115fabdf6624",
     ".yggdrasil/model/docs/concept/responsibility.md": "1b5a6590a3620359d6010c5bd05e665732cb35dff7b765a0d205244577bca2dd",
@@ -7,10 +7,10 @@
     ".yggdrasil/model/docs/responsibility.md": "070a2a6c6b29116ab18d2b824068d227cc4682f30fd5ef79b3cbe307dbe632fe",
     "docs/concept/engine.md": "0038b2bd5d650b15ce353afa2b8abdb86e8dc66276de07563caa8ef717484360",
     "docs/concept/foundation.md": "b7c496414f2922043ac5aa6fe030fa6a09a9b138a0e7f3628d3fa14a8d885f2a",
-    "docs/concept/graph.md": "ba4c67d6e500cb494e4c1ff45ee4b64d9d36fc6ae8e1146edcc5f4b69f8d2cd7",
     "docs/concept/integration.md": "0ba031ed338fb0e1d8ea02a2ef4e49099a7848f2e0bc693b47a506f6f7c0eef3",
     "docs/concept/materialization.md": "3ef091a28938f2e4c46b0fd2e9d6d442f11fe303897b526768187e46d4f02c87",
-    "docs/concept/tools.md": "3af7fba5a4d1de322d440feb9989e713f303a9a7624ecacd1dbefa357980535d"
+    "docs/concept/tools.md": "2e0fa3d8df83f6d89813c0fd1c6777d4b1c79640c6f54b0d00793fc263c165d5",
+    "docs/concept/graph.md": "31928348b7f62ef712a9f28fe2fd32ea2072d45c440d9b665214884071c899f6"
   },
   "mtimes": {
     ".yggdrasil/model/docs/concept/yg-node.yaml": 1774035679171.08,
@@ -19,9 +19,9 @@
     ".yggdrasil/model/docs/responsibility.md": 1772828320283.2747,
     "docs/concept/engine.md": 1774035679173.88,
     "docs/concept/foundation.md": 1772829192525.396,
-    "docs/concept/graph.md": 1774035679174.283,
+    "docs/concept/graph.md": 1774777266753.545,
     "docs/concept/integration.md": 1773392454496.5684,
     "docs/concept/materialization.md": 1772781876843.865,
-    "docs/concept/tools.md": 1774070285046.1082
+    "docs/concept/tools.md": 1774766741642.8901
   }
 }

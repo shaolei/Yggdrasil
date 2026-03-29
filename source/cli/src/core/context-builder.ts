@@ -27,12 +27,17 @@ const STRUCTURAL_RELATION_TYPES = new Set(['uses', 'calls', 'extends', 'implemen
 const EVENT_RELATION_TYPES = new Set(['emits', 'listens']);
 const YG_YAML_FILES = new Set(['yg-node.yaml', 'yg-aspect.yaml', 'yg-flow.yaml']);
 
-export async function buildContext(graph: Graph, nodePath: string): Promise<ContextPackage> {
+export interface BuildContextOptions {
+  selfOnly?: boolean;
+}
+
+export async function buildContext(graph: Graph, nodePath: string, options?: BuildContextOptions): Promise<ContextPackage> {
   const node = graph.nodes.get(nodePath);
   if (!node) {
     throw new Error(`Node not found: ${nodePath}`);
   }
 
+  const selfOnly = options?.selfOnly ?? false;
   const layers: ContextLayer[] = [];
 
   // 1. Global
@@ -40,49 +45,53 @@ export async function buildContext(graph: Graph, nodePath: string): Promise<Cont
 
   // 2. Hierarchy (only configured artifacts that exist in ancestor's directory)
   const ancestors = collectAncestors(node);
-  for (const ancestor of ancestors) {
-    layers.push(buildHierarchyLayer(ancestor, graph.config, graph));
+  if (!selfOnly) {
+    for (const ancestor of ancestors) {
+      layers.push(buildHierarchyLayer(ancestor, graph.config, graph));
+    }
   }
 
   // 3. Own (yg-node.yaml + configured artifacts)
   layers.push(await buildOwnLayer(node, graph.config, graph.rootPath, graph));
 
-  // 4. Relational (structural + event, with consumes/failure)
-  //    Skip relations targeting ancestors — their context is already in hierarchy layers.
-  const ancestorPaths = new Set(ancestors.map((a) => a.path));
-  for (const relation of node.meta.relations ?? []) {
-    const target = graph.nodes.get(relation.target);
-    if (!target) {
-      throw new Error(`Broken relation: ${nodePath} -> ${relation.target} (target not found)`);
-    }
-    if (ancestorPaths.has(relation.target)) continue;
-    if (STRUCTURAL_RELATION_TYPES.has(relation.type)) {
-      layers.push(buildStructuralRelationLayer(target, relation, graph.config));
-    } else if (EVENT_RELATION_TYPES.has(relation.type)) {
-      layers.push(buildEventRelationLayer(target, relation));
-    }
-  }
-
-  // 5. Flows (node + all ancestors) — built before aspects so we can collect flow aspect ids
-  for (const flow of collectParticipatingFlows(graph, node)) {
-    layers.push(buildFlowLayer(flow, graph));
-  }
-
-  // 6. Aspects: union of aspect ids from hierarchy + own + flow layers
-  const allAspectIds = new Set<string>();
-  for (const l of layers) {
-    const aspects = l.attrs?.aspects;
-    if (aspects) {
-      for (const id of aspects.split(',').map((t) => t.trim()).filter(Boolean)) {
-        allAspectIds.add(id);
+  if (!selfOnly) {
+    // 4. Relational (structural + event, with consumes/failure)
+    //    Skip relations targeting ancestors — their context is already in hierarchy layers.
+    const ancestorPaths = new Set(ancestors.map((a) => a.path));
+    for (const relation of node.meta.relations ?? []) {
+      const target = graph.nodes.get(relation.target);
+      if (!target) {
+        throw new Error(`Broken relation: ${nodePath} -> ${relation.target} (target not found)`);
+      }
+      if (ancestorPaths.has(relation.target)) continue;
+      if (STRUCTURAL_RELATION_TYPES.has(relation.type)) {
+        layers.push(buildStructuralRelationLayer(target, relation, graph.config));
+      } else if (EVENT_RELATION_TYPES.has(relation.type)) {
+        layers.push(buildEventRelationLayer(target, relation));
       }
     }
-  }
-  const aspectsToInclude = resolveAspects(allAspectIds, graph.aspects);
-  for (const aspect of aspectsToInclude) {
-    const entry = node.meta.aspects?.find(a => a.aspect === aspect.id);
-    const exceptionNote = entry?.exceptions?.join('; ');
-    layers.push(buildAspectLayer(aspect, exceptionNote));
+
+    // 5. Flows (node + all ancestors) — built before aspects so we can collect flow aspect ids
+    for (const flow of collectParticipatingFlows(graph, node)) {
+      layers.push(buildFlowLayer(flow, graph));
+    }
+
+    // 6. Aspects: union of aspect ids from hierarchy + own + flow layers
+    const allAspectIds = new Set<string>();
+    for (const l of layers) {
+      const aspects = l.attrs?.aspects;
+      if (aspects) {
+        for (const id of aspects.split(',').map((t) => t.trim()).filter(Boolean)) {
+          allAspectIds.add(id);
+        }
+      }
+    }
+    const aspectsToInclude = resolveAspects(allAspectIds, graph.aspects);
+    for (const aspect of aspectsToInclude) {
+      const entry = node.meta.aspects?.find(a => a.aspect === aspect.id);
+      const exceptionNote = entry?.exceptions?.join('; ');
+      layers.push(buildAspectLayer(aspect, exceptionNote));
+    }
   }
 
   const fullText = layers.map((l) => l.content).join('\n\n');
@@ -466,6 +475,7 @@ export function computeBudgetBreakdown(
 export function toContextMapOutput(
   pkg: ContextPackage,
   graph: Graph,
+  options?: { selfOnly?: boolean },
 ): ContextMapOutput {
   const node = graph.nodes.get(pkg.nodePath)!;
   const config = graph.config;
@@ -478,8 +488,10 @@ export function toContextMapOutput(
     return ref;
   });
 
+  const selfOnly = options?.selfOnly ?? false;
+
   // Node flows
-  const participatingFlows = collectParticipatingFlows(graph, node);
+  const participatingFlows = selfOnly ? [] : collectParticipatingFlows(graph, node);
   const flowRefs: FlowRef[] = participatingFlows.map((f) => {
     const ref: FlowRef = { path: f.path };
     if (f.aspects?.length) ref.aspects = f.aspects;
@@ -488,48 +500,52 @@ export function toContextMapOutput(
 
   // Hierarchy ancestors
   const ancestors = collectAncestors(node);
-  const hierarchyRefs: AncestorRef[] = ancestors.map((a) => {
+  const hierarchyRefs: AncestorRef[] = selfOnly ? [] : ancestors.map((a) => {
     const nodeAspectIds = (a.meta.aspects ?? []).map((e) => e.aspect);
     const expanded = expandAspects(nodeAspectIds, graph.aspects);
     return { path: a.path, name: a.meta.name, type: a.meta.type, description: a.meta.description, aspects: expanded, files: buildNodeFiles(a, config, `model/${a.path}`) };
   });
 
   // Dependencies — structural + event
-  const ancestorPaths = new Set(ancestors.map((a) => a.path));
   const depRefs: DependencyRef[] = [];
-  for (const relation of node.meta.relations ?? []) {
-    const target = graph.nodes.get(relation.target);
-    if (!target) continue; // buildContext validates relations; skip if somehow missing
-    if (ancestorPaths.has(relation.target)) continue;
+  if (!selfOnly) {
+    const ancestorPaths = new Set(ancestors.map((a) => a.path));
+    for (const relation of node.meta.relations ?? []) {
+      const target = graph.nodes.get(relation.target);
+      if (!target) continue;
+      if (ancestorPaths.has(relation.target)) continue;
 
-    const depAncestors = collectAncestors(target);
-    const depHierarchy: AncestorRef[] = depAncestors.map((a) => {
-      const ids = (a.meta.aspects ?? []).map((e) => e.aspect);
-      const expanded = expandAspects(ids, graph.aspects);
-      const ancestorNode = graph.nodes.get(a.path);
-      return { path: a.path, name: a.meta.name, type: a.meta.type, description: a.meta.description, aspects: expanded, files: ancestorNode ? buildDepNodeFiles(ancestorNode, config, `model/${a.path}`) : [] };
-    });
+      const depAncestors = collectAncestors(target);
+      const depHierarchy: AncestorRef[] = depAncestors.map((a) => {
+        const ids = (a.meta.aspects ?? []).map((e) => e.aspect);
+        const expanded = expandAspects(ids, graph.aspects);
+        const ancestorNode = graph.nodes.get(a.path);
+        return { path: a.path, name: a.meta.name, type: a.meta.type, description: a.meta.description, aspects: expanded, files: ancestorNode ? buildDepNodeFiles(ancestorNode, config, `model/${a.path}`) : [] };
+      });
 
-    const depEffectiveAspects = [...collectEffectiveAspectIds(graph, target.path)];
+      const depEffectiveAspects = [...collectEffectiveAspectIds(graph, target.path)];
 
-    const ref: DependencyRef = {
-      path: target.path,
-      name: target.meta.name,
-      type: target.meta.type,
-      description: target.meta.description,
-      relation: relation.type,
-      aspects: depEffectiveAspects,
-      hierarchy: depHierarchy,
-      files: buildDepNodeFiles(target, config, `model/${target.path}`),
-    };
-    if (relation.consumes?.length) ref.consumes = relation.consumes;
-    if (relation.failure) ref.failure = relation.failure;
-    if (relation.event_name) ref['event-name'] = relation.event_name;
-    depRefs.push(ref);
+      const ref: DependencyRef = {
+        path: target.path,
+        name: target.meta.name,
+        type: target.meta.type,
+        description: target.meta.description,
+        relation: relation.type,
+        aspects: depEffectiveAspects,
+        hierarchy: depHierarchy,
+        files: buildDepNodeFiles(target, config, `model/${target.path}`),
+      };
+      if (relation.consumes?.length) ref.consumes = relation.consumes;
+      if (relation.failure) ref.failure = relation.failure;
+      if (relation.event_name) ref['event-name'] = relation.event_name;
+      depRefs.push(ref);
+    }
   }
 
   // Glossary
-  const glossary = buildGlossary(node, depRefs, graph);
+  const glossary = selfOnly
+    ? { aspects: {}, flows: {} }
+    : buildGlossary(node, depRefs, graph);
 
   // Budget
   const breakdown = computeBudgetBreakdown(pkg, graph);

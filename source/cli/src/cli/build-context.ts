@@ -40,7 +40,8 @@ export function registerBuildCommand(program: Command): void {
     .option('--node <node-path>', 'Node path relative to .yggdrasil/model/')
     .option('--file <file-path>', 'Source file path — resolves owner node automatically')
     .option('--full', 'Include artifact file contents in output')
-    .action(async (options: { node?: string; file?: string; full?: boolean }) => {
+    .option('--self', 'Only include the node\u2019s own artifacts (no hierarchy, dependencies, aspects, flows)')
+    .action(async (options: { node?: string; file?: string; full?: boolean; self?: boolean }) => {
       try {
         if (!options.node && !options.file) {
           process.stderr.write("Error: either '--node <path>' or '--file <path>' is required\n");
@@ -90,8 +91,8 @@ export function registerBuildCommand(program: Command): void {
           process.exit(1);
         }
 
-        const pkg = await buildContext(graph, nodePath);
-        const mapOutput = toContextMapOutput(pkg, graph);
+        const pkg = await buildContext(graph, nodePath, { selfOnly: options.self });
+        const mapOutput = toContextMapOutput(pkg, graph, { selfOnly: options.self });
 
         let output = formatContextYaml(mapOutput);
 

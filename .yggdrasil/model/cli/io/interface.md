@@ -5,7 +5,7 @@ Library used by cli/core (loader, drift-detector). All paths are absolute; calle
 ## config-parser.ts
 
 - `parseConfig(filePath: string): Promise<YggConfig>`
-  - Reads and parses yg-config.yaml. Throws on missing name, invalid node_types (must be non-empty object keyed by type name, each entry must have non-empty description string), invalid artifacts (reserved name `node`, invalid required.when), invalid quality (context_budget.error < warning). Returns parsed config with quality defaults.
+  - Reads and parses yg-config.yaml. Throws on missing name, invalid node_types (must be non-empty object keyed by type name, each entry must have non-empty description string), invalid artifacts (reserved name `node`, invalid required.when), invalid quality (context_budget.error < warning). Returns parsed config with quality defaults. After parsing, injects the three standard artifacts (`responsibility.md`, `interface.md`, `internals.md`) if they are missing from config — this is a safety net ensuring they are always present in the parsed config even if the user removed them from YAML.
 
 ## node-parser.ts
 

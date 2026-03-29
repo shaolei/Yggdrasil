@@ -5,12 +5,13 @@
 ## validate(scope)
 
 1. **Early errors**: configError → E012; nodeParseErrors → E001
-2. **Config-dependent checks** (if !configError): checkNodeTypes, checkAspectsDefined, checkAspectIds, checkAspectIdUniqueness, checkImpliedAspectsExist, checkImpliesNoCycles, checkRequiredAspectsCoverage, checkAnchorPresence, checkRequiredArtifacts, checkInvalidArtifactConditions, checkContextBudget, checkHighFanOut
+2. **Config-dependent checks** (if !configError): checkStandardArtifactsInConfig, checkNodeTypes, checkAspectsDefined, checkAspectIds, checkAspectIdUniqueness, checkImpliedAspectsExist, checkImpliesNoCycles, checkRequiredAspectsCoverage, checkAnchorPresence, checkRequiredArtifacts, checkInvalidArtifactConditions, checkContextBudget, checkHighFanOut
 3. **Graph-structure checks**: checkRelationTargets, checkNoCycles, checkMappingOverlap, checkMappingPathsExist, checkBrokenFlowRefs, checkFlowAspectIds, checkDirectoriesHaveNodeYaml, checkShallowArtifacts, checkUnpairedEvents
 4. **Scope filter**: if scope !== 'all', filter issues by nodePath; validate scope exists
 
 ## Key rules
 
+- **checkStandardArtifactsInConfig**: STANDARD_ARTIFACT_NAMES = ['responsibility.md', 'interface.md', 'internals.md']; checks each is present in config.artifacts; missing → E020
 - **checkSchemas**: REQUIRED_SCHEMAS = ['node','aspect','flow']; present = Set(graph.schemas.map(s => s.schemaType)); missing → W010
 - **checkNoCycles**: DFS with WHITE/GRAY/BLACK; cycles involving blackbox tolerated
 - **checkImpliedAspectsExist**: each id in aspect.implies must have corresponding aspect → E016

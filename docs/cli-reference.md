@@ -40,8 +40,8 @@ Prints the full structure of the semantic memory.
 - `--depth <n>` — Maximum depth
 
 ```bash
-yg build-context --node <node-path> [--full]
-yg build-context --file <file-path> [--full]
+yg build-context --node <node-path> [--full] [--self]
+yg build-context --file <file-path> [--full] [--self]
 ```
 
 Shows the exact context package your agent reads before working on a node. Output is a
@@ -53,6 +53,8 @@ individually using their file-reading tool.
   owner mapping to stderr. Exits 1 if file has no graph coverage. Mutually exclusive with `--node`.
 - `--full` — Appends artifact file contents below a `---` separator in XML-style tags, for
   environments without file reading capabilities
+- `--self` — Returns only the node's own artifacts (no hierarchy, dependencies, aspects, or
+  flows). Use for file-level updates when cross-cutting context was already loaded at task-level.
 
 ```bash
 yg owner --file <path>

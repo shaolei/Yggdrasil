@@ -35,6 +35,7 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   }
 
   if (!graph.configError) {
+    issues.push(...checkStandardArtifactsInConfig(graph));
     issues.push(...checkNodeTypes(graph));
     issues.push(...checkAspectsDefined(graph));
     issues.push(...checkAspectIds(graph));
@@ -93,6 +94,26 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   }
 
   return { issues: filtered, nodesScanned };
+}
+
+// --- Rule: Standard artifacts must exist in config ---
+
+const STANDARD_ARTIFACT_NAMES = ['responsibility.md', 'interface.md', 'internals.md'];
+
+function checkStandardArtifactsInConfig(graph: Graph): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const configArtifacts = graph.config.artifacts ?? {};
+  for (const name of STANDARD_ARTIFACT_NAMES) {
+    if (!configArtifacts[name]) {
+      issues.push({
+        severity: 'error',
+        code: 'E020',
+        rule: 'missing-standard-artifact',
+        message: `Standard artifact '${name}' is missing from config.artifacts. The three standard artifacts (responsibility.md, interface.md, internals.md) are required and cannot be removed.`,
+      });
+    }
+  }
+  return issues;
 }
 
 // --- Rule 0: Node types from config ---

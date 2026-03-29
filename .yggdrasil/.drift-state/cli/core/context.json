@@ -1,8 +1,8 @@
 {
-  "hash": "06554176995cb4cc6a8447da8c22059b5947687e3cf41131222fba53f257fd57",
+  "hash": "824aec9b476ad9cd8f300cc3497d55a4e39e2be9492fa889d78ec37c8812f733",
   "files": {
     ".yggdrasil/model/cli/core/context/yg-node.yaml": "c746c47155917f48873666f753716874d6a62a523c2df9d1edc69ceec66e0cd9",
-    ".yggdrasil/model/cli/core/context/interface.md": "bfd70e472bdaeed8cdf4d6a0bdb4bfd34ed1cd22641a021a8b047eae1c76ba1f",
+    ".yggdrasil/model/cli/core/context/interface.md": "43b10412fd3230473c59d77e154d8e18e892311876c380ff784376f0096b2f11",
     ".yggdrasil/model/cli/core/context/internals.md": "e7a9887f2be92756bb76612158e8070eea0337fef65417fb8a96f886e0a54ce3",
     ".yggdrasil/model/cli/core/context/responsibility.md": "2f1639ee31215186bce1ff5060da400d46c890b56963981004712c23d2a9d8ed",
     ".yggdrasil/model/cli/yg-node.yaml": "df8a5321838edda0335736e81375b7219819d8b4065a45f883ed9686a07bd049",
@@ -22,12 +22,12 @@
     ".yggdrasil/flows/build-context/description.md": "60e4619e480293f028a1c2b756ce30c8800adc613dc9c64e6bd6ef7f3d5fcf87",
     ".yggdrasil/flows/graph-analysis/yg-flow.yaml": "54691941694d1009a854d5e8b422131342ee6715ce71eb8b685a3aee8559b9d7",
     ".yggdrasil/flows/graph-analysis/description.md": "2c5f6e377cea91a9b447f395971203f02c2a91a816e847269adb6f84c8786603",
-    "source/cli/src/core/context-builder.ts": "e8970fe29770a134a839c3ef23d487860c6b690e0d7a8a96eca48335c5735327",
+    "source/cli/src/core/context-builder.ts": "cc4c3b15001cd4636530f9c1f509fc848982c248143c9ddd505e98382905e488",
     "source/cli/src/core/context-files.ts": "d43b1033d4470355f251fab00fcb19331a6bac90453f48f6bac3641dc952a54a"
   },
   "mtimes": {
     ".yggdrasil/model/cli/core/context/yg-node.yaml": 1774035679166.3545,
-    ".yggdrasil/model/cli/core/context/interface.md": 1774035679166.1638,
+    ".yggdrasil/model/cli/core/context/interface.md": 1774766631046.9773,
     ".yggdrasil/model/cli/core/context/internals.md": 1773400320631.8093,
     ".yggdrasil/model/cli/core/context/responsibility.md": 1773381039569.15,
     ".yggdrasil/model/cli/yg-node.yaml": 1774035679170.8608,
@@ -47,7 +47,7 @@
     ".yggdrasil/flows/build-context/description.md": 1773381039567.111,
     ".yggdrasil/flows/graph-analysis/yg-flow.yaml": 1774035679160.974,
     ".yggdrasil/flows/graph-analysis/description.md": 1772743197470.7615,
-    "source/cli/src/core/context-builder.ts": 1774035679176.8975,
+    "source/cli/src/core/context-builder.ts": 1774766572855.444,
     "source/cli/src/core/context-files.ts": 1773381039573.0894
   }
 }

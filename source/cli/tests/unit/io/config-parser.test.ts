@@ -421,4 +421,70 @@ artifacts:
     expect(config.version).toBeUndefined();
   });
 
+  it('injects standard artifacts when missing from config', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-inject-standard');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'yg-config.yaml'),
+      `
+name: "OnlyCustom"
+node_types:
+  service:
+    description: x
+artifacts:
+  custom.md:
+    required: never
+    description: "custom artifact"
+`,
+      'utf-8',
+    );
+
+    const config = await parseConfig(path.join(tmpDir, 'yg-config.yaml'));
+    expect(config.artifacts['responsibility.md']).toBeDefined();
+    expect(config.artifacts['responsibility.md'].required).toBe('always');
+    expect(config.artifacts['interface.md']).toBeDefined();
+    expect(config.artifacts['interface.md'].included_in_relations).toBe(true);
+    expect(config.artifacts['internals.md']).toBeDefined();
+    expect(config.artifacts['internals.md'].required).toBe('never');
+    // Custom artifact preserved
+    expect(config.artifacts['custom.md']).toBeDefined();
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('does not overwrite user-customized standard artifacts', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-custom-standard');
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(
+      path.join(tmpDir, 'yg-config.yaml'),
+      `
+name: "CustomStandard"
+node_types:
+  service:
+    description: x
+artifacts:
+  responsibility.md:
+    required: always
+    description: "custom description for responsibility"
+    included_in_relations: false
+  interface.md:
+    required: always
+    description: "custom interface"
+  internals.md:
+    required: always
+    description: "custom internals"
+`,
+      'utf-8',
+    );
+
+    const config = await parseConfig(path.join(tmpDir, 'yg-config.yaml'));
+    // User's customizations preserved
+    expect(config.artifacts['responsibility.md'].description).toBe('custom description for responsibility');
+    expect(config.artifacts['responsibility.md'].included_in_relations).toBe(false);
+    expect(config.artifacts['interface.md'].required).toBe('always');
+    expect(config.artifacts['internals.md'].required).toBe('always');
+
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
 });

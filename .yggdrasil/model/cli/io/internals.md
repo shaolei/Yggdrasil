@@ -36,3 +36,5 @@ Each JSON file contains a `DriftNodeState`: canonical hash, per-file hashes, and
 **Separation of I/O from domain:** Parsers and stores live in io/ so that cli/core (loader, drift-detector) and cli/commands can remain focused on domain logic. All filesystem access, YAML parsing, and operational state persistence are centralized here.
 
 **Graceful degradation for operational files:** readDriftState returns empty structure on missing file — this is optional operational metadata. Parsers for config and graph structure throw on invalid input, since those are required for correct operation.
+
+**Standard artifact injection in parseConfig:** After parsing user-defined artifacts, the config parser injects the three standard artifacts (responsibility.md, interface.md, internals.md) if they are not already present. Chose injection-as-safety-net over throwing-on-missing because the validator (E020) already reports the error — the parser ensures downstream code always sees a complete config regardless. User-defined values for standard artifacts are preserved (injection only fills gaps, never overwrites).

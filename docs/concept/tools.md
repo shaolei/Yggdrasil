@@ -302,6 +302,7 @@ yg init --platform cursor
 yg init --platform cursor --upgrade   # refreshes rules when .yggdrasil/ exists
 yg build-context --node orders/order-service
 yg build-context --file src/modules/orders/order.service.ts  # resolves owner + context
+yg build-context --file src/modules/orders/order.service.ts --self  # own artifacts only
 yg tree
 yg aspects
 yg status

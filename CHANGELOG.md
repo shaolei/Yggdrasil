@@ -5,7 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.0] - 2026-03-29
+
+### Breaking
+
+- **E020 validation rule: missing-standard-artifact.** The three standard
+  artifacts (`responsibility.md`, `interface.md`, `internals.md`) are now
+  validated as required in `config.artifacts`. Projects that removed standard
+  artifacts from config will get errors on `yg validate`. Fix: re-add them
+  to `yg-config.yaml` or let the config parser inject defaults.
+
+### Added
+
+- **`yg build-context --self` flag.** Returns only the node's own artifacts — no
+  hierarchy, dependencies, aspects, or flows. Designed for file-level graph
+  updates where cross-cutting context was already loaded at task-level. Reduces
+  token cost from ~8K to ~2-3K per file interaction.
+
+### Changed
+
+- **Agent rules: greenfield spec-knowledge transfer (Track A).** Added
+  spec-level trigger to `critical_protocol` with two-category knowledge split:
+  (a) knowledge that maps to source files → node artifacts later, (b) knowledge
+  that will NEVER be in source code → graph immediately. Greenfield workflow
+  updated: step 0 (route spec knowledge), step 5 (every file must be mapped),
+  step 6 (write `internals.md` with design decisions — as numbered step).
+  Research result: 6.6 → 10.0/10.0 on spec-knowledge transfer.
+- **Agent rules: brownfield context reading (Track B).** Separated task-level
+  READ phase (aspects, flows, relations, parent — collect constraints before
+  designing) from file-level WRITE phase (local artifacts, graph updates).
+  Guard: file-level step warns if task-level READ was skipped. Research result:
+  1.82 → 7.04/10 on aspect compliance.
+- **Standard artifacts are now hardcoded in agent rules.** The Artifact Structure
+  section, Information Routing table, and Quick Routing Table reference the three
+  standard artifacts by name. Custom artifacts remain additive via `yg-config.yaml`.
+- **Config parser injects standard artifacts as safety net.** `parseConfig()` now
+  ensures the three standard artifacts are always present in the parsed config,
+  even if the user removed them from YAML. User customizations of standard
+  artifacts (e.g., changing `required` or `description`) are preserved.
 
 ## [2.12.0] - 2026-03-26
 

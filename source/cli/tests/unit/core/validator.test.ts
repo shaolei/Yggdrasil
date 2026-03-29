@@ -134,6 +134,47 @@ describe('validator', () => {
   });
 
 
+  it('missing-standard-artifact (E020) when standard artifact missing from config', async () => {
+    const graph = createGraph({
+      config: {
+        name: 'Test',
+        node_types: { service: { description: 'x' } },
+        artifacts: {
+          'responsibility.md': { required: 'always', description: 'x' },
+          // interface.md and internals.md deliberately omitted
+        },
+      },
+    });
+    graph.nodes.set('a', createNode('a'));
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'missing-standard-artifact');
+    expect(issues).toHaveLength(2);
+    expect(issues[0].code).toBe('E020');
+    const names = issues.map((i) => i.message);
+    expect(names.some((m) => m.includes('interface.md'))).toBe(true);
+    expect(names.some((m) => m.includes('internals.md'))).toBe(true);
+  });
+
+  it('no missing-standard-artifact when all three standard artifacts present', async () => {
+    const graph = createGraph({
+      config: {
+        name: 'Test',
+        node_types: { service: { description: 'x' } },
+        artifacts: {
+          'responsibility.md': { required: 'always', description: 'x' },
+          'interface.md': { required: { when: 'has_incoming_relations' }, description: 'x' },
+          'internals.md': { required: 'never', description: 'x' },
+        },
+      },
+    });
+    graph.nodes.set('a', createNode('a'));
+
+    const result = await validate(graph);
+    const issues = result.issues.filter((i) => i.rule === 'missing-standard-artifact');
+    expect(issues).toHaveLength(0);
+  });
+
   it('infrastructure is accepted as valid node type', async () => {
     const graph = createGraph({
       config: {

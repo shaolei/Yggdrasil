@@ -2,8 +2,9 @@
 
 **Primary API:**
 
-- `buildContext(graph: Graph, nodePath: string): Promise<ContextPackage>`
-  - Parameters: `graph` (Graph), `nodePath` (string).
+- `buildContext(graph: Graph, nodePath: string, options?: BuildContextOptions): Promise<ContextPackage>`
+  - Parameters: `graph` (Graph), `nodePath` (string), `options` (optional: `{ selfOnly?: boolean }`).
+  - When `selfOnly: true`: builds only global + own layers (skips hierarchy, relational, flows, aspects). Designed for file-level updates where cross-cutting context was already loaded at task-level.
   - Returns: `ContextPackage` with `nodePath`, `nodeName`, `layers` (ContextLayer[]), `sections` (ContextSection[]), `mapping` (string[] | null), `tokenCount` (number).
   - Throws if node not found or relation target broken.
 
@@ -26,7 +27,7 @@
 
 **Structured output converter:**
 
-- `toContextMapOutput(pkg: ContextPackage, graph: Graph): ContextMapOutput` — converts a layers-based ContextPackage into the v3 structured ContextMapOutput format. Builds a `glossary` (aspects + flows referenced in the package, each with name/description/files via `buildGlossary`), inlines `files` directly into `node`, `hierarchy`, and `dependencies` entries via `buildNodeFiles` and `buildDepNodeFiles` helpers. Budget status uses `'severe'` (not `'error'`) for over-budget. Includes `breakdown: BudgetBreakdown` in meta via `computeBudgetBreakdown`.
+- `toContextMapOutput(pkg: ContextPackage, graph: Graph, options?: { selfOnly?: boolean }): ContextMapOutput` — converts a layers-based ContextPackage into the v3 structured ContextMapOutput format. When `selfOnly: true`, skips hierarchy, dependencies, flows, and returns empty glossary. Builds a `glossary` (aspects + flows referenced in the package, each with name/description/files via `buildGlossary`), inlines `files` directly into `node`, `hierarchy`, and `dependencies` entries via `buildNodeFiles` and `buildDepNodeFiles` helpers. Budget status uses `'severe'` (not `'error'`) for over-budget. Includes `breakdown: BudgetBreakdown` in meta via `computeBudgetBreakdown`.
 
 **Types:**
 

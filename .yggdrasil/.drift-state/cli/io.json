@@ -1,9 +1,7 @@
 {
-  "hash": "9192e1c49eeb17f97f0eee42e6e55a722ff1040993cb529855fc7d4411e7b471",
+  "hash": "d53290fae142a77976e55dbd7d4a22e727b8ac332195947b1ab346b0ac42b71f",
   "files": {
     ".yggdrasil/model/cli/io/yg-node.yaml": "5d62f880ac7ff61e1a81433c608edb61694b0f4d0c459e5b5938a11631790bcb",
-    ".yggdrasil/model/cli/io/interface.md": "2b39bfe3fecefb33a2596f0dc58ce3313ba85bb3fd8ae1b2c9c25644aaa212f3",
-    ".yggdrasil/model/cli/io/internals.md": "98c81959a34ca4201f6311a2d586be8402b2c1609716e05a9b8cfbe3b93accad",
     ".yggdrasil/model/cli/io/responsibility.md": "55f3e198fae125b05e6073856eb1612db6fe4a6abec0a0209202ea217eb74a9b",
     ".yggdrasil/model/cli/yg-node.yaml": "df8a5321838edda0335736e81375b7219819d8b4065a45f883ed9686a07bd049",
     ".yggdrasil/model/cli/internals.md": "fcd16e38b431eead0b12e14b05dd25184ad4ef23884fbde7402172b0985857f6",
@@ -21,16 +19,18 @@
     "source/cli/src/io/.gitkeep": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
     "source/cli/src/io/artifact-reader.ts": "360662e5362e331de8886a584b29ddd87e323094a3b1d35f8b4eb8958f2e397e",
     "source/cli/src/io/aspect-parser.ts": "7484c0d08a50eae3a7a837b7aef5a0bc625b3479865478ed400cd6af393a8371",
-    "source/cli/src/io/config-parser.ts": "00f14ebb5bfceb1f84f6285d718f6c7c96a32450490cceee32191e35d98f988b",
     "source/cli/src/io/drift-state-store.ts": "f500c293b784ee161ddbb56bcba564bec0e6275e7e961c8c6b29145149fed2e6",
     "source/cli/src/io/flow-parser.ts": "1a3a15146b162a4930a6261f2321774f9265943971de1c4b31782fdd43ecb950",
     "source/cli/src/io/node-parser.ts": "18a44e230d40126bf89969e85bb36e3c8a77165785fb18ade6dd3615b4d5fe58",
-    "source/cli/src/io/schema-parser.ts": "ec5d0bcdafd58c5a93d32393a77527301ace2a0c095af250db22eef6619c1dc4"
+    "source/cli/src/io/schema-parser.ts": "ec5d0bcdafd58c5a93d32393a77527301ace2a0c095af250db22eef6619c1dc4",
+    ".yggdrasil/model/cli/io/interface.md": "705016b269727b2788148c1000b2edf498f5885a87cd219b90417e12d0e7afa4",
+    ".yggdrasil/model/cli/io/internals.md": "64206de0a063fae158e28e9d59506f4729d3683113be8de0e0db28ccadf770a4",
+    "source/cli/src/io/config-parser.ts": "49f1c3ef2662778abe83bfdebb1c787a73b1ef52c5cf4ec27ff278b82650b166"
   },
   "mtimes": {
     ".yggdrasil/model/cli/io/yg-node.yaml": 1774035679169.1846,
-    ".yggdrasil/model/cli/io/interface.md": 1774035679169.0005,
-    ".yggdrasil/model/cli/io/internals.md": 1772780852273.8635,
+    ".yggdrasil/model/cli/io/interface.md": 1774777450310.7954,
+    ".yggdrasil/model/cli/io/internals.md": 1774777461248.7717,
     ".yggdrasil/model/cli/io/responsibility.md": 1772778749789.3184,
     ".yggdrasil/model/cli/yg-node.yaml": 1774035679170.8608,
     ".yggdrasil/model/cli/internals.md": 1772829219205.6714,
@@ -48,7 +48,7 @@
     "source/cli/src/io/.gitkeep": 1771702275793.8906,
     "source/cli/src/io/artifact-reader.ts": 1772776392207.8506,
     "source/cli/src/io/aspect-parser.ts": 1772776392208.2227,
-    "source/cli/src/io/config-parser.ts": 1773400320636.3855,
+    "source/cli/src/io/config-parser.ts": 1774777223319.6929,
     "source/cli/src/io/drift-state-store.ts": 1772781980232.5386,
     "source/cli/src/io/flow-parser.ts": 1774035679178.3838,
     "source/cli/src/io/node-parser.ts": 1774035679178.7988,
