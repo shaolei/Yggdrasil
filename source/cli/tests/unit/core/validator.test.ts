@@ -648,15 +648,6 @@ describe('validator', () => {
     expect(issues[0].message).toContain("no aspect with that id exists");
   });
 
-  it('invalid-artifact-condition returns no errors for STANDARD_ARTIFACTS (all conditions valid)', async () => {
-    const graph = createGraph();
-    graph.nodes.set('a', createNode('a'));
-
-    const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'invalid-artifact-condition');
-    expect(issues).toHaveLength(0);
-  });
-
   it('shallow-artifact warns when artifact below min_artifact_length', async () => {
     const graph = createGraph();
     graph.config.quality = {

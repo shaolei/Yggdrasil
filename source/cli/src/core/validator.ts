@@ -45,7 +45,7 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
     issues.push(...checkRequiredAspectsCoverage(graph));
     issues.push(...(await checkAnchorPresence(graph)));
     issues.push(...checkRequiredArtifacts(graph));
-    issues.push(...checkInvalidArtifactConditions(graph));
+    // E013 (invalid-artifact-condition) removed — standard artifacts don't use has_aspect: conditions
     issues.push(...(await checkContextBudget(graph)));
     issues.push(...checkHighFanOut(graph));
     issues.push(...checkMissingDescriptions(graph));
@@ -505,15 +505,7 @@ function artifactRequiredReason(
       ? `${sources.length} incoming relation(s): ${sources.join(', ')}`
       : null;
   }
-  if (when === 'has_outgoing_relations') {
-    const count = node.meta.relations?.length ?? 0;
-    return count > 0 ? `${count} outgoing relation(s)` : null;
-  }
-  if (when.startsWith('has_aspect:') || when.startsWith('has_tag:')) {
-    const prefix = when.startsWith('has_aspect:') ? 'has_aspect:' : 'has_tag:';
-    const aspectId = when.slice(prefix.length);
-    return (node.meta.aspects ?? []).some(a => a.aspect === aspectId) ? `node has aspect '${aspectId}'` : null;
-  }
+  // has_outgoing_relations and has_aspect: conditions removed — standard artifacts don't use them
   return null;
 }
 
@@ -604,32 +596,7 @@ function checkFlowAspectIds(graph: Graph): ValidationIssue[] {
   return issues;
 }
 
-// --- E013: Invalid artifact condition (has_aspect:X where X has no aspect) ---
-
-function checkInvalidArtifactConditions(graph: Graph): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
-  const validAspectIds = new Set(graph.aspects.map((a) => a.id));
-  const artifacts = STANDARD_ARTIFACTS;
-  for (const [artifactName, config] of Object.entries(artifacts)) {
-    const required = config.required;
-    if (typeof required === 'object' && required && 'when' in required) {
-      const when = (required as { when: string }).when;
-      if (when.startsWith('has_aspect:') || when.startsWith('has_tag:')) {
-        const prefix = when.startsWith('has_aspect:') ? 'has_aspect:' : 'has_tag:';
-        const aspectId = when.slice(prefix.length);
-        if (!validAspectIds.has(aspectId)) {
-          issues.push({
-            severity: 'error',
-            code: 'E013',
-            rule: 'invalid-artifact-condition',
-            message: `Artifact '${artifactName}' condition has_aspect:${aspectId} has no corresponding aspect in aspects/`,
-          });
-        }
-      }
-    }
-  }
-  return issues;
-}
+// E013 removed — standard artifacts don't use has_aspect: conditions
 
 // --- W002: Shallow artifacts (below min_artifact_length) ---
 
