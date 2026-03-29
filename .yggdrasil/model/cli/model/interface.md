@@ -2,7 +2,7 @@
 
 Type library — exports TypeScript interfaces and types only. No runtime functions. Used by cli/core, cli/io, cli/commands, cli/formatters.
 
-**Config:** YggConfig, ArtifactConfig, QualityConfig
+**Config:** YggConfig, ArtifactConfig, QualityConfig, STANDARD_ARTIFACTS (constant)
 
 **Node:** Graph, GraphNode, NodeMeta, NodeAspectEntry, Relation, RelationType, NodeMapping, Artifact
 
@@ -40,7 +40,8 @@ Model is a TypeScript type library — it contains no executable code and does n
 
 ## Config types
 
-- **YggConfig** — Top-level config: name, node_types (Record keyed by type name), artifacts, optional quality thresholds.
+- **YggConfig** — Top-level config: name, optional version, node_types (Record keyed by type name), optional quality thresholds. No longer has an `artifacts` field — artifacts are defined by the STANDARD_ARTIFACTS constant.
+- **STANDARD_ARTIFACTS** — `Record<string, ArtifactConfig>` constant defining the three hardcoded artifacts: `responsibility.md` (required: always, included_in_relations: true), `interface.md` (required: when has_incoming_relations, included_in_relations: true), `internals.md` (required: never, included_in_relations: false). Replaces the previous configurable artifacts approach.
 - **NodeTypeConfig** — Node type definition with description (required) and optional required_aspects. Key in the Record is the type name.
 - **ArtifactConfig** — Per-artifact config: required condition (always/never/when), description, optional included_in_relations flag.
 - **QualityConfig** — Thresholds: min_artifact_length, max_direct_relations, optional max_mapping_source_files (default 10, for W017 wide-node check), context_budget (warning + error).

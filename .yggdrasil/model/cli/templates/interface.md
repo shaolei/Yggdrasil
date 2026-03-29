@@ -4,7 +4,7 @@ Public API consumed by cli/commands/init.
 
 ## default-config.ts
 
-- `DEFAULT_CONFIG: string` — YAML string for default yg-config.yaml (name, node_types with module/service/library/infrastructure, 3 artifacts: responsibility.md, interface.md, internals.md, quality thresholds)
+- `DEFAULT_CONFIG: string` — YAML string for default yg-config.yaml (version, name, node_types with module/service/library/infrastructure, quality thresholds). No artifacts section — artifacts are hardcoded as STANDARD_ARTIFACTS in cli/model.
 
 ## platform.ts
 

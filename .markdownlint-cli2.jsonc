@@ -16,6 +16,8 @@
     "**/dist/**",
     "**/tests/**",
     ".plans/**",
+    ".yggdrasil/agent-rules.md",
+    ".cursor/rules/**",
     "experiments/**",
     "django-rest-framework/**",
     "caddy/**",

@@ -5,13 +5,12 @@
 ## validate(scope)
 
 1. **Early errors**: configError → E012; nodeParseErrors → E001
-2. **Config-dependent checks** (if !configError): checkStandardArtifactsInConfig, checkNodeTypes, checkAspectsDefined, checkAspectIds, checkAspectIdUniqueness, checkImpliedAspectsExist, checkImpliesNoCycles, checkRequiredAspectsCoverage, checkAnchorPresence, checkRequiredArtifacts, checkInvalidArtifactConditions, checkContextBudget, checkHighFanOut
+2. **Config-dependent checks** (if !configError): checkNodeTypes, checkAspectsDefined, checkAspectIds, checkAspectIdUniqueness, checkImpliedAspectsExist, checkImpliesNoCycles, checkRequiredAspectsCoverage, checkAnchorPresence, checkRequiredArtifacts, checkInvalidArtifactConditions, checkContextBudget, checkHighFanOut, checkMissingDescriptions
 3. **Graph-structure checks**: checkRelationTargets, checkNoCycles, checkMappingOverlap, checkMappingPathsExist, checkBrokenFlowRefs, checkFlowAspectIds, checkDirectoriesHaveNodeYaml, checkShallowArtifacts, checkUnpairedEvents
 4. **Scope filter**: if scope !== 'all', filter issues by nodePath; validate scope exists
 
 ## Key rules
 
-- **checkStandardArtifactsInConfig**: STANDARD_ARTIFACT_NAMES = ['responsibility.md', 'interface.md', 'internals.md']; checks each is present in config.artifacts; missing → E020
 - **checkSchemas**: REQUIRED_SCHEMAS = ['node','aspect','flow']; present = Set(graph.schemas.map(s => s.schemaType)); missing → W010
 - **checkNoCycles**: DFS with WHITE/GRAY/BLACK; cycles involving blackbox tolerated
 - **checkImpliedAspectsExist**: each id in aspect.implies must have corresponding aspect → E016
@@ -30,7 +29,7 @@ Config-dependent first (need valid config). Structure checks can run with partia
 
 # Validator Decisions
 
-**Stable error codes E001-E019, W001-W014:** Each validation rule has a fixed code (E for errors, W for warnings). These codes are machine-readable identifiers stable across versions, enabling CI pipelines and automation to match on specific codes rather than fragile message text. New rules receive the next available code.
+**Stable error codes E001-E017, W001-W017:** Each validation rule has a fixed code (E for errors, W for warnings). E018, E019, E020 have been removed. These codes are machine-readable identifiers stable across versions, enabling CI pipelines and automation to match on specific codes rather than fragile message text. New rules receive the next available code.
 
 **Warnings do not block build-context:** Warnings (W-codes) indicate quality suggestions such as shallow artifacts, high fan-out, or missing optional coverage. Errors (E-codes) indicate structural integrity failures such as broken relations, missing yg-node.yaml, or cycles. Only errors represent states where the graph is structurally invalid. build-context operates on the loaded graph and does not consult validation results, so warnings never prevent context assembly.
 

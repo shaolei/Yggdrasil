@@ -277,7 +277,7 @@ A subagent that delivers code without corresponding graph updates has not comple
 
 ```
 .yggdrasil/
-  yg-config.yaml     ← version, vocabulary, node types, artifact rules, required aspects
+  yg-config.yaml     ← version, vocabulary, node types, required aspects
   model/             ← what exists: nodes, hierarchy, relations, file mappings
   aspects/           ← what must: cross-cutting requirements with rationale and guidance
   flows/             ← why and in what process: business processes with node participation
@@ -303,7 +303,7 @@ Three artifacts capture node knowledge at three levels:
 
 **Enrichment priority (when adding incrementally):** `interface.md` first (highest cross-module ROI — contracts enable other nodes to reason about interactions), then `responsibility.md` (identity and boundaries), then `internals.md` (depth for complex nodes). A node with only `interface.md` provides more cross-module value than one with only `internals.md`.
 
-These three are the standard set — always present, not configurable. Projects can define additional artifacts in `yg-config.yaml` (additive only — the three standard artifacts above cannot be removed or renamed). Each custom artifact has a `description` (tells you what to write), a `required` condition (`always`, `never`, `when: has_incoming_relations`, `when: has_aspect:<id>`), and an `included_in_relations` flag (if true, included in dependency context packages for structural relations).
+These three artifacts are built into the CLI and are not configurable. `responsibility.md` is always required, `interface.md` is required when the node has incoming relations, and `internals.md` is always optional.
 
 ### Context Assembly
 

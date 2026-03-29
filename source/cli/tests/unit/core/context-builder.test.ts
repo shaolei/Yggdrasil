@@ -203,7 +203,7 @@ describe('context-builder', () => {
         consumes: ['methodA'],
         failure: 'retry 3x',
       };
-      const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
+      const layer = buildStructuralRelationLayer(target, rel);
       expect(layer.content).toContain('methodA');
       expect(layer.content).toContain('retry 3x');
       expect(layer.content).toContain('### responsibility.md');
@@ -221,7 +221,7 @@ describe('context-builder', () => {
         parent: null,
       };
       const rel: Relation = { target: 'dep/svc', type: 'uses' };
-      const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
+      const layer = buildStructuralRelationLayer(target, rel);
       expect(layer.content).not.toContain('Consumes:');
       expect(layer.content).not.toContain('On failure:');
       expect(layer.content).toContain('### interface.md');
@@ -242,7 +242,7 @@ describe('context-builder', () => {
         parent: null,
       };
       const rel: Relation = { target: 'dep/svc', type: 'uses' };
-      const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
+      const layer = buildStructuralRelationLayer(target, rel);
       // responsibility.md and interface.md have included_in_relations=true
       expect(layer.content).toContain('### responsibility.md');
       expect(layer.content).toContain('### interface.md');
@@ -261,7 +261,7 @@ describe('context-builder', () => {
         parent: null,
       };
       const rel: Relation = { target: 'dep/svc', type: 'uses' };
-      const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
+      const layer = buildStructuralRelationLayer(target, rel);
       // Falls back to all standard artifacts since target has none with included_in_relations
       expect(layer.content).toContain('### internals.md');
       expect(layer.content).toContain('internal details');
@@ -276,7 +276,7 @@ describe('context-builder', () => {
         parent: null,
       };
       const rel: Relation = { target: 'dep/svc', type: 'uses' };
-      const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
+      const layer = buildStructuralRelationLayer(target, rel);
       expect(layer.content).toContain('### internals.md');
       expect(layer.content).toContain('internal details');
     });

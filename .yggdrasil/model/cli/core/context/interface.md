@@ -11,15 +11,15 @@
 **Layer builders (exported for tests):**
 
 - `buildGlobalLayer(config: YggConfig): ContextLayer` — project name.
-- `buildHierarchyLayer(ancestor: GraphNode, config: YggConfig, graph: Graph): ContextLayer` — filtered by config.artifacts; adds attrs.aspects from ancestor aspects + expandAspects.
-- `buildOwnLayer(node: GraphNode, config: YggConfig, graphRootPath: string, graph: Graph): Promise<ContextLayer>` — reads yg-node.yaml from disk; uses node.artifacts; adds attrs.aspects from node aspects + expandAspects.
-- `buildStructuralRelationLayer(target: GraphNode, relation: Relation, config: YggConfig): ContextLayer` — prefers included_in_relations artifacts; includes consumes, failure.
+- `buildHierarchyLayer(ancestor: GraphNode, config: YggConfig, graph: Graph): ContextLayer` — filtered by STANDARD_ARTIFACTS; adds attrs.aspects from ancestor aspects + expandAspects.
+- `buildOwnLayer(node: GraphNode, config: YggConfig, graphRootPath: string, graph: Graph): Promise<ContextLayer>` — reads yg-node.yaml from disk; uses node.artifacts filtered by STANDARD_ARTIFACTS; adds attrs.aspects from node aspects + expandAspects.
+- `buildStructuralRelationLayer(target: GraphNode, relation: Relation): ContextLayer` — prefers included_in_relations artifacts from STANDARD_ARTIFACTS; includes consumes, failure. No longer takes config parameter.
 - `buildEventRelationLayer(target: GraphNode, relation: Relation): ContextLayer`
 - `buildAspectLayer(aspect: AspectDef, exceptionNote?: string): ContextLayer` — renders aspect content; if aspect has `stability`, appends "Stability tier: ..." line; if `exceptionNote` is provided, appends a warning block: "Exception for this node: {note}". The exception note comes from the aspect entry's `exceptions` field in `node.meta.aspects`, joined with '; '.
 - `collectAncestors(node: GraphNode): GraphNode[]` — returns ancestors from parent chain.
-- `collectDependencyAncestors(target: GraphNode, config: YggConfig, graph: Graph): DependencyAncestorInfo[]` — returns ancestor chain for a dependency target node. Each entry includes path, name, type, aspects (own aspects expanded via `implies` only — not effective aspects), and artifactFilenames (filtered by `included_in_relations`, falling back to all config artifacts). Used by `toContextMapOutput` to build the `hierarchy` list inside each `DependencyRef`.
-- `buildNodeFiles(node, config, prefix): string[]` — internal helper; returns artifact file paths for a node (yg-node.yaml + all configured artifact files that exist), prefixed with the given path. Used for `node.files` and `hierarchy[].files` in ContextMapOutput.
-- `buildDepNodeFiles(node, config, prefix): string[]` — internal helper; returns only `included_in_relations` artifact paths for a dependency node (falling back to all artifacts if none marked). Used for `dependencies[].files` and dependency hierarchy `files` in ContextMapOutput.
+- `collectDependencyAncestors(target: GraphNode, config: YggConfig, graph: Graph): DependencyAncestorInfo[]` — returns ancestor chain for a dependency target node. Each entry includes path, name, type, aspects (own aspects expanded via `implies` only — not effective aspects), and artifactFilenames (filtered by `included_in_relations` from STANDARD_ARTIFACTS, falling back to all standard artifacts). Used by `toContextMapOutput` to build the `hierarchy` list inside each `DependencyRef`.
+- `buildNodeFiles(node, config, prefix): string[]` — internal helper; returns artifact file paths for a node (all STANDARD_ARTIFACTS files that exist), prefixed with the given path. Used for `node.files` and `hierarchy[].files` in ContextMapOutput.
+- `buildDepNodeFiles(node, config, prefix): string[]` — internal helper; returns only `included_in_relations` artifact paths from STANDARD_ARTIFACTS for a dependency node (falling back to all standard artifacts if none marked). Used for `dependencies[].files` and dependency hierarchy `files` in ContextMapOutput.
 
 **Budget analysis:**
 
@@ -34,7 +34,9 @@
 - `BudgetBreakdown` — `{ own: number; hierarchy: number; aspects: number; flows: number; dependencies: number; total: number }` — per-category token counts for a context package.
 - `DependencyAncestorInfo` — `{ path: string; name: string; type: string; aspects: string[]; artifactFilenames: string[] }`
 
-**Constants (internal):** `STRUCTURAL_RELATION_TYPES`, `EVENT_RELATION_TYPES`.
+**Constants (internal):** `STRUCTURAL_RELATION_TYPES`, `EVENT_RELATION_TYPES`, `YG_YAML_FILES`.
+
+**Imported constant:** `STANDARD_ARTIFACTS` from cli/model — the hardcoded artifact definitions used for filtering throughout. Replaces the previous config.artifacts approach.
 
 ## Failure Modes
 

@@ -13,7 +13,7 @@
 ## scanModelDirectory
 
 - readdir; if no yg-node.yaml and dir !== modelDir → return (skip)
-- If has yg-node.yaml: parseNodeYaml, readArtifacts (exclude yg-node.yaml, filter by config.artifacts)
+- If has yg-node.yaml: parseNodeYaml, readArtifacts (exclude yg-node.yaml, filter by STANDARD_ARTIFACTS keys)
 - Build GraphNode with path, meta, artifacts, children, parent
 - Recurse into subdirs; each subdir with yg-node.yaml becomes child
 

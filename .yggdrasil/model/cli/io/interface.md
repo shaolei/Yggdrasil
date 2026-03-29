@@ -5,7 +5,7 @@ Library used by cli/core (loader, drift-detector). All paths are absolute; calle
 ## config-parser.ts
 
 - `parseConfig(filePath: string): Promise<YggConfig>`
-  - Reads and parses yg-config.yaml. Throws on missing name, invalid node_types (must be non-empty object keyed by type name, each entry must have non-empty description string), invalid artifacts (reserved name `node`, invalid required.when), invalid quality (context_budget.error < warning). Returns parsed config with quality defaults. After parsing, injects the three standard artifacts (`responsibility.md`, `interface.md`, `internals.md`) if they are missing from config — this is a safety net ensuring they are always present in the parsed config even if the user removed them from YAML.
+  - Reads and parses yg-config.yaml. Throws on missing name, invalid node_types (must be non-empty object keyed by type name, each entry must have non-empty description string), invalid quality (context_budget.error < warning). Returns parsed config with quality defaults. No longer parses or validates an `artifacts` section — artifacts are hardcoded as STANDARD_ARTIFACTS in cli/model.
 
 ## node-parser.ts
 
@@ -45,7 +45,7 @@ Library used by cli/core (loader, drift-detector). All paths are absolute; calle
 
 Parsers and stores throw `Error` on invalid input. No dedicated error codes — standard Error with descriptive message.
 
-**config-parser:** Missing name, invalid node_types (not a non-empty object, entries missing description), invalid artifacts (reserved name `node`, invalid required.when), invalid quality (context_budget.error < warning). Propagates ENOENT, EACCES from readFile.
+**config-parser:** Missing name, invalid node_types (not a non-empty object, entries missing description), invalid quality (context_budget.error < warning). Propagates ENOENT, EACCES from readFile.
 
 **node-parser:** Missing name/type, invalid relations (non-array, invalid type, missing target), invalid mapping (paths must be relative, non-empty, no leading slash), invalid aspects (non-array, entries not objects, missing/empty aspect string, invalid exceptions/anchors not arrays of strings, duplicate aspect ids). Propagates ENOENT, EACCES from readFile.
 

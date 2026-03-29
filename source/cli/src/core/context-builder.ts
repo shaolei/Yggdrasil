@@ -68,7 +68,7 @@ export async function buildContext(graph: Graph, nodePath: string, options?: Bui
       }
       if (ancestorPaths.has(relation.target)) continue;
       if (STRUCTURAL_RELATION_TYPES.has(relation.type)) {
-        layers.push(buildStructuralRelationLayer(target, relation, graph.config));
+        layers.push(buildStructuralRelationLayer(target, relation));
       } else if (EVENT_RELATION_TYPES.has(relation.type)) {
         layers.push(buildEventRelationLayer(target, relation));
       }
@@ -243,7 +243,6 @@ export async function buildOwnLayer(
 export function buildStructuralRelationLayer(
   target: GraphNode,
   relation: Relation,
-  config: YggConfig,
 ): ContextLayer {
   let content = '';
   if (relation.consumes?.length) {
