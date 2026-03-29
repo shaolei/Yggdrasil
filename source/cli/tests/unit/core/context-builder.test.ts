@@ -17,6 +17,7 @@ import {
 } from '../../../src/core/context-builder.js';
 import { formatContextMarkdown } from '../../../src/formatters/markdown.js';
 import { loadGraph } from '../../../src/core/graph-loader.js';
+import { STANDARD_ARTIFACTS } from '../../../src/model/types.js';
 import type {
   Graph,
   GraphNode,
@@ -29,6 +30,22 @@ import type {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PROJECT = path.join(__dirname, '../../fixtures/sample-project');
+
+describe('STANDARD_ARTIFACTS constant', () => {
+  it('defines three standard artifacts with correct properties', () => {
+    expect(Object.keys(STANDARD_ARTIFACTS)).toEqual([
+      'responsibility.md',
+      'interface.md',
+      'internals.md',
+    ]);
+    expect(STANDARD_ARTIFACTS['responsibility.md'].required).toBe('always');
+    expect(STANDARD_ARTIFACTS['responsibility.md'].included_in_relations).toBe(true);
+    expect(STANDARD_ARTIFACTS['interface.md'].required).toEqual({ when: 'has_incoming_relations' });
+    expect(STANDARD_ARTIFACTS['interface.md'].included_in_relations).toBe(true);
+    expect(STANDARD_ARTIFACTS['internals.md'].required).toBe('never');
+    expect(STANDARD_ARTIFACTS['internals.md'].included_in_relations).toBe(false);
+  });
+});
 
 describe('context-builder', () => {
   describe('buildGlobalLayer', () => {

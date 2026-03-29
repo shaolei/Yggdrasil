@@ -11,7 +11,6 @@ export interface YggConfig {
   version?: string;
   name: string;
   node_types: Record<string, NodeTypeConfig>;
-  artifacts: Record<string, ArtifactConfig>;
   quality?: QualityConfig;
 }
 
@@ -21,6 +20,25 @@ export interface ArtifactConfig {
   /** When true, include this artifact when building dependency context for structural relations */
   included_in_relations?: boolean;
 }
+
+/** The three standard artifacts — hardcoded, not configurable. */
+export const STANDARD_ARTIFACTS: Record<string, ArtifactConfig> = {
+  'responsibility.md': {
+    required: 'always',
+    description: 'What this node is responsible for, and what it is not',
+    included_in_relations: true,
+  },
+  'interface.md': {
+    required: { when: 'has_incoming_relations' },
+    description: 'Public API — methods, parameters, return types, contracts, failure modes',
+    included_in_relations: true,
+  },
+  'internals.md': {
+    required: 'never',
+    description: 'How the node works and why — algorithms, business rules, design decisions',
+    included_in_relations: false,
+  },
+};
 
 export interface QualityConfig {
   min_artifact_length: number;
