@@ -53,7 +53,6 @@ describe('context-builder', () => {
       const config: YggConfig = {
         name: 'Test Project',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       };
       const layer = buildGlobalLayer(config);
 
@@ -122,7 +121,6 @@ describe('context-builder', () => {
       const config: YggConfig = {
         name: 'Test',
         node_types: { module: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       };
       const graph: Graph = {
         rootPath: '/tmp',
@@ -161,7 +159,6 @@ describe('context-builder', () => {
       const config: YggConfig = {
         name: 'Test',
         node_types: { module: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       };
       const graph: Graph = {
         rootPath: '/tmp/nonexistent',
@@ -187,12 +184,6 @@ describe('context-builder', () => {
     const defaultConfig: YggConfig = {
       name: '',
       node_types: { service: { description: 'x' } },
-      artifacts: {
-        'responsibility.md': { required: 'always', description: 'x' },
-        'interface.md': { required: 'never', description: 'x', included_in_relations: true },
-        'errors.md': { required: 'never', description: 'x', included_in_relations: true },
-        'description.md': { required: 'never', description: 'x' },
-      },
     };
 
     it('includes consumes and failure when present', () => {
@@ -200,8 +191,8 @@ describe('context-builder', () => {
         path: 'dep/svc',
         meta: { name: 'DepSvc', type: 'service' },
         artifacts: [
+          { filename: 'responsibility.md', content: 'resp' },
           { filename: 'interface.md', content: 'api' },
-          { filename: 'errors.md', content: 'E001' },
         ],
         children: [],
         parent: null,
@@ -215,8 +206,8 @@ describe('context-builder', () => {
       const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
       expect(layer.content).toContain('methodA');
       expect(layer.content).toContain('retry 3x');
+      expect(layer.content).toContain('### responsibility.md');
       expect(layer.content).toContain('### interface.md');
-      expect(layer.content).toContain('### errors.md');
       expect(layer.attrs!.consumes).toBe('methodA');
       expect(layer.attrs!.failure).toBe('retry 3x');
     });
@@ -238,63 +229,56 @@ describe('context-builder', () => {
       expect(layer.attrs!.failure).toBeUndefined();
     });
 
-    it('uses included_in_relations artifacts when configured', () => {
-      const configWithStructural = defaultConfig;
+    it('uses included_in_relations artifacts from STANDARD_ARTIFACTS', () => {
       const target: GraphNode = {
         path: 'dep/svc',
         meta: { name: 'DepSvc', type: 'service' },
         artifacts: [
+          { filename: 'responsibility.md', content: 'resp' },
           { filename: 'interface.md', content: 'api' },
-          { filename: 'errors.md', content: 'E001' },
+          { filename: 'internals.md', content: 'internal' },
         ],
         children: [],
         parent: null,
       };
       const rel: Relation = { target: 'dep/svc', type: 'uses' };
-      const layer = buildStructuralRelationLayer(target, rel, configWithStructural);
+      const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
+      // responsibility.md and interface.md have included_in_relations=true
+      expect(layer.content).toContain('### responsibility.md');
       expect(layer.content).toContain('### interface.md');
-      expect(layer.content).toContain('### errors.md');
+      expect(layer.content).toContain('resp');
       expect(layer.content).toContain('api');
-      expect(layer.content).toContain('E001');
+      // internals.md has included_in_relations=false, should NOT appear
+      expect(layer.content).not.toContain('### internals.md');
     });
 
-    it('falls back to filterArtifactsByConfig when included_in_relations artifacts not in target', () => {
-      const configWithStructural = {
-        ...defaultConfig,
-        artifacts: {
-          ...defaultConfig.artifacts,
-          'interface.md': {
-            required: 'never' as const,
-            description: 'x',
-            included_in_relations: true,
-          },
-        },
-      };
+    it('falls back to standard artifacts when included_in_relations artifacts not in target', () => {
       const target: GraphNode = {
         path: 'dep/svc',
         meta: { name: 'DepSvc', type: 'service' },
-        artifacts: [{ filename: 'description.md', content: 'desc' }],
-        children: [],
-        parent: null,
-      };
-      const rel: Relation = { target: 'dep/svc', type: 'uses' };
-      const layer = buildStructuralRelationLayer(target, rel, configWithStructural);
-      expect(layer.content).toContain('### description.md');
-      expect(layer.content).toContain('desc');
-    });
-
-    it('falls back to config-allowed artifacts when no interface/errors', () => {
-      const target: GraphNode = {
-        path: 'dep/svc',
-        meta: { name: 'DepSvc', type: 'service' },
-        artifacts: [{ filename: 'description.md', content: 'desc' }],
+        artifacts: [{ filename: 'internals.md', content: 'internal details' }],
         children: [],
         parent: null,
       };
       const rel: Relation = { target: 'dep/svc', type: 'uses' };
       const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
-      expect(layer.content).toContain('### description.md');
-      expect(layer.content).toContain('desc');
+      // Falls back to all standard artifacts since target has none with included_in_relations
+      expect(layer.content).toContain('### internals.md');
+      expect(layer.content).toContain('internal details');
+    });
+
+    it('falls back to all standard artifacts when no included_in_relations artifacts on target', () => {
+      const target: GraphNode = {
+        path: 'dep/svc',
+        meta: { name: 'DepSvc', type: 'service' },
+        artifacts: [{ filename: 'internals.md', content: 'internal details' }],
+        children: [],
+        parent: null,
+      };
+      const rel: Relation = { target: 'dep/svc', type: 'uses' };
+      const layer = buildStructuralRelationLayer(target, rel, defaultConfig);
+      expect(layer.content).toContain('### internals.md');
+      expect(layer.content).toContain('internal details');
     });
   });
 
@@ -407,8 +391,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([['test/node', node]]),
         aspects: [auditAspect, hipaaAspect],
         flows: [],
@@ -445,8 +428,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([['test/node', node]]),
         aspects: [a, b],
         flows: [],
@@ -612,8 +594,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { module: { description: 'x' }, service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([
           ['orders', parent],
           ['orders/order-service', child],
@@ -660,8 +641,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { module: { description: 'x' }, service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([
           ['orders', parent],
           ['orders/order-service', child],
@@ -698,8 +678,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([['orders/order-service', node]]),
         aspects: [
           {
@@ -750,8 +729,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { module: { description: 'x' }, service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([
           ['orders', parent],
           ['orders/order-service', child],
@@ -798,8 +776,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([
           ['events/emitter', emitter],
           ['events/handler', handler],
@@ -841,8 +818,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([
           ['events/listener', listener],
           ['events/publisher', publisher],
@@ -886,8 +862,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([['svc', node]]),
         aspects: [],
         flows: [{ name: 'F1', nodes: ['svc'], artifacts: [] }],
@@ -920,11 +895,10 @@ describe('context-builder', () => {
 
       const ownLayer = pkg.layers.find((l) => l.type === 'own');
       expect(ownLayer?.content).toContain('### yg-node.yaml');
-      expect(ownLayer?.content).toContain('### description.md');
+      expect(ownLayer?.content).toContain('### responsibility.md');
 
       const relationLayer = pkg.layers.find((l) => l.type === 'relational');
       expect(relationLayer?.content).toContain('### responsibility.md');
-      expect(relationLayer?.content).toContain('Auth API');
 
       const flowLayer = pkg.layers.find((l) => l.type === 'flows');
       expect(flowLayer?.content).toContain('description.md');
@@ -966,8 +940,7 @@ describe('context-builder', () => {
         config: {
           name: 'MultiAspect',
           node_types: { module: { description: 'x' }, service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([
           ['mod', parent],
           ['mod/svc', child],
@@ -1011,8 +984,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { service: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([['test/node', node]]),
         aspects: [],
         flows: [],
@@ -1048,8 +1020,7 @@ describe('context-builder', () => {
         config: {
           name: 'T',
           node_types: { module: { description: 'x' } },
-          artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
-        },
+          },
         nodes: new Map([['bare', node]]),
         aspects: [],
         flows: [],
@@ -1140,15 +1111,10 @@ describe('collectDependencyAncestors', () => {
     expect(Array.isArray(ancestors[0].artifactFilenames)).toBe(true);
   });
 
-  it('filters ancestor artifacts by included_in_relations', () => {
+  it('filters ancestor artifacts by included_in_relations from STANDARD_ARTIFACTS', () => {
     const config: YggConfig = {
       name: 'T',
       node_types: { module: { description: 'x' }, service: { description: 'x' } },
-      artifacts: {
-        'responsibility.md': { required: 'always', description: 'x' },
-        'interface.md': { required: 'never', description: 'x', included_in_relations: true },
-        'internals.md': { required: 'never', description: 'x' },
-      },
     };
     const parent: GraphNode = {
       path: 'auth',
@@ -1180,8 +1146,8 @@ describe('collectDependencyAncestors', () => {
 
     const ancestors = collectDependencyAncestors(child, config, graph);
     expect(ancestors).toHaveLength(1);
-    // Only interface.md should appear (included_in_relations=true), NOT responsibility.md or internals.md
-    expect(ancestors[0].artifactFilenames).toEqual(['interface.md']);
+    // responsibility.md and interface.md have included_in_relations=true in STANDARD_ARTIFACTS
+    expect(ancestors[0].artifactFilenames).toEqual(['responsibility.md', 'interface.md']);
   });
 });
 
@@ -1414,23 +1380,19 @@ describe('toContextMapOutput', () => {
     expect(emitsDep!['event-name']).toBe('order.created');
   });
 
-  it('filters dependency files by included_in_relations', async () => {
+  it('filters dependency files by included_in_relations from STANDARD_ARTIFACTS', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
-    // Add included_in_relations to responsibility.md
-    graph.config.artifacts['responsibility.md'] = {
-      ...graph.config.artifacts['responsibility.md'],
-      included_in_relations: true,
-    };
     const pkg = await buildContext(graph, 'orders/order-service');
     const output = toContextMapOutput(pkg, graph);
 
     // Dependency files should be filtered by included_in_relations
+    // STANDARD_ARTIFACTS has responsibility.md and interface.md with included_in_relations=true
     const authDep = output.dependencies.find((d) => d.path === 'auth/auth-api');
     expect(authDep).toBeDefined();
-    // With included_in_relations on responsibility.md, only that should appear for deps
     const depFiles = authDep!.files ?? [];
     for (const f of depFiles) {
-      expect(f).toContain('responsibility.md');
+      const isStructural = f.includes('responsibility.md') || f.includes('interface.md');
+      expect(isStructural).toBe(true);
     }
   });
 
@@ -1494,7 +1456,6 @@ describe('toContextMapOutput', () => {
       config: {
         name: 'T',
         node_types: { module: { description: 'x' }, service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([
         ['payments', parent],
@@ -1539,7 +1500,6 @@ describe('toContextMapOutput', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([['svc', node]]),
       aspects: [
@@ -1582,7 +1542,6 @@ describe('toContextMapOutput', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([['svc', node]]),
       aspects: [],
@@ -1624,7 +1583,6 @@ describe('toContextMapOutput', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([['svc', node]]),
       aspects: [],
@@ -1651,7 +1609,6 @@ describe('toContextMapOutput', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([['svc', node]]),
       aspects: [
@@ -1686,7 +1643,6 @@ describe('toContextMapOutput', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([['svc', node]]),
       aspects: [],

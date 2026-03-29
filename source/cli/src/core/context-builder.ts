@@ -1,5 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import {
+  STANDARD_ARTIFACTS,
+} from '../model/types.js';
 import type {
   Graph,
   GraphNode,
@@ -173,11 +176,10 @@ export function buildGlobalLayer(config: YggConfig): ContextLayer {
   return { type: 'global', label: 'Global Context', content };
 }
 
-function filterArtifactsByConfig(
+function filterByStandardArtifacts(
   artifacts: Array<{ filename: string; content: string }>,
-  config: YggConfig,
 ): Array<{ filename: string; content: string }> {
-  const allowed = new Set(Object.keys(config.artifacts ?? {}));
+  const allowed = new Set(Object.keys(STANDARD_ARTIFACTS));
   return artifacts.filter((a) => allowed.has(a.filename));
 }
 
@@ -186,7 +188,7 @@ export function buildHierarchyLayer(
   config: YggConfig,
   graph: Graph,
 ): ContextLayer {
-  const filtered = filterArtifactsByConfig(ancestor.artifacts, config);
+  const filtered = filterByStandardArtifacts(ancestor.artifacts);
   const content = filtered.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
   const nodeAspects = (ancestor.meta.aspects ?? []).map(a => a.aspect);
   const expanded = expandAspects(nodeAspects, graph.aspects);
@@ -220,7 +222,7 @@ export async function buildOwnLayer(
     }
   }
 
-  const filtered = filterArtifactsByConfig(node.artifacts, config);
+  const filtered = filterByStandardArtifacts(node.artifacts);
   for (const a of filtered) {
     parts.push(`### ${a.filename}\n${a.content}`);
   }
@@ -251,7 +253,7 @@ export function buildStructuralRelationLayer(
     content += `On failure: ${relation.failure}\n\n`;
   }
 
-  const structuralArtifactFilenames = Object.entries(config.artifacts ?? {})
+  const structuralArtifactFilenames = Object.entries(STANDARD_ARTIFACTS)
     .filter(([, c]) => c.included_in_relations)
     .map(([filename]) => filename);
 
@@ -265,7 +267,7 @@ export function buildStructuralRelationLayer(
   if (structuralArts.length > 0) {
     content += structuralArts.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
   } else {
-    const filtered = filterArtifactsByConfig(target.artifacts, config);
+    const filtered = filterByStandardArtifacts(target.artifacts);
     content += filtered.map((a) => `### ${a.filename}\n${a.content}`).join('\n\n');
   }
 
@@ -388,10 +390,10 @@ export function collectDependencyAncestors(
   graph: Graph,
 ): DependencyAncestorInfo[] {
   const ancestors = collectAncestors(target);
-  const structuralFilenames = Object.entries(config.artifacts ?? {})
+  const structuralFilenames = Object.entries(STANDARD_ARTIFACTS)
     .filter(([, c]) => c.included_in_relations)
     .map(([filename]) => filename);
-  const configArtifactKeys = [...Object.keys(config.artifacts ?? {})];
+  const configArtifactKeys = [...Object.keys(STANDARD_ARTIFACTS)];
 
   return ancestors.map((ancestor) => {
     const nodeAspects = (ancestor.meta.aspects ?? []).map(a => a.aspect);
@@ -575,18 +577,18 @@ export function toContextMapOutput(
   };
 }
 
-function buildNodeFiles(node: GraphNode, config: YggConfig, prefix: string): string[] {
-  const configKeys = Object.keys(config.artifacts ?? {});
+function buildNodeFiles(node: GraphNode, _config: YggConfig, prefix: string): string[] {
+  const configKeys = Object.keys(STANDARD_ARTIFACTS);
   return configKeys
     .filter(f => !YG_YAML_FILES.has(f) && node.artifacts.some(a => a.filename === f))
     .map(f => `${prefix}/${f}`);
 }
 
-function buildDepNodeFiles(node: GraphNode, config: YggConfig, prefix: string): string[] {
-  const structural = Object.entries(config.artifacts ?? {})
+function buildDepNodeFiles(node: GraphNode, _config: YggConfig, prefix: string): string[] {
+  const structural = Object.entries(STANDARD_ARTIFACTS)
     .filter(([, c]) => c.included_in_relations)
     .map(([f]) => f);
-  const filenames = structural.length > 0 ? structural : Object.keys(config.artifacts ?? {});
+  const filenames = structural.length > 0 ? structural : Object.keys(STANDARD_ARTIFACTS);
   return filenames
     .filter(f => !YG_YAML_FILES.has(f) && node.artifacts.some(a => a.filename === f))
     .map(f => `${prefix}/${f}`);

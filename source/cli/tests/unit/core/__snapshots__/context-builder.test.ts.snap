@@ -20,10 +20,6 @@ exports[`context-builder > formatContextMarkdown > produces correct markdown str
 
 ### Module Context (orders/)
 
-### description.md
-Order management module.
-
-
 ### responsibility.md
 Order management module.
 
@@ -53,10 +49,6 @@ relations:
 mapping:
   paths:
     - src/orders/order.service.ts
-
-### description.md
-Order service handles order lifecycle.
-
 
 ### interface.md
 # Order Service Interface
@@ -123,10 +115,6 @@ Auth API service.
 
 ### Dependency: UserRepo (uses) — users/user-repo
 
-### description.md
-User repository.
-
-
 ### responsibility.md
 User repository.
 
@@ -147,7 +135,7 @@ Sequence: create order -> validate -> payment -> ship.
 
 ---
 
-Context size: 508 tokens
+Context size: 472 tokens
 Layers: global, hierarchy, own, relational, relational, relational, flows, aspects, aspects
 "
 `;
