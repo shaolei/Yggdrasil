@@ -2,28 +2,9 @@ import { readFile } from 'node:fs/promises';
 import { parse as parseYaml } from 'yaml';
 import type {
   YggConfig,
-  ArtifactConfig,
   QualityConfig,
   NodeTypeConfig,
 } from '../model/types.js';
-
-/** The three standard artifacts — always present, cannot be removed from config. */
-const STANDARD_ARTIFACTS: Record<string, ArtifactConfig> = {
-  'responsibility.md': {
-    required: 'always',
-    description: 'What this node is responsible for, and what it is not',
-    included_in_relations: true,
-  },
-  'interface.md': {
-    required: { when: 'has_incoming_relations' },
-    description: 'Public API — methods, parameters, return types, contracts, failure modes, exposed data structures',
-    included_in_relations: true,
-  },
-  'internals.md': {
-    required: 'never',
-    description: 'How the node works and why — algorithms, business rules, state machines, design decisions with rejected alternatives',
-  },
-};
 
 const DEFAULT_QUALITY: QualityConfig = {
   min_artifact_length: 50,
@@ -72,50 +53,6 @@ export async function parseConfig(filePath: string): Promise<YggConfig> {
     };
   }
 
-  const artifacts = raw.artifacts;
-  if (
-    !artifacts ||
-    typeof artifacts !== 'object' ||
-    Array.isArray(artifacts) ||
-    Object.keys(artifacts).length === 0
-  ) {
-    throw new Error(`yg-config.yaml: 'artifacts' must be a non-empty object`);
-  }
-
-  const artifactsMap: Record<string, ArtifactConfig> = {};
-  for (const [key, val] of Object.entries(artifacts)) {
-    if (key === 'yg-node.yaml') {
-      throw new Error(`yg-config.yaml: artifact name 'yg-node.yaml' is reserved`);
-    }
-    const a = val as Record<string, unknown>;
-    const required = a.required;
-    if (
-      required !== 'always' &&
-      required !== 'never' &&
-      (typeof required !== 'object' || !required || !('when' in required))
-    ) {
-      throw new Error(`yg-config.yaml: artifact '${key}' has invalid 'required' field`);
-    }
-    if (typeof required === 'object' && required && 'when' in required) {
-      const when = (required as { when: string }).when;
-      const validWhen =
-        when === 'has_incoming_relations' ||
-        when === 'has_outgoing_relations' ||
-        (typeof when === 'string' &&
-          (when.startsWith('has_aspect:') || when.startsWith('has_tag:')));
-      if (!validWhen) {
-        throw new Error(
-          `yg-config.yaml: artifact '${key}' has invalid 'required.when': must be has_incoming_relations, has_outgoing_relations, or has_aspect:<name>`,
-        );
-      }
-    }
-    artifactsMap[key] = {
-      required: required as ArtifactConfig['required'],
-      description: (a.description as string) ?? '',
-      included_in_relations: (a.included_in_relations as boolean) ?? false,
-    };
-  }
-
   const qualityRaw = raw.quality as Record<string, unknown> | undefined;
   const quality: QualityConfig = qualityRaw
     ? {
@@ -145,18 +82,10 @@ export async function parseConfig(filePath: string): Promise<YggConfig> {
     throw new Error('quality.context_budget.own_warning must be a positive number');
   }
 
-  // Ensure the three standard artifacts are always present (safety net)
-  for (const [key, defaults] of Object.entries(STANDARD_ARTIFACTS)) {
-    if (!artifactsMap[key]) {
-      artifactsMap[key] = { ...defaults };
-    }
-  }
-
   return {
     version,
     name: (raw.name as string).trim(),
     node_types: nodeTypes,
-    artifacts: artifactsMap,
     quality,
   };
 }

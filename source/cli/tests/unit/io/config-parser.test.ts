@@ -8,13 +8,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_DIR = path.join(__dirname, '../../fixtures/sample-project/.yggdrasil');
 
 describe('config-parser', () => {
-  it('parses valid yg-config.yaml correctly (v2.2)', async () => {
+  it('parses valid yg-config.yaml correctly', async () => {
     const config = await parseConfig(path.join(FIXTURE_DIR, 'yg-config.yaml'));
 
     expect(config.name).toBe('Sample E-Commerce System');
     expect(config.quality?.context_budget.warning).toBe(8000);
     expect(config.node_types['service']).toBeDefined();
-    expect(config.artifacts['responsibility.md']).toBeDefined();
   });
 
   it('throws on empty YAML file', async () => {
@@ -40,10 +39,6 @@ describe('config-parser', () => {
 node_types:
   service:
     description: x
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
 `,
       'utf-8',
     );
@@ -55,7 +50,7 @@ artifacts:
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('parses minimal config without tags field', async () => {
+  it('parses minimal config', async () => {
     const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-minimal');
     await mkdir(tmpDir, { recursive: true });
     const minimalConfigPath = path.join(tmpDir, 'yg-config.yaml');
@@ -66,10 +61,6 @@ name: "Minimal Config"
 node_types:
   module:
     description: x
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
 `,
       'utf-8',
     );
@@ -80,118 +71,10 @@ artifacts:
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('parses included_in_relations when present in artifact', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-structural');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'yg-config.yaml'),
-      `
-name: "Structural"
-node_types:
-  service:
-    description: x
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
-  interface:
-    required: never
-    description: "API"
-    included_in_relations: true
-`,
-      'utf-8',
-    );
-
-    const config = await parseConfig(path.join(tmpDir, 'yg-config.yaml'));
-    expect(config.artifacts.interface.included_in_relations).toBe(true);
-    expect(config.artifacts.responsibility.included_in_relations).toBe(false);
-
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
   it('parses quality.context_budget when present', async () => {
     const config = await parseConfig(path.join(FIXTURE_DIR, 'yg-config.yaml'));
     expect(config.quality?.context_budget.warning).toBe(8000);
     expect(config.quality?.context_budget.error).toBe(16000);
-  });
-
-  it('throws when artifact name is yg-node.yaml (reserved)', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-node');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'yg-config.yaml'),
-      `
-name: "Reserved"
-node_types:
-  service:
-    description: x
-artifacts:
-  yg-node.yaml:
-    required: always
-    description: "x"
-  responsibility:
-    required: always
-    description: "x"
-`,
-      'utf-8',
-    );
-
-    await expect(parseConfig(path.join(tmpDir, 'yg-config.yaml'))).rejects.toThrow(
-      "artifact name 'yg-node.yaml' is reserved",
-    );
-
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
-  it('throws when artifact required is invalid', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-invalid-required');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'yg-config.yaml'),
-      `
-name: "Invalid"
-node_types:
-  service:
-    description: x
-artifacts:
-  responsibility:
-    required: invalid_value
-    description: "x"
-`,
-      'utf-8',
-    );
-
-    await expect(parseConfig(path.join(tmpDir, 'yg-config.yaml'))).rejects.toThrow(
-      "invalid 'required' field",
-    );
-
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
-  it('throws when required.when is invalid', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-invalid-when');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'yg-config.yaml'),
-      `
-name: "InvalidWhen"
-node_types:
-  service:
-    description: x
-artifacts:
-  responsibility:
-    required:
-      when: has_foo
-    description: "x"
-`,
-      'utf-8',
-    );
-
-    await expect(parseConfig(path.join(tmpDir, 'yg-config.yaml'))).rejects.toThrow(
-      "invalid 'required.when'",
-    );
-
-    await rm(tmpDir, { recursive: true, force: true });
   });
 
   it('throws when quality.context_budget.error < warning', async () => {
@@ -204,10 +87,6 @@ name: "Budget"
 node_types:
   service:
     description: x
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
 quality:
   context_budget:
     warning: 10000
@@ -231,10 +110,6 @@ quality:
       `
 name: "Bad"
 node_types: "not-object"
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
 `,
       'utf-8',
     );
@@ -254,10 +129,6 @@ artifacts:
       `
 name: "Bad"
 node_types: {}
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
 `,
       'utf-8',
     );
@@ -283,89 +154,12 @@ node_types:
   service:
     description: component providing functionality
     required_aspects: [requires-audit]
-artifacts:
-  responsibility.md:
-    required: always
-    description: x
 `,
       'utf-8',
     );
     const cfg = await parseConfig(configPath);
     expect(cfg.node_types['module']).toEqual({ description: 'business logic unit' });
     expect(cfg.node_types['service']).toEqual({ description: 'component providing functionality', required_aspects: ['requires-audit'] });
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
-  it('throws when artifacts is array', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-artifacts-array');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'yg-config.yaml'),
-      `
-name: "Bad"
-node_types:
-  service:
-    description: x
-artifacts: []
-`,
-      'utf-8',
-    );
-
-    await expect(parseConfig(path.join(tmpDir, 'yg-config.yaml'))).rejects.toThrow(
-      "'artifacts' must be a non-empty object",
-    );
-
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
-  it('defaults artifact description to empty string when missing', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-artifact-no-desc');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'yg-config.yaml'),
-      `
-name: "NoDesc"
-node_types:
-  service:
-    description: x
-artifacts:
-  responsibility:
-    required: always
-`,
-      'utf-8',
-    );
-
-    const config = await parseConfig(path.join(tmpDir, 'yg-config.yaml'));
-    expect(config.artifacts.responsibility.description).toBe('');
-
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
-  it('accepts has_aspect: as valid when condition', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-has-aspect');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'yg-config.yaml'),
-      `
-name: "HasAspect"
-node_types:
-  service:
-    description: x
-artifacts:
-  responsibility:
-    required: always
-    description: "x"
-  compliance:
-    required:
-      when: has_aspect:regulated
-    description: "y"
-`,
-      'utf-8',
-    );
-
-    const config = await parseConfig(path.join(tmpDir, 'yg-config.yaml'));
-    expect(config.artifacts.compliance.required).toEqual({ when: 'has_aspect:regulated' });
-
     await rm(tmpDir, { recursive: true, force: true });
   });
 
@@ -379,10 +173,6 @@ artifacts:
 name: "BadEntry"
 node_types:
   service: {}
-artifacts:
-  responsibility.md:
-    required: always
-    description: x
 `,
       'utf-8',
     );
@@ -404,10 +194,6 @@ name: "Versioned"
 node_types:
   module:
     description: x
-artifacts:
-  responsibility.md:
-    required: always
-    description: "x"
 `,
       'utf-8',
     );
@@ -421,70 +207,29 @@ artifacts:
     expect(config.version).toBeUndefined();
   });
 
-  it('injects standard artifacts when missing from config', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-inject-standard');
+  it('ignores artifacts section in config (no longer parsed)', async () => {
+    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-ignores-artifacts');
     await mkdir(tmpDir, { recursive: true });
     await writeFile(
       path.join(tmpDir, 'yg-config.yaml'),
       `
-name: "OnlyCustom"
-node_types:
-  service:
-    description: x
-artifacts:
-  custom.md:
-    required: never
-    description: "custom artifact"
-`,
-      'utf-8',
-    );
-
-    const config = await parseConfig(path.join(tmpDir, 'yg-config.yaml'));
-    expect(config.artifacts['responsibility.md']).toBeDefined();
-    expect(config.artifacts['responsibility.md'].required).toBe('always');
-    expect(config.artifacts['interface.md']).toBeDefined();
-    expect(config.artifacts['interface.md'].included_in_relations).toBe(true);
-    expect(config.artifacts['internals.md']).toBeDefined();
-    expect(config.artifacts['internals.md'].required).toBe('never');
-    // Custom artifact preserved
-    expect(config.artifacts['custom.md']).toBeDefined();
-
-    await rm(tmpDir, { recursive: true, force: true });
-  });
-
-  it('does not overwrite user-customized standard artifacts', async () => {
-    const tmpDir = path.join(__dirname, '../../fixtures/tmp-config-custom-standard');
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(
-      path.join(tmpDir, 'yg-config.yaml'),
-      `
-name: "CustomStandard"
+name: "WithArtifacts"
 node_types:
   service:
     description: x
 artifacts:
   responsibility.md:
     required: always
-    description: "custom description for responsibility"
-    included_in_relations: false
-  interface.md:
-    required: always
-    description: "custom interface"
-  internals.md:
-    required: always
-    description: "custom internals"
+    description: "x"
 `,
       'utf-8',
     );
 
     const config = await parseConfig(path.join(tmpDir, 'yg-config.yaml'));
-    // User's customizations preserved
-    expect(config.artifacts['responsibility.md'].description).toBe('custom description for responsibility');
-    expect(config.artifacts['responsibility.md'].included_in_relations).toBe(false);
-    expect(config.artifacts['interface.md'].required).toBe('always');
-    expect(config.artifacts['internals.md'].required).toBe('always');
+    expect(config.name).toBe('WithArtifacts');
+    // artifacts field should not exist on returned config
+    expect((config as Record<string, unknown>).artifacts).toBeUndefined();
 
     await rm(tmpDir, { recursive: true, force: true });
   });
-
 });
