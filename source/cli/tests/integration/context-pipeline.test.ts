@@ -36,28 +36,26 @@ describe('context-pipeline', () => {
     expect(globalLayer?.content).not.toContain('Standards');
   });
 
-  it('hierarchy includes orders/ configured artifacts only', async () => {
+  it('hierarchy includes orders/ standard artifacts only', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
     const pkg = await buildContext(graph, 'orders/order-service');
 
     const hierarchyLayer = pkg.layers.find((l) => l.type === 'hierarchy');
     expect(hierarchyLayer).toBeDefined();
     expect(hierarchyLayer?.label).toContain('orders');
-    // Only config.artifacts (responsibility, interface, constraints, description) are included
+    // Only STANDARD_ARTIFACTS (responsibility, interface, internals) are included
     expect(hierarchyLayer?.content).toContain('responsibility');
-    expect(hierarchyLayer?.content).toContain('description');
   });
 
-  it('own artifacts present (only configured types)', async () => {
+  it('own artifacts present (only standard types)', async () => {
     const graph = await loadGraph(FIXTURE_PROJECT);
     const pkg = await buildContext(graph, 'orders/order-service');
 
     const ownLayer = pkg.layers.find((l) => l.type === 'own');
     expect(ownLayer).toBeDefined();
     expect(ownLayer?.label).toContain('OrderService');
-    // Only config.artifacts (responsibility, interface, constraints, description) are included
+    // Only STANDARD_ARTIFACTS (responsibility, interface, internals) are included
     expect(ownLayer?.content).toContain('responsibility');
-    expect(ownLayer?.content).toContain('description');
   });
 
   it('relational includes auth-api artifacts (config-allowed only)', async () => {

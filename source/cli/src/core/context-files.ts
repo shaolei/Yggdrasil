@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { STANDARD_ARTIFACTS } from '../model/types.js';
 import type { Graph, GraphNode, DriftCategory, FlowDef } from '../model/types.js';
 import { normalizeMappingPaths } from '../utils/paths.js';
 import { collectAncestors, resolveAspects } from './context-builder.js';
@@ -29,7 +30,7 @@ export function collectTrackedFiles(node: GraphNode, graph: Graph): TrackedFile[
   // Normalize to forward slashes for consistency
   const yggPrefixNormalized = yggPrefix.split(path.sep).join('/');
 
-  const configArtifactKeys = new Set(Object.keys(graph.config.artifacts ?? {}));
+  const configArtifactKeys = new Set(Object.keys(STANDARD_ARTIFACTS));
 
   function addFile(filePath: string, category: DriftCategory): void {
     if (seen.has(filePath)) return;
@@ -100,7 +101,7 @@ export function collectTrackedFiles(node: GraphNode, graph: Graph): TrackedFile[
     if (!target) continue;
 
     // Determine which artifacts to include from the target
-    const structuralFilenames = Object.entries(graph.config.artifacts ?? {})
+    const structuralFilenames = Object.entries(STANDARD_ARTIFACTS)
       .filter(([, c]) => c.included_in_relations)
       .map(([filename]) => filename);
 
@@ -142,7 +143,7 @@ export function collectTrackedFiles(node: GraphNode, graph: Graph): TrackedFile[
     const target = graph.nodes.get(relation.target);
     if (!target) continue;
 
-    const structuralFilenames = Object.entries(graph.config.artifacts ?? {})
+    const structuralFilenames = Object.entries(STANDARD_ARTIFACTS)
       .filter(([, c]) => c.included_in_relations)
       .map(([filename]) => filename);
     const filterFilenames = structuralFilenames.length > 0 ? structuralFilenames : [...configArtifactKeys];

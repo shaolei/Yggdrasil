@@ -1,5 +1,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import {
+  STANDARD_ARTIFACTS,
+} from '../model/types.js';
 import type {
   Graph,
   GraphNode,
@@ -23,7 +26,6 @@ function toModelPath(absolutePath: string, modelDir: string): string {
 const FALLBACK_CONFIG: YggConfig = {
   name: '',
   node_types: {},
-  artifacts: {},
 };
 
 export async function loadGraph(
@@ -45,7 +47,7 @@ export async function loadGraph(
   const modelDir = path.join(yggRoot, 'model');
   const nodes = new Map<string, GraphNode>();
   const nodeParseErrors: Array<{ nodePath: string; message: string }> = [];
-  const artifactFilenames = Object.keys(config.artifacts ?? {});
+  const artifactFilenames = Object.keys(STANDARD_ARTIFACTS);
   try {
     await scanModelDirectory(modelDir, modelDir, null, nodes, nodeParseErrors, artifactFilenames);
   } catch (err) {

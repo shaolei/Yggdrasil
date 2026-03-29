@@ -16,9 +16,9 @@ describe('collectTrackedFiles', () => {
     const paths = files.map((f) => f.path);
 
     expect(paths).toContain('.yggdrasil/model/orders/order-service/yg-node.yaml');
-    // order-service has responsibility.md, description.md artifacts (config-allowed)
+    // order-service has responsibility.md, interface.md (STANDARD_ARTIFACTS only)
     expect(paths).toContain('.yggdrasil/model/orders/order-service/responsibility.md');
-    expect(paths).toContain('.yggdrasil/model/orders/order-service/description.md');
+    expect(paths).toContain('.yggdrasil/model/orders/order-service/interface.md');
   });
 
   it('includes parent yg-node.yaml and artifacts', async () => {
@@ -29,7 +29,6 @@ describe('collectTrackedFiles', () => {
 
     expect(paths).toContain('.yggdrasil/model/orders/yg-node.yaml');
     expect(paths).toContain('.yggdrasil/model/orders/responsibility.md');
-    expect(paths).toContain('.yggdrasil/model/orders/description.md');
   });
 
   it('includes aspect files', async () => {
@@ -152,11 +151,6 @@ describe('collectTrackedFiles', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: {
-          'responsibility.md': { required: 'always', description: 'x' },
-          'interface.md': { required: 'never', description: 'x', included_in_relations: true },
-          'description.md': { required: 'never', description: 'x' },
-        },
       },
       nodes: new Map([
         ['my/svc', node],
@@ -171,10 +165,10 @@ describe('collectTrackedFiles', () => {
     const files = collectTrackedFiles(node, graph);
     const paths = files.map((f) => f.path);
 
-    // Should include only the included_in_relations artifact from dep
+    // Should include included_in_relations artifacts from dep (responsibility.md and interface.md)
+    expect(paths).toContain('.yggdrasil/model/dep/svc/responsibility.md');
     expect(paths).toContain('.yggdrasil/model/dep/svc/interface.md');
-    // Should NOT include non-structural artifacts from the dep
-    expect(paths).not.toContain('.yggdrasil/model/dep/svc/responsibility.md');
+    // description.md is not in STANDARD_ARTIFACTS, so should NOT appear
     expect(paths).not.toContain('.yggdrasil/model/dep/svc/description.md');
   });
 
@@ -199,7 +193,6 @@ describe('collectTrackedFiles', () => {
       config: {
         name: 'T',
         node_types: { module: { description: 'x' }, service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([
         ['orders', parent],
@@ -279,7 +272,6 @@ describe('collectTrackedFiles', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([
         ['my/svc', node],
@@ -324,10 +316,6 @@ describe('collectTrackedFiles', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: {
-          'responsibility.md': { required: 'always', description: 'x' },
-          'interface.md': { required: 'never', description: 'x', included_in_relations: true },
-        },
       },
       nodes: new Map([
         ['my/svc', node],
@@ -342,9 +330,9 @@ describe('collectTrackedFiles', () => {
     const files = collectTrackedFiles(node, graph);
     const paths = files.map((f) => f.path);
 
-    // With included_in_relations, event relation should only include interface.md
+    // With included_in_relations, event relation includes responsibility.md and interface.md
+    expect(paths).toContain('.yggdrasil/model/events/bus/responsibility.md');
     expect(paths).toContain('.yggdrasil/model/events/bus/interface.md');
-    expect(paths).not.toContain('.yggdrasil/model/events/bus/responsibility.md');
   });
 
   it('skips relations with missing targets', () => {
@@ -363,7 +351,6 @@ describe('collectTrackedFiles', () => {
       config: {
         name: 'T',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([['my/svc', node]]),
       aspects: [],
@@ -398,7 +385,6 @@ describe('collectTrackedFiles', () => {
       config: {
         name: 'T',
         node_types: { module: { description: 'x' }, service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       nodes: new Map([
         ['orders', parent],

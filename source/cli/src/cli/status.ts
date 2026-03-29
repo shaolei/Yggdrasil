@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { STANDARD_ARTIFACTS } from '../model/types.js';
 import { loadGraph } from '../core/graph-loader.js';
 import { detectDrift } from '../core/drift-detector.js';
 import { validate } from '../core/validator.js';
@@ -50,7 +51,7 @@ export function registerStatusCommand(program: Command): void {
         ).length;
 
         // Quality metrics
-        const configuredArtifactTypes = Object.keys(graph.config.artifacts ?? {});
+        const configuredArtifactTypes = Object.keys(STANDARD_ARTIFACTS);
         const totalSlots = graph.nodes.size * configuredArtifactTypes.length;
         let filledSlots = 0;
         let mappedNodeCount = 0;
