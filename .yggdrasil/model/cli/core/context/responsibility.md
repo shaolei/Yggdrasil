@@ -10,7 +10,7 @@ Assembles context packages for nodes — the 5-step layer assembly used by `yg b
 - **expandAspects(aspectIds, aspects)**: Helper; expands aspect ids with implied aspects recursively (cycle detection). Used by buildHierarchyLayer, buildOwnLayer, buildFlowLayer.
 - **Token estimation**: ~4 chars/token heuristic via estimateTokens (no tokenizer dependency).
 - **Layer builders** (exported for tests): `buildGlobalLayer`, `buildHierarchyLayer`, `buildOwnLayer`, `buildStructuralRelationLayer`, `buildEventRelationLayer`, `buildAspectLayer`, `collectAncestors`.
-- **filterArtifactsByConfig**: Internal; filters artifacts by config.artifacts keys.
+- **filterByStandardArtifacts**: Internal; filters artifacts by STANDARD_ARTIFACTS keys.
 - **buildHierarchyLayer(ancestor, config, graph)**: Accepts graph; computes ancestor aspects + implies via expandAspects; adds `attrs.aspects` when non-empty.
 - **buildOwnLayer(node, config, graphRootPath, graph)**: Accepts graph; computes node aspects + implies; adds `attrs.aspects`.
 - **buildFlowLayer(flow, graph)**: Internal; accepts graph; computes flow.aspects + implies; adds `attrs.aspects`.
@@ -18,7 +18,7 @@ Assembles context packages for nodes — the 5-step layer assembly used by `yg b
 - **collectParticipatingFlows**: Internal; returns flows where node or any ancestor is in flow.nodes.
 - **Relation type sets**: STRUCTURAL_RELATION_TYPES (uses, calls, extends, implements), EVENT_RELATION_TYPES (emits, listens). Relations not in either set are skipped.
 
-- **collectTrackedFiles(node, graph)**: Mirrors build-context traversal but returns file paths instead of content. Used by drift-detector to know which files to track for a node. Collects: own files (yg-node.yaml + artifacts), hierarchical (ancestor files), aspect files (recursive implies), relational-deps (structural target artifacts + dependency ancestor artifacts), event relations (emits/listens target artifacts + their ancestor artifacts), relational-flows (flow files), source files (from mapping.paths). Dependency ancestors and event relation ancestors use included_in_relations artifacts when available, falling back to all config artifacts. Synchronous — all data from loaded Graph.
+- **collectTrackedFiles(node, graph)**: Mirrors build-context traversal but returns file paths instead of content. Used by drift-detector to know which files to track for a node. Collects: own files (yg-node.yaml + artifacts), hierarchical (ancestor files), aspect files (recursive implies), relational-deps (structural target artifacts + dependency ancestor artifacts), event relations (emits/listens target artifacts + their ancestor artifacts), relational-flows (flow files), source files (from mapping.paths). Dependency ancestors and event relation ancestors use included_in_relations artifacts when available, falling back to all standard artifacts. Synchronous — all data from loaded Graph.
 
 **Out of scope:**
 

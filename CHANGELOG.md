@@ -9,11 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
-- **E020 validation rule: missing-standard-artifact.** The three standard
-  artifacts (`responsibility.md`, `interface.md`, `internals.md`) are now
-  validated as required in `config.artifacts`. Projects that removed standard
-  artifacts from config will get errors on `yg validate`. Fix: re-add them
-  to `yg-config.yaml` or let the config parser inject defaults.
+- **Artifacts removed from `yg-config.yaml`.** The three standard artifacts
+  (`responsibility.md`, `interface.md`, `internals.md`) are now hardcoded in
+  the CLI. The `artifacts` section is no longer read from config. Migration
+  to 3.0.0 removes the section automatically. Custom artifact files remain
+  on disk but the CLI will ignore them.
+- **E013 and E020 validation rules removed.** E020 (missing standard artifact
+  in config) and E013 (invalid artifact condition) are no longer needed since
+  artifacts are hardcoded.
 
 ### Added
 
@@ -21,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hierarchy, dependencies, aspects, or flows. Designed for file-level graph
   updates where cross-cutting context was already loaded at task-level. Reduces
   token cost from ~8K to ~2-3K per file interaction.
+- **Migration to 3.0.0.** Automatically removes `artifacts` section from
+  `yg-config.yaml`. Warns if custom (non-standard) artifacts were present.
 
 ### Changed
 
@@ -36,13 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   designing) from file-level WRITE phase (local artifacts, graph updates).
   Guard: file-level step warns if task-level READ was skipped. Research result:
   1.82 → 7.04/10 on aspect compliance.
-- **Standard artifacts are now hardcoded in agent rules.** The Artifact Structure
-  section, Information Routing table, and Quick Routing Table reference the three
-  standard artifacts by name. Custom artifacts remain additive via `yg-config.yaml`.
-- **Config parser injects standard artifacts as safety net.** `parseConfig()` now
-  ensures the three standard artifacts are always present in the parsed config,
-  even if the user removed them from YAML. User customizations of standard
-  artifacts (e.g., changing `required` or `description`) are preserved.
+- **Standard artifacts hardcoded in agent rules and CLI.** The three artifacts
+  are referenced by name everywhere — rules, validator, context builder. No
+  longer configurable.
 
 ## [2.12.0] - 2026-03-26
 

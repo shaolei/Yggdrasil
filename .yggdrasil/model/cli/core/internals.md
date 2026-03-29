@@ -24,9 +24,9 @@ For node N at path P with aspects A, buildContext executes in this order:
 
 1. GLOBAL — yg-config.yaml (project name)
 2. HIERARCHY — artifacts of each ancestor (root down to parent of N)
-3. OWN — N's yg-node.yaml (raw from disk) and N's content artifacts (all .md matching config)
+3. OWN — N's yg-node.yaml (raw from disk) and N's content artifacts (all .md matching STANDARD_ARTIFACTS)
 4. ASPECTS — for each aspect in A (union from hierarchy + own + flow blocks, expanded via implies), content of matching aspect
-5. RELATIONAL — for each structural relation: target's structural_context artifacts (or fallback: all configured artifacts), annotate with consumes/failure from relation; for each event relation: event name + consumes; for each participating flow: flow artifacts
+5. RELATIONAL — for each structural relation: target's structural_context artifacts (or fallback: all standard artifacts), annotate with consumes/failure from relation; for each event relation: event name + consumes; for each participating flow: flow artifacts
 
 ## Broken references block
 

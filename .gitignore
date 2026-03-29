@@ -30,5 +30,8 @@ Thumbs.db
 # Agent working dir — design docs and plans (local only, not committed)
 .plans/
 
+# Researcher lab — experiment data (local only, not committed)
+.lab/
+
 # Git worktrees
 .worktrees/

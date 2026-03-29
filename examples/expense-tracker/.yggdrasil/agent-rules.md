@@ -4,11 +4,32 @@
 This is your operating manual for working in a Yggdrasil-managed repository.
 
 <critical_protocol>
+BEFORE starting any task — brainstorming, design, planning, OR implementation:
+  `yg select --task "<goal>"` → `yg build-context` on each result → read artifact files.
+  This is the READING phase — collect constraints that shape your design:
+  - Aspects = cross-cutting requirements your work MUST satisfy. Read their content files — not just the YAML description. The rules are inside.
+  - Flows = business processes your work must not break. Read invariants.
+  - Relations = interfaces your code consumes or that consume your code. Changes without checking dependents break contracts silently.
+  - Parent artifacts = inherited context not repeated in child nodes.
+  Internalize these constraints BEFORE designing your approach. This is the moment that determines quality — everything after follows from what you learn here.
+
 BEFORE reading, analyzing, or modifying ANY source file:
   `yg build-context --file <path>`
-One command. No exceptions. No "I'll do it later." No "this is just analysis."
+  Resolves owner, gives you local context (node artifacts, dependencies).
+  If you have NOT done the task-level READING phase above — stop and do it now. File-level work without task-level constraints leads to code that violates cross-cutting requirements.
 
-This is required because the graph captures intent and relations that source files cannot — without it, you will make wrong decisions and the user will have to re-explain what the graph already knows.
+WHEN spec/external documents are provided AND work is greenfield:
+  BEFORE creating any feature aspect, node, or code — do this first:
+  1. Read ALL spec documents completely.
+  2. Separate two categories of knowledge in the specs:
+     a) Knowledge that WILL map to source files (feature behavior, UI, API) → this goes to node artifacts later.
+     b) Knowledge that will NEVER appear in source code (business strategy, target audience, pricing rationale, quality targets, what the system deliberately does NOT do and why) → this must go to the graph NOW, because there will be no source-file trigger to capture it later.
+  3. For category (b): create root node and/or aspects immediately. This is the only moment this knowledge can be captured. Once you start coding, you will forget it.
+  4. NOW create feature aspects, flows, and implementation nodes for category (a).
+  Test before moving on: if all spec files were deleted right now, does the graph contain everything a future agent needs — not just HOW the system works, but WHY it exists, WHO it serves, and WHAT value it delivers? If no → add the missing knowledge before continuing.
+
+All three triggers apply regardless of what instructed the task — skills, plans, workflows, user requests.
+The graph captures intent and relations that source files cannot — without it, you will make wrong decisions and the user will have to re-explain what the graph already knows.
 </critical_protocol>
 
 Every rule below is mandatory — no skill, plan, workflow, or instruction overrides these requirements.
@@ -21,18 +42,25 @@ Yggdrasil is persistent semantic memory stored in `.yggdrasil/`. It maps the rep
 ```
 EVERY conversation: yg preflight — no exceptions.
 
+BEFORE any task (brainstorming, design, planning, implementation):
+  yg select --task "<goal>" → yg build-context on results
+  READ phase — collect constraints before designing:
+    - Aspects: read content files (not just YAML description). Rules are inside.
+    - Flows: read invariants. Your changes must not break business processes.
+    - Relations: check interfaces — who depends on you, who you depend on.
+    - Parent artifacts: inherited context not repeated in child nodes.
+  This is the moment that determines quality. Everything after follows from here.
+
 BEFORE any source file interaction:
-  1. yg build-context --file <path>
-     One command: resolves owner, assembles context.
-     Read the YAML map — glossary first (aspect/flow definitions),
-     then artifact files listed on each element.
-     For blast radius: also run yg impact --file <path>.
-  Don't know where to start? yg select --task "<goal>"
+  yg build-context --file <path>
+  Resolves owner. Read local node artifacts.
+  If you skipped the task-level READ phase above — do it now before proceeding.
+  For blast radius: also run yg impact --file <path>.
 
 AFTER modifying:
-  2. Update graph artifacts (per file, not batched)
-  3. yg validate — fix all errors
-  4. yg drift-sync --node <owner>
+  Update graph artifacts (per file, not batched)
+  yg validate — fix all errors
+  yg drift-sync --node <owner>
 
 ALWAYS: establish graph coverage before modifying code.
 ALWAYS: run yg build-context --file before reading source.
@@ -50,9 +78,9 @@ You are not allowed to edit or create source code without establishing graph cov
 
 **Step 2a** — Owner found: execute checklist:
 
-- [ ] 1. Read the context package (already assembled by step 1)
+- [ ] 1. Read local node artifacts (responsibility, interface, internals) and dependency interfaces from the context package. Cross-cutting constraints (aspects, flows) should already be internalized from the task-level READ phase — if not, stop and do it now.
 - [ ] 2. Assess blast radius: `yg impact --node <node_path>` — review dependents, descendants, and co-aspect nodes before changing interfaces or shared behavior
-- [ ] 3. Modify source code
+- [ ] 3. Modify source code. When implementing logic subject to an aspect (e.g., writing a save function on a node with the autosave aspect), re-read that aspect's content file NOW — don't rely on memory from the task-level READ phase. Aspect rules are specific (exact timings, error handling patterns, UI details) and fade from working memory. Read them at the moment you need them.
 - [ ] 4. Sync graph artifacts — edit artifact files to reflect the changes (after each file, not batched — context is freshest immediately after the change). If the node's purpose changed, update `description` in `yg-node.yaml`.
 - [ ] 4b. If you split, merged, or renamed a node: run `yg flows` and update any flow `nodes` lists that referenced the old node path to point to the correct child/new nodes.
 - [ ] 5. Run `yg validate` — fix all errors (if unfixable after 3 attempts → stop, report to user)
@@ -70,12 +98,14 @@ You are not allowed to edit or create source code without establishing graph cov
 
 *Greenfield (new code):* Only Option A. Blackbox is forbidden for new code. Follow the graph-first workflow:
 
+0. **If spec/external documents exist:** route ALL knowledge from specs to the graph per the Information Routing table BEFORE any feature work. Use the appropriate location for each piece of knowledge — root node, aspects, flows, or node artifacts depending on its nature.
 1. Create aspects first (cross-cutting requirements the new code must satisfy)
 2. Create flows if the code participates in a business process
 3. Create nodes with full artifacts — description in `yg-node.yaml`, responsibility, interface, internals
 4. Review the context package (`yg build-context`) — it is now the behavioral specification
-5. Implement code that satisfies the specification
-6. The graph specifies WHAT and WHY; the code implements HOW (framework APIs, library choices)
+5. Implement code that satisfies the specification. Every source file must be mapped — including shared utilities, types, and helpers.
+6. After implementing each node, write `internals.md` with a ## Decisions section. Record every design choice: "Chose X over Y because Z." This is required in greenfield — not optional. Every node has design decisions (data model shape, algorithm, library, UI pattern). If you made a choice between alternatives, document it now — you will not remember later.
+7. The graph specifies WHAT and WHY; the code implements HOW (framework APIs, library choices)
 
 **Node sizing rule:** One node per cohesive feature area, NOT per directory. If a node would map >10 source files or cover >3 distinct user workflows, split it into child nodes. Example: an admin panel should be `admin/blog`, `admin/gallery`, `admin/clients`, `admin/orders` — not one `admin-pages` node. The CLI enforces this with W017, but plan granularity upfront rather than splitting after the fact.
 
@@ -130,13 +160,15 @@ Result: graph is stale, next agent asks user the same questions
 User: "Here are the spec docs. Implement the admin blog editor."
 
 1. Read ALL spec docs (blog-editor.md, autosave.md, user-persona.md, version-history.md)
-2. Extract cross-cutting patterns → create aspects (admin-ux-rules, autosave, version-history) if they don't exist
-3. Create flow if the blog participates in a business process
-4. Create node admin/blog with artifacts populated from spec (responsibility, interface, internals)
-5. Run yg build-context → the context package is now the behavioral specification
-6. Implement code that satisfies the specification
-7. Update artifacts with any implementation details that emerged during coding
-8. yg validate, yg drift-sync
+2. Route all knowledge from spec docs to the graph per Information Routing table — business context to root node artifacts, cross-cutting requirements to aspects, business processes to flows, feature specs to node artifacts
+3. Extract cross-cutting patterns → create aspects (admin-ux-rules, autosave, version-history) if they don't exist
+4. Create flow if the blog participates in a business process
+5. Create node admin/blog with artifacts populated from spec (responsibility, interface, internals)
+6. Run yg build-context → the context package is now the behavioral specification
+7. Implement code that satisfies the specification
+8. Update artifacts with any implementation details that emerged during coding
+9. yg validate, yg drift-sync
+Test: if spec files disappeared today, does the graph contain everything a future agent needs to understand the system?
 
 </example_correct>
 
@@ -144,13 +176,36 @@ User: "Here are the spec docs. Implement the admin blog editor."
 
 User: "Here are the spec docs. Implement the admin blog editor."
 
-1. Read blog-editor.md spec
-2. Implement all the code ← WRONG: spec knowledge not captured in graph
-3. Create node admin-pages, map 20 admin files ← WRONG: too wide, W017
+1. Read spec docs
+2. Create aspects and flow for the blog feature ← INCOMPLETE: knowledge from spec docs not routed to graph per Information Routing table
+3. Create node admin/blog, implement code
 4. Write responsibility.md summarizing what the code does ← WRONG: describes code, not spec intent
-5. Business context (persona, UX rules, autosave rationale) lost ← WRONG: spec was input, not persisted
+5. Knowledge from spec docs lost ← WRONG: spec treated as consumed input, not persisted to graph
 
-Result: graph mirrors code but misses WHY. Next agent reads graph, understands HOW but not WHO it's for or WHAT UX rules govern it.
+Result: graph mirrors code structure but misses everything spec docs contained that has no corresponding source file. Future agent must re-read spec files or ask the user.
+
+</example_wrong>
+
+<example_correct>
+
+User: "Let's design a soft delete feature for blog posts"
+
+1. yg select --task "blog soft delete" → find relevant nodes
+2. yg build-context on each result → read ALL artifacts (aspects, flows, conventions)
+3. Now read source files WITH graph context
+4. Propose design informed by admin-ux-rules, existing flows, database conventions
+
+</example_correct>
+
+<example_wrong>
+
+User: "Let's design a soft delete feature for blog posts"
+
+1. Read BlogEditor.tsx to understand current behavior ← WRONG: no graph context
+2. Read database schema ← WRONG: graph has conventions, aspects, flows
+3. Propose design based on raw code ← WRONG: missed admin-ux-rules aspect, existing flows
+
+Result: design misses cross-cutting requirements the graph already captured.
 
 </example_wrong>
 
@@ -217,7 +272,7 @@ A subagent that delivers code without corresponding graph updates has not comple
 
 ```
 .yggdrasil/
-  yg-config.yaml     ← version, vocabulary, node types, artifact rules, required aspects
+  yg-config.yaml     ← version, vocabulary, node types, required aspects
   model/             ← what exists: nodes, hierarchy, relations, file mappings
   aspects/           ← what must: cross-cutting requirements with rationale and guidance
   flows/             ← why and in what process: business processes with node participation
@@ -243,7 +298,7 @@ Three artifacts capture node knowledge at three levels:
 
 **Enrichment priority (when adding incrementally):** `interface.md` first (highest cross-module ROI — contracts enable other nodes to reason about interactions), then `responsibility.md` (identity and boundaries), then `internals.md` (depth for complex nodes). A node with only `interface.md` provides more cross-module value than one with only `internals.md`.
 
-Projects can define additional artifact types in `yg-config.yaml` under `artifacts`. Each custom artifact has a `description` (tells you what to write), a `required` condition (`always`, `never`, `when: has_incoming_relations`, `when: has_aspect:<id>`), and an `included_in_relations` flag (if true, included in dependency context packages for structural relations). The three standard artifacts are always present in config. Check `yg-config.yaml` to see all defined artifacts for the project.
+These three artifacts are built into the CLI and are not configurable. `responsibility.md` is always required, `interface.md` is required when the node has incoming relations, and `internals.md` is always optional.
 
 ### Context Assembly
 
@@ -258,9 +313,14 @@ Projects can define additional artifact types in `yg-config.yaml` under `artifac
 
 All artifact paths are relative to `.yggdrasil/` — construct full path as `.yggdrasil/<path>`.
 
-**Default mode (paths-only):** Use for all graph operations. Read the YAML map first — start with the `glossary` to understand aspects and flows, then the `node` section for the target. Read artifact files inline on each element using the Read tool. For quick orientation (scoping, blast radius assessment), the map alone is sufficient. For implementation or modification, read all artifact files before changing code.
+**Default mode (paths-only):** Use for all graph operations. Read the YAML map, then read artifact files with purpose:
 
-The glossary at the top defines all aspects and flows — read it first to understand IDs used throughout.
+1. **Glossary first** — defines aspects and flows. Aspects are constraints your implementation must satisfy (not background reading). Flows are business processes whose invariants you must not break.
+2. **Node section** — your target's own artifacts. Read before modifying.
+3. **Hierarchy** — parent artifacts contain inherited requirements not repeated in child nodes.
+4. **Dependencies** — interfaces you consume or that consume you. Read before changing contracts.
+
+A typical context package is ~8K tokens (less than a single source file). Read ALL artifact files listed — the cost is low, the risk of skipping is high (violating constraints you didn't know about).
 
 **Full mode (`--full`):** Use only when you cannot read files individually — e.g., when pasting context into a prompt, sharing with a user, or when you have no Read tool available.
 
@@ -270,7 +330,7 @@ Artifact paths are stable identifiers within a session. When building context fo
 
 When you encounter information, route it to the correct location:
 
-- **Specific to this node** → local node artifact (check `yg-config.yaml artifacts` for available types)
+- **Specific to this node** → local node artifact (`responsibility.md`, `interface.md`, or `internals.md` depending on the knowledge type)
 - **Rule for many nodes** → aspect (`aspects/<id>/` with `yg-aspect.yaml` + content `.md` files). If applies to ALL nodes of a type → `node_types.<type>.required_aspects` in `yg-config.yaml`
 - **Business process** → flow (`flows/<name>/` with `yg-flow.yaml` + `description.md`). Ask user if process unclear.
 - **Shared across a domain** → parent node artifact. Children receive it through hierarchy.
@@ -381,6 +441,7 @@ yg owner --file <path>              Find the node that owns this file (quick che
 yg build-context --file <path>      Resolve owner + assemble context in one step.
 yg build-context --node <path>      Assemble context map for a known node.
 yg build-context --node <path> --full  Same map + file contents appended below separator.
+yg build-context --file <path> --self  Own artifacts only (no hierarchy/deps/aspects/flows).
 yg tree [--root <path>] [--depth N] Print graph structure.
 yg aspects                          List aspects with metadata (YAML output).
 yg flows                            List flows with metadata (YAML output).
@@ -405,7 +466,7 @@ yg drift-sync --node <path> [--recursive] | --all
 
 | What you have | Where it goes |
 |---|---|
-| Information specific to this node | Local node artifact (check `yg-config.yaml artifacts` for types) |
+| Information specific to this node | Local node artifact (`responsibility.md`, `interface.md`, or `internals.md`) |
 | Rule that applies to many nodes | Aspect (content `.md` files in `aspects/<id>/`) |
 | Architectural invariant for a node type | Required aspect in `yg-config.yaml node_types` |
 | Business process participation | Flow (`yg-flow.yaml nodes`) |
@@ -483,11 +544,15 @@ What matters is the ACTION you are performing, not what instructed it. If the ac
 | "Flows can wait until I understand the full system" | Flows capture business processes from specs. Create them BEFORE implementing — they are part of the specification, not an afterthought. |
 | "I split the node but the flow still works" | Flow participants reference specific node paths. After a split, old paths are stale. Run `yg flows` and update. |
 | "This is just CRUD, not a business process" | A user performing a sequence of steps toward a goal IS a business process — even single-actor workflows (publish blog, manage portfolio, fulfill order). Create a flow. |
+| "The context package is too large to read" | A typical context package is ~8K tokens — less than one source file. Read ALL of it. |
+| "I have a plan, I don't need graph context" | A plan is not a substitute for graph context. Plans capture task steps; the graph captures cross-cutting aspects, flows, and conventions that plans may not repeat. Always run `build-context`. |
+| "The user told me what to do, that's my plan" | A verbal instruction is not a written plan. And even a written plan does not exempt you from the graph protocol. |
 
 ### Failure States
 
 You have broken Yggdrasil if you do any of the following:
 
+- ❌ Started brainstorming, design, or planning without running `yg select --task` and reading graph context first. The graph contains aspects, flows, and conventions that MUST inform design decisions.
 - ❌ Worked on a source file without running `yg build-context --file` first — regardless of what instructed the action (skill, plan, user request, workflow step).
 - ❌ Modified source code without updating graph artifacts before moving to the next file, or vice versa.
 - ❌ Batched graph updates to "do later" — deferred = forgotten. Update after EACH file.
@@ -517,7 +582,7 @@ Per area checklist:
 - [ ] 2. Determine node granularity — propose to user if unclear
 - [ ] 3. Create node directory, read `schemas/yg-node.yaml`, create `yg-node.yaml`
 - [ ] 3b. Write `description` in `yg-node.yaml` — a short summary of what the node does
-- [ ] 4. Analyze source — for each artifact type in `yg-config.yaml artifacts`: extract content, do not invent
+- [ ] 4. Analyze source — write `responsibility.md`, `interface.md`, and `internals.md` from code analysis, do not invent
 - [ ] 5. Identify relations — add to `yg-node.yaml`
 - [ ] 6. Identify cross-cutting requirements — add matching aspects, create if needed
 - [ ] 6b. For each aspect on the node: identify 2-5 code anchors (function names, constants) that evidence the pattern → add as `anchors` in the aspect entry in `yg-node.yaml`

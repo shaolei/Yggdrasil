@@ -966,7 +966,6 @@ Two levels of severity defined in the [Engine](engine) document.
 | `E009` | `overlapping-mapping`        | Overlapping mappings between unrelated nodes           |
 | `E010` | `structural-cycle`           | Cycle in structural relations (cycles involving blackbox are tolerated) |
 | `E012` | `invalid-config`             | `yg-config.yaml` fails to parse or is invalid          |
-| `E013` | `invalid-artifact-condition` | Condition `has_aspect:<name>` refers to an undefined aspect  |
 | `E014` | `duplicate-aspect-binding`   | Aspect identifier is bound to multiple aspect directories |
 | `E015` | `missing-node-yaml`          | Directory in `model/` has files but no `yg-node.yaml`  |
 | `E016` | `implied-aspect-missing`     | Identifier in aspect's `implies` has no corresponding aspect in `aspects/`           |

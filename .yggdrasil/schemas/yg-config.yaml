@@ -18,7 +18,7 @@ node_types:                       # required — non-empty object of node type d
     description: "Shared utility code with no domain knowledge"
 
 # artifacts are hardcoded in the CLI (responsibility.md, interface.md, internals.md)
-# and cannot be configured here. See: source/cli/src/model/types.ts STANDARD_ARTIFACTS
+# and cannot be configured. See STANDARD_ARTIFACTS in source code.
 
 quality:                          # optional — quality thresholds
   min_artifact_length: 50         #   minimum characters for an artifact (warning if below)

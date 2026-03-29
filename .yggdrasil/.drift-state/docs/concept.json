@@ -1,5 +1,5 @@
 {
-  "hash": "b94502ff14b3f8aa7bf64bc9fba9046a81c7046bd83814d3cc4885e48177c2a6",
+  "hash": "77b000a6e895fc3a5b5336aa8c98e390dab723e4ea1e3f59feb353ee47a2ae25",
   "files": {
     ".yggdrasil/model/docs/concept/yg-node.yaml": "0d5413e7e504a3bc4ed599cda747953b8f706c756b09f5aeb827115fabdf6624",
     ".yggdrasil/model/docs/concept/responsibility.md": "1b5a6590a3620359d6010c5bd05e665732cb35dff7b765a0d205244577bca2dd",
@@ -10,7 +10,7 @@
     "docs/concept/graph.md": "06153e5fed3ed4234f19914630366c40daa48e28ddab5d79e8545ec8dcc5e431",
     "docs/concept/integration.md": "0ba031ed338fb0e1d8ea02a2ef4e49099a7848f2e0bc693b47a506f6f7c0eef3",
     "docs/concept/materialization.md": "3ef091a28938f2e4c46b0fd2e9d6d442f11fe303897b526768187e46d4f02c87",
-    "docs/concept/tools.md": "2e0fa3d8df83f6d89813c0fd1c6777d4b1c79640c6f54b0d00793fc263c165d5"
+    "docs/concept/tools.md": "a5bc5f14a8a83ed61c5b3ff0c6493634b69d047ddbebd7655ce7afdcc7fbe1e9"
   },
   "mtimes": {
     ".yggdrasil/model/docs/concept/yg-node.yaml": 1774035679171.08,
@@ -22,6 +22,6 @@
     "docs/concept/graph.md": 1774782523377.8816,
     "docs/concept/integration.md": 1773392454496.5684,
     "docs/concept/materialization.md": 1772781876843.865,
-    "docs/concept/tools.md": 1774779260189.722
+    "docs/concept/tools.md": 1774784660535.7712
   }
 }
