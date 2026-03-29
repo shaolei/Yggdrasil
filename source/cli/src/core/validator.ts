@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { STANDARD_ARTIFACTS } from '../model/types.js';
 import type { Graph, ValidationResult, ValidationIssue, ArtifactConfig, NodeAspectEntry } from '../model/types.js';
 import { buildContext, computeBudgetBreakdown, resolveAspects } from './context-builder.js';
 import { normalizeMappingPaths } from '../utils/paths.js';
@@ -35,7 +36,6 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   }
 
   if (!graph.configError) {
-    issues.push(...checkStandardArtifactsInConfig(graph));
     issues.push(...checkNodeTypes(graph));
     issues.push(...checkAspectsDefined(graph));
     issues.push(...checkAspectIds(graph));
@@ -94,26 +94,6 @@ export async function validate(graph: Graph, scope: string = 'all'): Promise<Val
   }
 
   return { issues: filtered, nodesScanned };
-}
-
-// --- Rule: Standard artifacts must exist in config ---
-
-const STANDARD_ARTIFACT_NAMES = ['responsibility.md', 'interface.md', 'internals.md'];
-
-function checkStandardArtifactsInConfig(graph: Graph): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
-  const configArtifacts = graph.config.artifacts ?? {};
-  for (const name of STANDARD_ARTIFACT_NAMES) {
-    if (!configArtifacts[name]) {
-      issues.push({
-        severity: 'error',
-        code: 'E020',
-        rule: 'missing-standard-artifact',
-        message: `Standard artifact '${name}' is missing from config.artifacts. The three standard artifacts (responsibility.md, interface.md, internals.md) are required and cannot be removed.`,
-      });
-    }
-  }
-  return issues;
 }
 
 // --- Rule 0: Node types from config ---
@@ -552,7 +532,7 @@ function getIncomingRelations(graph: Graph, nodePath: string): string[] {
 
 function checkRequiredArtifacts(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const artifacts = graph.config.artifacts ?? {};
+  const artifacts = STANDARD_ARTIFACTS;
 
   for (const [nodePath, node] of graph.nodes) {
     for (const [filename, config] of Object.entries(artifacts)) {
@@ -629,7 +609,7 @@ function checkFlowAspectIds(graph: Graph): ValidationIssue[] {
 function checkInvalidArtifactConditions(graph: Graph): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const validAspectIds = new Set(graph.aspects.map((a) => a.id));
-  const artifacts = graph.config.artifacts ?? {};
+  const artifacts = STANDARD_ARTIFACTS;
   for (const [artifactName, config] of Object.entries(artifacts)) {
     const required = config.required;
     if (typeof required === 'object' && required && 'when' in required) {

@@ -46,7 +46,6 @@ function createGraph(overrides: Partial<Graph> = {}): Graph {
     config: {
       name: 'Test',
       node_types: { service: { description: 'x' } },
-      artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
     },
     nodes: new Map(),
     aspects: [{ name: 'Valid', id: 'valid-tag', artifacts: [] }],
@@ -134,53 +133,11 @@ describe('validator', () => {
   });
 
 
-  it('missing-standard-artifact (E020) when standard artifact missing from config', async () => {
-    const graph = createGraph({
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          'responsibility.md': { required: 'always', description: 'x' },
-          // interface.md and internals.md deliberately omitted
-        },
-      },
-    });
-    graph.nodes.set('a', createNode('a'));
-
-    const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'missing-standard-artifact');
-    expect(issues).toHaveLength(2);
-    expect(issues[0].code).toBe('E020');
-    const names = issues.map((i) => i.message);
-    expect(names.some((m) => m.includes('interface.md'))).toBe(true);
-    expect(names.some((m) => m.includes('internals.md'))).toBe(true);
-  });
-
-  it('no missing-standard-artifact when all three standard artifacts present', async () => {
-    const graph = createGraph({
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          'responsibility.md': { required: 'always', description: 'x' },
-          'interface.md': { required: { when: 'has_incoming_relations' }, description: 'x' },
-          'internals.md': { required: 'never', description: 'x' },
-        },
-      },
-    });
-    graph.nodes.set('a', createNode('a'));
-
-    const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'missing-standard-artifact');
-    expect(issues).toHaveLength(0);
-  });
-
   it('infrastructure is accepted as valid node type', async () => {
     const graph = createGraph({
       config: {
         name: 'Test',
         node_types: { service: { description: 'x' }, infrastructure: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
     });
     graph.nodes.set('guard', createNode('guard', { type: 'infrastructure' }));
@@ -199,7 +156,7 @@ describe('validator', () => {
     await mkdir(badNodeDir, { recursive: true });
     await writeFile(
       path.join(yggRoot, 'yg-config.yaml'),
-      'name: V\nnode_types:\n  service:\n    description: x\nartifacts:\n  responsibility.md:\n    required: always\n    description: x',
+      'name: V\nnode_types:\n  service:\n    description: x',
     );
     await writeFile(path.join(badNodeDir, 'yg-node.yaml'), 'type: service\n# missing name');
 
@@ -237,7 +194,7 @@ describe('validator', () => {
     await mkdir(serviceDir, { recursive: true });
     await writeFile(
       path.join(yggRoot, 'yg-config.yaml'),
-      'name: V\nnode_types:\n  service:\n    description: x\nartifacts:\n  responsibility.md:\n    required: always\n    description: x',
+      'name: V\nnode_types:\n  service:\n    description: x',
     );
     await writeFile(path.join(serviceDir, 'yg-node.yaml'), 'name: Svc\ntype: service\n');
     await writeFile(path.join(orphanDir, 'readme.md'), '# orphan content');
@@ -264,7 +221,7 @@ describe('validator', () => {
     await mkdir(childDir, { recursive: true });
     await writeFile(
       path.join(yggRoot, 'yg-config.yaml'),
-      'name: V\nnode_types:\n  service:\n    description: x\nartifacts:\n  responsibility.md:\n    required: always\n    description: x',
+      'name: V\nnode_types:\n  service:\n    description: x',
     );
     await writeFile(path.join(childDir, 'yg-node.yaml'), 'name: Child\ntype: service\n');
     await writeFile(path.join(childDir, 'responsibility.md'), 'Child responsibility content here — enough to pass.');
@@ -296,25 +253,17 @@ describe('validator', () => {
     expect(issues[0].message).toContain('responsibility');
   });
 
-  it('missing-artifact does not warn when required is never', async () => {
-    const graph = createGraph({
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          responsibility: { required: 'always', description: 'x' },
-          optional: { required: 'never', description: '' },
-        },
-      },
-    });
+  it('missing-artifact does not warn when required is never (internals.md)', async () => {
+    const graph = createGraph();
     graph.nodes.set('a', {
       ...createNode('a'),
       artifacts: [{ filename: 'responsibility.md', content: 'x'.repeat(60) }],
     });
 
     const result = await validate(graph);
+    // internals.md has required: 'never' in STANDARD_ARTIFACTS, so no warning for it
     const issues = result.issues.filter(
-      (i) => i.rule === 'missing-artifact' && i.message.includes('optional'),
+      (i) => i.rule === 'missing-artifact' && i.message.includes('internals.md'),
     );
     expect(issues).toHaveLength(0);
   });
@@ -403,7 +352,6 @@ describe('validator', () => {
       config: {
         name: 'Test',
         node_types: { service: { description: 'x' } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
     });
     graph.nodes.set('a', createNode('a'));
@@ -700,47 +648,13 @@ describe('validator', () => {
     expect(issues[0].message).toContain("no aspect with that id exists");
   });
 
-  it('invalid-artifact-condition returns error when has_tag references tag with no aspect', async () => {
-    const graph = createGraph({
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          responsibility: { required: 'always', description: 'x' },
-          interface: {
-            required: { when: 'has_tag:undefined-tag' },
-            description: '',
-          },
-        },
-      },
-    });
+  it('invalid-artifact-condition returns no errors for STANDARD_ARTIFACTS (all conditions valid)', async () => {
+    const graph = createGraph();
     graph.nodes.set('a', createNode('a'));
 
     const result = await validate(graph);
     const issues = result.issues.filter((i) => i.rule === 'invalid-artifact-condition');
-    expect(issues).toHaveLength(1);
-  });
-
-  it('artifactRequiredReason has_tag returns null when node lacks tag', async () => {
-    const graph = createGraph({
-      aspects: [{ name: 'Special', id: 'special', artifacts: [] }],
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          responsibility: { required: 'always', description: 'x' },
-          optional: {
-            required: { when: 'has_tag:special', description: 'x' },
-            description: 'x',
-          },
-        },
-      },
-    });
-    graph.nodes.set('svc', createNode('svc'));
-
-    const result = await validate(graph);
-    const optionalIssues = result.issues.filter((i) => i.message.includes('optional'));
-    expect(optionalIssues).toHaveLength(0);
+    expect(issues).toHaveLength(0);
   });
 
   it('shallow-artifact warns when artifact below min_artifact_length', async () => {
@@ -833,20 +747,8 @@ describe('validator', () => {
     expect(issues).toHaveLength(0);
   });
 
-  it('missing-artifact when required has_incoming_relations and node has incoming', async () => {
-    const graph = createGraph({
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          'responsibility.md': { required: 'always', description: 'x' },
-          'interface.md': {
-            required: { when: 'has_incoming_relations' },
-            description: '',
-          },
-        },
-      },
-    });
+  it('missing-artifact warns for interface.md when node has incoming relations', async () => {
+    const graph = createGraph();
     graph.nodes.set('dep', createNode('dep', { relations: [{ target: 'svc', type: 'uses' }] }));
     graph.nodes.set('svc', {
       ...createNode('svc'),
@@ -857,131 +759,7 @@ describe('validator', () => {
     const issues = result.issues.filter(
       (i) => i.rule === 'missing-artifact' && i.nodePath === 'svc',
     );
-    expect(issues.some((i) => i.message.includes('interface.md'))).toBe(true);
-  });
-
-  it('missing-artifact when required has_outgoing_relations and node has outgoing', async () => {
-    const graph = createGraph({
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          'responsibility.md': { required: 'always', description: 'x' },
-          'interface.md': {
-            required: { when: 'has_outgoing_relations' },
-            description: '',
-          },
-        },
-      },
-    });
-    graph.nodes.set('svc', {
-      ...createNode('svc', { relations: [{ target: 'other', type: 'uses' }] }),
-      artifacts: [{ filename: 'responsibility.md', content: 'x' }],
-    });
-    graph.nodes.set('other', createNode('other'));
-
-    const result = await validate(graph);
-    const issues = result.issues.filter(
-      (i) => i.rule === 'missing-artifact' && i.nodePath === 'svc',
-    );
-    expect(issues.some((i) => i.message.includes('interface.md'))).toBe(true);
-  });
-
-  it('missing-artifact when required has_tag and node has tag', async () => {
-    const graph = createGraph({
-      aspects: [{ name: 'PublicAPI', id: 'public-api', artifacts: [] }],
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          'responsibility.md': { required: 'always', description: 'x' },
-          'interface.md': {
-            required: { when: 'has_tag:public-api' },
-            description: '',
-          },
-        },
-      },
-    });
-    graph.nodes.set('svc', {
-      ...createNode('svc', { aspects: [{ aspect: 'public-api' }] }),
-      artifacts: [{ filename: 'responsibility.md', content: 'x' }],
-    });
-
-    const result = await validate(graph);
-    const issues = result.issues.filter(
-      (i) => i.rule === 'missing-artifact' && i.nodePath === 'svc',
-    );
-    expect(issues.some((i) => i.message.includes('interface.md'))).toBe(true);
-  });
-
-  it('invalid-artifact-condition returns error when has_aspect references aspect with no directory', async () => {
-    const graph = createGraph({
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          responsibility: { required: 'always', description: 'x' },
-          interface: {
-            required: { when: 'has_aspect:undefined-aspect' },
-            description: '',
-          },
-        },
-      },
-    });
-    graph.nodes.set('a', createNode('a'));
-
-    const result = await validate(graph);
-    const issues = result.issues.filter((i) => i.rule === 'invalid-artifact-condition');
-    expect(issues).toHaveLength(1);
-    expect(issues[0].message).toContain('has_aspect:undefined-aspect');
-  });
-
-  it('artifactRequiredReason has_aspect returns null when node lacks aspect', async () => {
-    const graph = createGraph({
-      aspects: [{ name: 'Special', id: 'special', artifacts: [] }],
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          responsibility: { required: 'always', description: 'x' },
-          optional: {
-            required: { when: 'has_aspect:special' },
-            description: 'x',
-          },
-        },
-      },
-    });
-    graph.nodes.set('svc', createNode('svc'));
-
-    const result = await validate(graph);
-    const optionalIssues = result.issues.filter((i) => i.message.includes('optional'));
-    expect(optionalIssues).toHaveLength(0);
-  });
-
-  it('missing-artifact when required has_aspect and node has aspect', async () => {
-    const graph = createGraph({
-      aspects: [{ name: 'PublicAPI', id: 'public-api', artifacts: [] }],
-      config: {
-        name: 'Test',
-        node_types: { service: { description: 'x' } },
-        artifacts: {
-          'responsibility.md': { required: 'always', description: 'x' },
-          'interface.md': {
-            required: { when: 'has_aspect:public-api' },
-            description: '',
-          },
-        },
-      },
-    });
-    graph.nodes.set('svc', {
-      ...createNode('svc', { aspects: [{ aspect: 'public-api' }] }),
-      artifacts: [{ filename: 'responsibility.md', content: 'x' }],
-    });
-
-    const result = await validate(graph);
-    const issues = result.issues.filter(
-      (i) => i.rule === 'missing-artifact' && i.nodePath === 'svc',
-    );
+    // interface.md has required: { when: 'has_incoming_relations' } in STANDARD_ARTIFACTS
     expect(issues.some((i) => i.message.includes('interface.md'))).toBe(true);
   });
 
@@ -1067,7 +845,6 @@ describe('validator', () => {
       config: {
         name: 'Test',
         node_types: { service: { description: 'x', required_aspects: ['requires-audit'] } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
     });
     graph.nodes.set('svc', createNode('svc'));
@@ -1084,7 +861,6 @@ describe('validator', () => {
       config: {
         name: 'Test',
         node_types: { service: { description: 'x', required_aspects: ['requires-audit'] } },
-        artifacts: { 'responsibility.md': { required: 'always', description: 'x' } },
       },
       aspects: [
         { name: 'Audit', id: 'requires-audit', artifacts: [] },
