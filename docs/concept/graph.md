@@ -58,9 +58,8 @@ reserved top-level directories.
 
 ## Configuration
 
-The configuration file in the graph root defines project identity, vocabulary, artifact
-structure, and quality criteria. It is the **only** source of truth for what tools expect and
-enforce.
+The configuration file in the graph root defines project identity, vocabulary, and quality
+criteria. It is the **only** source of truth for what tools expect and enforce.
 
 ```yaml
 name: my-project
@@ -93,54 +92,15 @@ Tools validate that every node declares a type that is a key in this object.
 
 ### Artifact types
 
-```yaml
-artifacts:
-  responsibility.md:
-    required: always
-    description: What this node is responsible for, and what it is not
-    included_in_relations: true
+The three standard artifacts (`responsibility.md`, `interface.md`, `internals.md`) are built
+into the CLI. They are not configurable — the CLI defines their required conditions and
+descriptions internally.
 
-  interface.md:
-    required:
-      when: has_incoming_relations
-    description: "Public API — methods, parameters, return types, contracts, failure modes, exposed data structures"
-    included_in_relations: true
-
-  internals.md:
-    required: never
-    description: "How the node works and why — algorithms, business rules, state machines, design decisions with rejected alternatives"
-```
-
-Artifact types are content files that nodes may contain. Each artifact key is the **full filename**
-of a file placed next to `yg-node.yaml`. Configuration defines:
-
-- **Key** — full filename (e.g. `responsibility.md`, `api.txt`). Any extension; content must be
-  encodable as UTF-8 text for context assembly.
-- **Required condition** — when this artifact must be present:
-  - `always` — every non-blackbox node must have it.
-  - `never` — always optional.
-  - `when ...` — conditional on graph structure, such as `has_incoming_relations`,
-    `has_outgoing_relations`, `has_aspect:<name>` (legacy `has_tag:<name>` also accepted).
-- **Description** — what the artifact captures. This text is available to agents via tool
-  feedback when creating or validating nodes.
-
-The three standard artifacts above (`responsibility.md`, `interface.md`, `internals.md`) are
-always present and cannot be removed from config. The config parser injects them automatically
-if missing, and the validator reports an error (E020) if they are absent. Projects can add
-domain-specific artifacts on top of the standard three:
-
-```yaml
-artifacts:
-  compliance.md:
-    required:
-      when: has_aspect:regulated
-    description: Regulatory requirements and constraints
-
-  performance.txt:
-    required:
-      when: has_aspect:high-throughput
-    description: Performance budgets, SLAs, optimization constraints
-```
+- **`responsibility.md`** — always required. What this node is responsible for, and what it is not.
+- **`interface.md`** — required when the node has incoming relations. Public API: methods,
+  parameters, return types, contracts, failure modes, exposed data structures.
+- **`internals.md`** — always optional. How the node works and why: algorithms, business rules,
+  state machines, design decisions with rejected alternatives.
 
 Tools validate artifact presence based on these rules and attach artifact content to context
 packages.
@@ -280,20 +240,18 @@ is coarse.
 
 ### Content artifacts
 
-Content artifacts are text files placed next to `yg-node.yaml`. Which artifacts exist and
-when they are required is defined by configuration. Each config key is the full filename
-(e.g. `responsibility.md`, `api.txt`). Content must be UTF-8 encodable for context assembly.
+Content artifacts are text files placed next to `yg-node.yaml`. The three standard artifacts
+are built into the CLI. Content must be UTF-8 encodable for context assembly.
 
-| File                | Purpose                                                                                              | Default requirement                        |
+| File                | Purpose                                                                                              | Requirement                                |
 | ------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | `responsibility.md` | What the node is responsible for, and what it is not                                                  | Required always                            |
 | `interface.md`      | Public API — methods, parameters, return types, contracts, failure modes, exposed data structures     | Required when someone depends on this node |
 | `internals.md`      | How the node works and why — algorithms, business rules, state machines, design decisions with rejected alternatives | Optional                                   |
 
-A simple utility node might have only `responsibility.md`. A complex service may have all three,
-plus project-specific artifacts (any filename in config). The self-calibrating granularity
-principle from the [Foundation](foundation) document applies: add detail where the agent
-produces bad outputs without it.
+A simple utility node might have only `responsibility.md`. A complex service may have all three.
+The self-calibrating granularity principle from the [Foundation](foundation) document applies:
+add detail where the agent produces bad outputs without it.
 
 ### Relations
 
