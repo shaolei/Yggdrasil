@@ -13,13 +13,13 @@ describe('default-config', () => {
     const parsed = parseYaml(DEFAULT_CONFIG) as Record<string, unknown>;
     expect(parsed.name).toBeDefined();
     expect(parsed.node_types).toBeDefined();
-    expect(parsed.artifacts).toBeDefined();
+    expect(parsed.artifacts).toBeUndefined();
     expect(parsed.quality).toBeDefined();
   });
 
-  it('DEFAULT_CONFIG contains version field equal to 2.0.0', () => {
+  it('DEFAULT_CONFIG contains version field equal to 3.0.0', () => {
     const parsed = parseYaml(DEFAULT_CONFIG) as Record<string, unknown>;
-    expect(parsed.version).toBe('2.0.0');
+    expect(parsed.version).toBe('3.0.0');
   });
 
   it('DEFAULT_CONFIG node_types includes module, service, library', () => {
@@ -32,13 +32,9 @@ describe('default-config', () => {
     expect(names).toContain('library');
   });
 
-  it('DEFAULT_CONFIG responsibility and interface have included_in_relations, internals does not', () => {
-    const parsed = parseYaml(DEFAULT_CONFIG) as {
-      artifacts: Record<string, { included_in_relations?: boolean }>;
-    };
-    expect(parsed.artifacts['responsibility.md'].included_in_relations).toBe(true);
-    expect(parsed.artifacts['interface.md'].included_in_relations).toBe(true);
-    expect(parsed.artifacts['internals.md'].included_in_relations).toBeUndefined();
+  it('DEFAULT_CONFIG does not contain artifacts section', () => {
+    const parsed = parseYaml(DEFAULT_CONFIG) as Record<string, unknown>;
+    expect(parsed.artifacts).toBeUndefined();
   });
 
   it('DEFAULT_CONFIG node_types includes infrastructure', () => {

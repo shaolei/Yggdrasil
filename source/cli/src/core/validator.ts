@@ -473,7 +473,7 @@ async function checkMappingPathsExist(graph: Graph): Promise<ValidationIssue[]> 
   return issues;
 }
 
-// --- Rule 6: Required artifacts per config.artifacts (W001) ---
+// --- Rule 6: Required artifacts per STANDARD_ARTIFACTS (W001) ---
 
 function getIncomingRelationSources(graph: Graph, nodePath: string): string[] {
   const sources: string[] = [];
