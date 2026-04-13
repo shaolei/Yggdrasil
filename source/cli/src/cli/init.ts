@@ -49,7 +49,7 @@ export function registerInitCommand(program: Command): void {
     .description('Initialize Yggdrasil graph in current project')
     .option(
       '--platform <name>',
-      'Agent platform: cursor, claude-code, copilot, cline, roocode, codex, windsurf, aider, gemini, amp, generic',
+      'Agent platform: cursor, claude-code, copilot, cline, roocode, codex, windsurf, aider, gemini, amp, codebuddy, generic',
       'generic',
     )
     .option('--upgrade', 'Refresh rules only (when .yggdrasil/ already exists)')

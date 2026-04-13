@@ -17,6 +17,7 @@ instruction file — so the agent knows how to use the repo's semantic memory.
 | Aider | `.aider.conf.yml` (adds `read:` entry) | ⚠️ Minimal (1 line) |
 | Gemini CLI | `GEMINI.md` (single `@...` line) | ⚠️ Minimal (1 line) |
 | Amp | `AGENTS.md` (single `@...` line) | ⚠️ Minimal (1 line) |
+| CodeBuddy | `.codebuddy/rules/yggdrasil/RULE.mdc` | ❌ No |
 | Generic | `.yggdrasil/agent-rules.md` | ❌ No |
 
 Notes:

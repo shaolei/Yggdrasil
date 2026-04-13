@@ -16,7 +16,7 @@ yg init --platform <platform>
 ```
 
 Supported platforms: `cursor`, `claude-code`, `copilot`, `cline`,
-`roocode`, `codex`, `windsurf`, `aider`, `gemini`, `amp`, `generic`
+`roocode`, `codex`, `windsurf`, `aider`, `gemini`, `amp`, `codebuddy`, `generic`
 
 ## 3) Start coding
 

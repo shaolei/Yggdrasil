@@ -17,7 +17,7 @@ yg init [--platform <name>] [--upgrade]
 
 Creates `.yggdrasil/` and installs the platform instruction file.
 
-- `--platform <name>` — Agent platform (default: `generic`). Values: `cursor`, `claude-code`, `copilot`, `cline`, `roocode`, `codex`, `windsurf`, `aider`, `gemini`, `amp`, `generic`
+- `--platform <name>` — Agent platform (default: `generic`). Values: `cursor`, `claude-code`, `copilot`, `cline`, `roocode`, `codex`, `windsurf`, `aider`, `gemini`, `amp`, `codebuddy`, `generic`
 - `--upgrade` — Refresh rules only when `.yggdrasil/` already exists
 
 ---

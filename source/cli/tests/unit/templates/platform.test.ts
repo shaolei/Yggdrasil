@@ -26,6 +26,7 @@ describe('installRulesForPlatform', () => {
     expect(PLATFORMS).toContain('aider');
     expect(PLATFORMS).toContain('gemini');
     expect(PLATFORMS).toContain('amp');
+    expect(PLATFORMS).toContain('codebuddy');
     expect(PLATFORMS).toContain('generic');
   });
 
@@ -150,6 +151,19 @@ describe('installRulesForPlatform', () => {
       const content = readFileSync(path.join(root, 'AGENTS.md'), 'utf-8');
       expect(content).toContain('## Project rules');
       expect(content).toContain('@.yggdrasil/agent-rules.md');
+    });
+  });
+
+  it('codebuddy when empty: creates .codebuddy/rules/yggdrasil/RULE.mdc with frontmatter', async () => {
+    await withTempDir(async (root) => {
+      const out = await installRulesForPlatform(root, 'codebuddy');
+      expect(out).toBe(path.join(root, '.codebuddy', 'rules', 'yggdrasil', 'RULE.mdc'));
+      expect(existsSync(out)).toBe(true);
+      const content = readFileSync(out, 'utf-8');
+      expect(content).toContain('---');
+      expect(content).toContain('description: Yggdrasil — semantic memory of the repository');
+      expect(content).toContain('alwaysApply: true');
+      expect(content).toContain(AGENT_RULES_CONTENT);
     });
   });
 

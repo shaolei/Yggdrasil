@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Invariant extraction step (4b) in reverse-engineering protocol.** Instructs
   agents to scan for guards, throws, and conditionals and record them as
   behavioral invariants.
+- **CodeBuddy platform support.** `yg init --platform codebuddy` creates
+  `.codebuddy/rules/yggdrasil/RULE.mdc` with `alwaysApply: true` frontmatter,
+  integrating Yggdrasil's agent rules into CodeBuddy's project-level rule system.
 
 ### Changed
 

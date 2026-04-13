@@ -19,6 +19,7 @@ export type Platform =
   | 'aider'
   | 'gemini'
   | 'amp'
+  | 'codebuddy'
   | 'generic';
 
 export const PLATFORMS: Platform[] = [
@@ -32,6 +33,7 @@ export const PLATFORMS: Platform[] = [
   'aider',
   'gemini',
   'amp',
+  'codebuddy',
   'generic',
 ];
 
@@ -62,6 +64,8 @@ export async function installRulesForPlatform(
       return installForGemini(projectRoot, agentRulesPath);
     case 'amp':
       return installForAmp(projectRoot, agentRulesPath);
+    case 'codebuddy':
+      return installForCodeBuddy(projectRoot);
     case 'generic':
     default:
       return installForGeneric(projectRoot);
@@ -226,6 +230,20 @@ async function installForGemini(projectRoot: string, agentRulesPath: string): Pr
   const content = existing.trimEnd() ? `${existing.trimEnd()}\n${importLine}\n` : `${importLine}\n`;
   await writeFile(filePath, content, 'utf-8');
   return agentRulesPath;
+}
+
+async function installForCodeBuddy(projectRoot: string): Promise<string> {
+  const dir = path.join(projectRoot, '.codebuddy', 'rules', 'yggdrasil');
+  await mkdir(dir, { recursive: true });
+  const filePath = path.join(dir, 'RULE.mdc');
+  const content = `---
+description: Yggdrasil — semantic memory of the repository
+alwaysApply: true
+---
+
+${AGENT_RULES_CONTENT}`;
+  await writeFile(filePath, content, 'utf-8');
+  return filePath;
 }
 
 async function installForAmp(projectRoot: string, agentRulesPath: string): Promise<string> {
